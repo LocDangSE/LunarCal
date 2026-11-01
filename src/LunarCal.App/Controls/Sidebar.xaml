@@ -1,0 +1,183 @@
+<UserControl x:Class="LunarCal.App.Controls.Sidebar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:controls="clr-namespace:LunarCal.App.Controls"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
+             Width="{DynamicResource SidebarWidth}"
+             Background="{DynamicResource SidebarBackgroundBrush}"
+             BorderBrush="{DynamicResource BorderBrush}"
+             BorderThickness="0,0,1,0"
+             AutomationProperties.AutomationId="Sidebar">
+
+  <UserControl.Resources>
+    <conv:ColorToBrushConverter x:Key="ColorToBrush" />
+
+    <!-- Style for Create Event Action Button (Figma 01) -->
+    <Style x:Key="CreateEventButtonStyle" TargetType="Button">
+      <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="btnBorder"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="22"
+                    Padding="16,0">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="+" FontSize="20" FontWeight="Bold" Margin="0,0,8,2" VerticalAlignment="Center" />
+                <ContentPresenter VerticalAlignment="Center" />
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="btnBorder" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Custom CheckBox for Calendar List -->
+    <Style x:Key="CalendarCheckBoxStyle" TargetType="CheckBox">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="Margin" Value="0,4" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="CheckBox">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <!-- Color Indicator Bullet -->
+              <Border Width="14" Height="14"
+                      CornerRadius="7"
+                      Background="{Binding Color, Converter={StaticResource ColorToBrush}}"
+                      Margin="0,0,8,0"
+                      VerticalAlignment="Center">
+                <Path x:Name="checkMark"
+                      Data="M 3,7 L 6,10 L 11,4"
+                      Stroke="{DynamicResource AccentTextBrush}"
+                      StrokeThickness="2"
+                      Visibility="Collapsed" />
+              </Border>
+              <ContentPresenter VerticalAlignment="Center" />
+            </StackPanel>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="checkMark" Property="Visibility" Value="Visible" />
+              </Trigger>
+              <Trigger Property="IsChecked" Value="False">
+                <Setter Property="Opacity" Value="0.6" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <Grid Margin="16,16,16,12">
+    <Grid.RowDefinitions>
+      <!-- Top: Create Event Button -->
+      <RowDefinition Height="Auto" />
+      <!-- Middle: Mini Calendar + Calendar List (Scrollable) -->
+      <RowDefinition Height="*" />
+      <!-- Bottom: Sync Status & AI Queue Block -->
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- 1. CREATE EVENT BUTTON (FR-UI-10) -->
+    <Button Grid.Row="0"
+            Content="{loc:Loc Key=sidebar.create_event}"
+            Command="{Binding CreateEventCommand}"
+            Style="{StaticResource CreateEventButtonStyle}"
+            AutomationProperties.AutomationId="BtnCreateEvent"
+            AutomationProperties.Name="Tạo sự kiện"
+            Margin="0,0,0,16" />
+
+    <!-- 2. SCROLLABLE MIDDLE SECTION -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel>
+        <!-- Mini Calendar -->
+        <controls:MiniCalendar DataContext="{Binding MiniCalendar}" Margin="0,0,0,16" />
+
+        <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,16" />
+
+        <!-- My Calendars Header -->
+        <TextBlock Text="{loc:Loc Key=sidebar.my_calendars}"
+                   FontSize="{DynamicResource FontSizeCaption}"
+                   FontWeight="{DynamicResource FontWeightSemiBold}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   Margin="0,0,0,8" />
+
+        <!-- Calendar Collections List -->
+        <ItemsControl ItemsSource="{Binding Calendars}" AutomationProperties.AutomationId="CalendarList">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <CheckBox Content="{Binding Summary}"
+                        IsChecked="{Binding IsSelected}"
+                        Style="{StaticResource CalendarCheckBoxStyle}"
+                        AutomationProperties.Name="{Binding Summary}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- 3. SYNC STATUS & AI QUEUE (FR-UI-10) -->
+    <Border Grid.Row="2"
+            Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="{DynamicResource CornerRadiusSmall}"
+            Padding="10,8"
+            Margin="0,12,0,0"
+            AutomationProperties.AutomationId="SyncStatusBlock">
+      <StackPanel>
+        <Grid>
+          <TextBlock Text="{Binding SyncStatusText}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     VerticalAlignment="Center" />
+
+          <!-- Sync Now Button -->
+          <Button Content="↻"
+                  Command="{Binding SyncNowCommand}"
+                  HorizontalAlignment="Right"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Foreground="{DynamicResource AccentPrimaryBrush}"
+                  FontWeight="Bold"
+                  Cursor="Hand"
+                  ToolTip="{loc:Loc Key=sidebar.sync_now}"
+                  AutomationProperties.AutomationId="BtnSyncNow" />
+        </Grid>
+
+        <!-- Pending AI Commands Badge (if count > 0) -->
+        <Border x:Name="aiBadge"
+                Background="{DynamicResource WarningBrush}"
+                CornerRadius="{DynamicResource CornerRadiusSmall}"
+                Padding="6,2"
+                Margin="0,6,0,0"
+                HorizontalAlignment="Left"
+                Visibility="Collapsed">
+          <TextBlock Text="{Binding PendingAiCommandsCount, StringFormat='{}{0} lệnh đang chờ'}"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     Foreground="#000000" />
+        </Border>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

@@ -358,4 +358,31 @@
   <data name="solarterm.kinh_trap" xml:space="preserve">
     <value>Kinh trập</value>
   </data>
+  <data name="sidebar.create_event" xml:space="preserve">
+    <value>Tạo sự kiện</value>
+  </data>
+  <data name="sidebar.my_calendars" xml:space="preserve">
+    <value>Lịch của tôi</value>
+  </data>
+  <data name="sidebar.sync_status_now" xml:space="preserve">
+    <value>Đã đồng bộ vừa xong</value>
+  </data>
+  <data name="sidebar.sync_now" xml:space="preserve">
+    <value>Đồng bộ ngay</value>
+  </data>
+  <data name="sidebar.pending_ai_commands" xml:space="preserve">
+    <value>{0} lệnh AI đang chờ</value>
+  </data>
+  <data name="network.online" xml:space="preserve">
+    <value>Trực tuyến</value>
+  </data>
+  <data name="network.offline" xml:space="preserve">
+    <value>Ngoại tuyến</value>
+  </data>
+  <data name="topbar.prev" xml:space="preserve">
+    <value>Trước</value>
+  </data>
+  <data name="topbar.next" xml:space="preserve">
+    <value>Sau</value>
+  </data>
 </root>

@@ -4,13 +4,108 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+        xmlns:controls="clr-namespace:LunarCal.App.Controls"
+        xmlns:loc="clr-namespace:LunarCal.App.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
         Title="LunarCal"
         AutomationProperties.AutomationId="MainWindow"
         Width="1280" Height="800"
         MinWidth="960" MinHeight="600"
-        WindowStartupLocation="CenterScreen">
-  <!-- Shell layout (top bar, sidebar, calendar views, AI command bar) arrives in Phase 2 (Figma 01). -->
-  <Grid />
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+  <DockPanel LastChildFill="True">
+    <!-- Top Bar (FR-UI-9) -->
+    <controls:TopBar DockPanel.Dock="Top" DataContext="{Binding}" />
+
+    <!-- Sidebar (FR-UI-10) -->
+    <controls:Sidebar DockPanel.Dock="Left" DataContext="{Binding}" />
+
+    <!-- Main View Content Area -->
+    <Grid Background="{DynamicResource WindowBackgroundBrush}">
+      <Grid.RowDefinitions>
+        <!-- Center Calendar Viewport (Month/Week/Day/Agenda) -->
+        <RowDefinition Height="*" />
+        <!-- Bottom AI Command Bar Placeholder (FR-UI-5, Figma 01) -->
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <!-- Calendar View Placeholder (Wired up with MonthView in P2-07) -->
+      <Border Grid.Row="0"
+              Margin="16"
+              Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusMedium}"
+              AutomationProperties.AutomationId="MainViewContainer">
+        <Grid>
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="{Binding HeaderTitle}"
+                       FontSize="{DynamicResource FontSizeDisplay}"
+                       FontWeight="{DynamicResource FontWeightBold}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,8" />
+            <TextBlock Text="{Binding LunarHeaderSubtitle}"
+                       FontSize="{DynamicResource FontSizeSubtitle}"
+                       Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,16" />
+            <TextBlock Text="Chế độ xem: Tháng (Month View)"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- AI Command Bar Placeholder (FR-UI-5, Figma 01) -->
+      <Border Grid.Row="1"
+              Height="{DynamicResource AiCommandBarHeight}"
+              Margin="16,0,16,16"
+              Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="24"
+              Padding="16,0"
+              AutomationProperties.AutomationId="AiCommandBar">
+        <Grid VerticalAlignment="Center">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+          <!-- AI Sparkle Icon -->
+          <TextBlock Grid.Column="0"
+                     Text="✨"
+                     FontSize="16"
+                     Margin="0,0,10,0"
+                     VerticalAlignment="Center" />
+
+          <!-- Prompt Placeholder -->
+          <TextBlock Grid.Column="1"
+                     Text="Nhập câu lệnh để tạo sự kiện bằng AI (ví dụ: 'Nhắc tôi đi khám răng lúc 15h thứ Sáu')..."
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
+                     VerticalAlignment="Center" />
+
+          <!-- Send Action Button -->
+          <Border Grid.Column="2"
+                  Width="28" Height="28"
+                  CornerRadius="14"
+                  Background="{DynamicResource AccentPrimaryBrush}"
+                  Cursor="Hand"
+                  AutomationProperties.AutomationId="BtnAiSubmit">
+            <TextBlock Text="↑"
+                       Foreground="{DynamicResource AccentTextBrush}"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </Border>
+        </Grid>
+      </Border>
+    </Grid>
+  </DockPanel>
 </Window>

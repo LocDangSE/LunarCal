@@ -1,0 +1,300 @@
+<UserControl x:Class="LunarCal.App.Controls.TopBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
+             Height="{DynamicResource TopBarHeight}"
+             Background="{DynamicResource SurfaceBackgroundBrush}"
+             BorderBrush="{DynamicResource BorderBrush}"
+             BorderThickness="0,0,0,1"
+             AutomationProperties.AutomationId="TopBar">
+
+  <UserControl.Resources>
+    <conv:EnumToBooleanConverter x:Key="EnumToBool" />
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+    <!-- Style for TopBar Buttons -->
+    <Style x:Key="TopBarButtonStyle" TargetType="Button">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="Padding" Value="12,5" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+      <Setter Property="FontFamily" Value="{DynamicResource FontFamilyBase}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusSmall}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Style for Navigation Arrow Buttons -->
+    <Style x:Key="NavIconButtonStyle" TargetType="Button" BasedOn="{StaticResource TopBarButtonStyle}">
+      <Setter Property="Padding" Value="8,5" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <!-- Style for Segmented View RadioButtons -->
+    <Style x:Key="SegmentedRadioButtonStyle" TargetType="RadioButton">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+      <Setter Property="Padding" Value="12,5" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Border x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{DynamicResource CornerRadiusSmall}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="border" Property="Background" Value="{DynamicResource SurfaceElevatedBackgroundBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+              </Trigger>
+              <MultiTrigger>
+                <MultiTrigger.Conditions>
+                  <Condition Property="IsMouseOver" Value="True" />
+                  <Condition Property="IsChecked" Value="False" />
+                </MultiTrigger.Conditions>
+                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+              </MultiTrigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <Grid Margin="16,0">
+    <Grid.ColumnDefinitions>
+      <!-- Left: Brand, Today, Nav arrows, Titles -->
+      <ColumnDefinition Width="Auto" />
+      <!-- Center: View Switcher -->
+      <ColumnDefinition Width="*" />
+      <!-- Right: Language, Network, Avatar -->
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+
+    <!-- LEFT SECTION -->
+    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+      <!-- App Brand -->
+      <TextBlock Text="LunarCal"
+                 FontSize="{DynamicResource FontSizeTitle}"
+                 FontWeight="{DynamicResource FontWeightBold}"
+                 Foreground="{DynamicResource AccentPrimaryBrush}"
+                 VerticalAlignment="Center"
+                 Margin="0,0,24,0" />
+
+      <!-- Today Button -->
+      <Button Content="{loc:Loc Key=topbar.today}"
+              Command="{Binding GoToTodayCommand}"
+              Style="{StaticResource TopBarButtonStyle}"
+              AutomationProperties.AutomationId="BtnToday"
+              AutomationProperties.Name="Hôm nay"
+              Margin="0,0,12,0" />
+
+      <!-- Navigation Arrows -->
+      <Button Content="&lt;"
+              Command="{Binding PreviousPeriodCommand}"
+              Style="{StaticResource NavIconButtonStyle}"
+              AutomationProperties.AutomationId="BtnPrev"
+              AutomationProperties.Name="Thời gian trước"
+              ToolTip="{loc:Loc Key=topbar.prev}" />
+
+      <Button Content="&gt;"
+              Command="{Binding NextPeriodCommand}"
+              Style="{StaticResource NavIconButtonStyle}"
+              AutomationProperties.AutomationId="BtnNext"
+              AutomationProperties.Name="Thời gian sau"
+              ToolTip="{loc:Loc Key=topbar.next}"
+              Margin="2,0,16,0" />
+
+      <!-- Title & Lunar Subtitle Stack -->
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="{Binding HeaderTitle}"
+                   FontSize="{DynamicResource FontSizeTitle}"
+                   FontWeight="{DynamicResource FontWeightSemiBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   AutomationProperties.AutomationId="HeaderTitleText" />
+
+        <TextBlock Text="{Binding LunarHeaderSubtitle}"
+                   FontSize="{DynamicResource FontSizeCaption}"
+                   Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                   Visibility="{Binding IsLunarVisible, Converter={StaticResource BoolToVis}}"
+                   AutomationProperties.AutomationId="LunarHeaderSubtitleText" />
+      </StackPanel>
+    </StackPanel>
+
+    <!-- CENTER SECTION: VIEW SWITCHER (Day, Week, Month, Agenda) -->
+    <Border Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource HoverBackgroundBrush}"
+            CornerRadius="{DynamicResource CornerRadiusSmall}"
+            Padding="2">
+      <StackPanel Orientation="Horizontal" AutomationProperties.AutomationId="ViewSwitcher">
+        <!-- Day View -->
+        <RadioButton Content="{loc:Loc Key=view.day}"
+                     GroupName="ViewModeGroup"
+                     IsChecked="{Binding ActiveViewMode, Converter={StaticResource EnumToBool}, ConverterParameter=Day}"
+                     Command="{Binding ChangeViewCommand}"
+                     CommandParameter="{x:Static vm:CalendarViewMode.Day}"
+                     AutomationProperties.AutomationId="ViewModeDay"
+                     Style="{DynamicResource SegmentedRadioButtonStyle}" />
+
+        <!-- Week View -->
+        <RadioButton Content="{loc:Loc Key=view.week}"
+                     GroupName="ViewModeGroup"
+                     IsChecked="{Binding ActiveViewMode, Converter={StaticResource EnumToBool}, ConverterParameter=Week}"
+                     Command="{Binding ChangeViewCommand}"
+                     CommandParameter="{x:Static vm:CalendarViewMode.Week}"
+                     AutomationProperties.AutomationId="ViewModeWeek"
+                     Style="{DynamicResource SegmentedRadioButtonStyle}" />
+
+        <!-- Month View -->
+        <RadioButton Content="{loc:Loc Key=view.month}"
+                     GroupName="ViewModeGroup"
+                     IsChecked="{Binding ActiveViewMode, Converter={StaticResource EnumToBool}, ConverterParameter=Month}"
+                     Command="{Binding ChangeViewCommand}"
+                     CommandParameter="{x:Static vm:CalendarViewMode.Month}"
+                     AutomationProperties.AutomationId="ViewModeMonth"
+                     Style="{DynamicResource SegmentedRadioButtonStyle}" />
+
+        <!-- Agenda View -->
+        <RadioButton Content="{loc:Loc Key=view.agenda}"
+                     GroupName="ViewModeGroup"
+                     IsChecked="{Binding ActiveViewMode, Converter={StaticResource EnumToBool}, ConverterParameter=Agenda}"
+                     Command="{Binding ChangeViewCommand}"
+                     CommandParameter="{x:Static vm:CalendarViewMode.Agenda}"
+                     AutomationProperties.AutomationId="ViewModeAgenda"
+                     Style="{DynamicResource SegmentedRadioButtonStyle}" />
+      </StackPanel>
+    </Border>
+
+    <!-- RIGHT SECTION: Language (VI | EN), Network Status Chip, User Avatar -->
+    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+      <!-- Language Switcher: VI | EN -->
+      <Border Background="{DynamicResource HoverBackgroundBrush}"
+              CornerRadius="{DynamicResource CornerRadiusSmall}"
+              Padding="2"
+              Margin="0,0,16,0"
+              AutomationProperties.AutomationId="LanguageSwitcher">
+        <StackPanel Orientation="Horizontal">
+          <Button Content="VI"
+                  Command="{Binding SwitchLanguageCommand}"
+                  CommandParameter="vi-VN"
+                  AutomationProperties.AutomationId="BtnLangVi"
+                  AutomationProperties.Name="Tiếng Việt"
+                  Padding="8,3"
+                  FontSize="{DynamicResource FontSizeCaption}"
+                  FontWeight="{DynamicResource FontWeightSemiBold}"
+                  BorderThickness="0"
+                  Cursor="Hand">
+            <Button.Style>
+              <Style TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsVietnameseActive}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+          </Button>
+
+          <Button Content="EN"
+                  Command="{Binding SwitchLanguageCommand}"
+                  CommandParameter="en-US"
+                  AutomationProperties.AutomationId="BtnLangEn"
+                  AutomationProperties.Name="English"
+                  Padding="8,3"
+                  FontSize="{DynamicResource FontSizeCaption}"
+                  FontWeight="{DynamicResource FontWeightSemiBold}"
+                  BorderThickness="0"
+                  Cursor="Hand">
+            <Button.Style>
+              <Style TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsEnglishActive}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+          </Button>
+        </StackPanel>
+      </Border>
+
+      <!-- Network Status Chip -->
+      <Border Background="{DynamicResource HoverBackgroundBrush}"
+              CornerRadius="{DynamicResource CornerRadiusFull}"
+              Padding="10,4"
+              Margin="0,0,16,0"
+              AutomationProperties.AutomationId="NetworkStatusChip">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <Ellipse Width="8" Height="8" Margin="0,0,6,0">
+            <Ellipse.Style>
+              <Style TargetType="Ellipse">
+                <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsOnline}" Value="False">
+                    <Setter Property="Fill" Value="{DynamicResource TextTertiaryBrush}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Ellipse.Style>
+          </Ellipse>
+
+          <TextBlock Text="{Binding NetworkStatusText}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+      </Border>
+
+      <!-- User Avatar Placeholder -->
+      <Border Width="32" Height="32"
+              CornerRadius="16"
+              Background="{DynamicResource AccentPrimaryBrush}"
+              AutomationProperties.AutomationId="UserAvatar">
+        <TextBlock Text="L"
+                   FontSize="14"
+                   FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource AccentTextBrush}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" />
+      </Border>
+    </StackPanel>
+  </Grid>
+</UserControl>

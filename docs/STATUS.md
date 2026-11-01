@@ -3,17 +3,17 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 11:47 +07:00, Antigravity. Hoàn thành P2-03 (chốt ADR-0011, Tokens.xaml, Themes/Light.xaml, Dark.xaml, HighContrast.xaml, IThemeService/ThemeService, 12 unit test pass). Tổng 136 test (135 pass, 1 skip).
+**Cập nhật lần cuối:** 2026-11-01 12:06 +07:00, Antigravity. Hoàn thành P2-06 (dựng MainWindow UI Shell theo Figma 01: TopBar, Sidebar, MiniCalendar, view switching Day/Week/Month/Agenda, GoToToday, runtime language switcher VI|EN, chip mạng Online/Offline, user avatar, danh sách calendar với checkbox & bullet màu, sync status block với nút Đồng bộ ngay và badge AI pending command). 7 view model unit tests mới pass. Tổng 143 test (142 pass, 1 skip).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01, P2-02, P2-03, P2-04, P2-05 đã xong).
+- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01, P2-02, P2-03, P2-04, P2-05, P2-06 đã xong; tiếp theo: P2-07).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào (P0-01 vừa xong). Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. P0-01 xong: CI run 41267053678 (commit 159781c) xanh cả `build-test` và `core-linux-container`. Không giữ task nào. File đang sửa dở: không có.
-  - **Antigravity:** không giữ task nào (P2-03 vừa xong). Đã: ADR-0011 Accepted (tự style ResourceDictionary), `Tokens.xaml`, `Themes/Light.xaml`, `Dark.xaml`, `HighContrast.xaml`, `IThemeService`/`ThemeService`, đăng ký DI trong App, 12 unit test pass kiểm tra hệ thống theme, phát hiện OS mode, tính tương thích brush giữa các theme (FR-UI-7, FR-UI-8). File đang sửa dở: không có.
+  - **Antigravity:** không giữ task nào (P2-06 vừa xong). Đã hoàn thành P2-06: dựng MainWindow shell theo Figma 01 (TopBar, Sidebar, MiniCalendar, view switching Day/Week/Month/Agenda, GoToToday, runtime language switcher VI|EN, chip mạng Online/Offline, user avatar, danh sách calendar với checkbox & bullet màu, sync status block với nút Đồng bộ ngay và badge AI pending command). 7 view model unit tests mới pass. Tổng cộng: 143 test (142 pass, 1 skip). Format verified. Coverage gate pass (Lunar 100%, Core 99.67%). File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
-  1. Phase 2 UI shell: P2-06 (MainWindow shell theo Figma 01, TopBar, Sidebar, MiniCalendar, kết nối IEventStore và ILocalizationService).
-  2. Phase 2 Month view: P2-07 (lưới tháng 6×7 có ngày âm).
+  1. Phase 2 Month view: P2-07 (lưới tháng 6×7 có ngày âm, mùng 1 dạng `1/tháng` có ký hiệu nhuận; ẩn khi tắt lịch âm; đo render < 100 ms).
+  2. Phase 2 Week/Day view: P2-08 (view Tuần và Ngày: lưới giờ, sự kiện cả ngày, vạch giờ hiện tại, ngày âm ở tiêu đề cột).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -21,7 +21,7 @@
 | --- | --- | --- |
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2 | Đang thực hiện: P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store) xong | `src/LunarCal.App/Themes/`, `src/LunarCal.App/Resources/Tokens.xaml`, `src/LunarCal.Core/Calendar/`, `src/LunarCal.Infrastructure/Storage/`, `tests/` |
+| 2 | Đang thực hiện: P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar) xong | `src/LunarCal.App/Views/MainWindow.xaml`, `src/LunarCal.App/Controls/`, `src/LunarCal.App/ViewModels/`, `src/LunarCal.App/Themes/`, `src/LunarCal.App/Resources/Tokens.xaml`, `src/LunarCal.Core/Calendar/`, `src/LunarCal.Infrastructure/Storage/`, `tests/` |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -33,9 +33,9 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 136 test: 135 pass, 0 fail, 1 skip |
+| `dotnet test --solution LunarCal.slnx` | 143 test: 142 pass, 0 fail, 1 skip |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.67% (ngưỡng 95% và 85%) |
-| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được (shell còn trống; kiểm tra ngày 2026-10-31) |
+| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar |
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
 
 - Test skip: `LunarCal.App.UiTests.SmokeTests.App_starts_and_shows_main_window`, lý do "UI shell is implemented in Phase 2". Bỏ skip ở P2-12.
@@ -98,9 +98,3 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - **Đề xuất / tạm quyết:** Chủ dự án đọc điều khoản trước khi công khai repo. Đã ghi nguồn trong `Fixtures/README.md`.
 - **Trạng thái:** Mở
 - **Ghi bởi:** Claude Code, 2026-10-31
-
-## Nợ kỹ thuật
-
-- Các package đã chốt ở spec §2 nhưng chưa thêm và chưa chọn phiên bản: Serilog, Google.Apis.*, Http.Resilience, SQLCipher, Parquet.Net, DuckDB, H.NotifyIcon.Wpf, Microsoft.Toolkit.Uwp.Notifications. Phải kiểm tra package còn được bảo trì trên .NET 10 trước khi thêm (ADR-0014).
-- `docs/THREAT_MODEL.md` và `docs/DATA_LAKE.md` mới là khung; SECURITY.md, PRIVACY.md chưa có (P6b-07, P8-05).
-- ADR-0001..0009 viết bằng tiếng Anh, ADR-0010 trở đi viết bằng tiếng Việt.

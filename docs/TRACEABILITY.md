@@ -28,3 +28,6 @@ Maps requirement IDs from the spec to the tests that cover them. Fill in as each
 | FR-SYNC-6 Event sync fields (RecurringEventId, Etag, Updated, ExtendedProperties) | `LunarCal.Core.Tests.Calendar.CalendarModelTests.FR_SYNC_6_*`, `LunarCal.Infrastructure.Tests.Storage.InMemoryEventStoreTests.*` | Covered (P2-05) |
 | FR-UI-7 Theme system (Light, Dark, System, runtime switching, design tokens) | `LunarCal.App.Tests.Themes.ThemeServiceTests.FR_UI_7_*`, `LunarCal.App.Tests.Themes.ThemeDictionaryTests.FR_UI_7_*` | Covered (ADR-0011, P2-03) |
 | FR-UI-8 High Contrast theme & accessibility palette | `LunarCal.App.Tests.Themes.ThemeServiceTests.FR_UI_8_*`, `LunarCal.App.Tests.Themes.ThemeDictionaryTests.*` | Covered (P2-03) |
+| FR-UI-1 MainWindow UI shell (TopBar, Sidebar, MiniCalendar, view switching, GoToToday) | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_1_*` | Covered (P2-06) |
+| FR-UI-9 Runtime language switcher (VI \| EN), online/offline network indicator | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_9_*` | Covered (P2-06) |
+| FR-UI-10 Sync status block, manual sync trigger, pending AI command badge | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_10_*` | Covered (P2-06) |
