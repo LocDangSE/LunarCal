@@ -69,3 +69,4 @@
 | 2026-11-01 17:35 +07:00 | Claude Code (Opus 5.5) | P2-R8 | START | Siết UI smoke test |
 | 2026-11-01 17:41 +07:00 | Claude Code (Opus 5.5) | P2-R8 | DONE | SmokeTests: regex ngày âm cho subtitle, 42 ô tháng (có ít nhất một mùng 1), 7 header tuần, nhãn ngày; thay `Thread.Sleep` bằng `Retry`; assert view cũ biến mất; chạy app cùng cấu hình build (đã làm ở P2-R1). Pass 5/5 lần liên tiếp local (Release). Ghi chú: dòng DONE của P2-R7 ghi 217 test, số đúng là 218. Tiếp theo: P2-R9 |
 | 2026-11-01 17:41 +07:00 | Claude Code (Opus 5.5) | P2-R9 | START | Cập nhật STATUS, CHANGELOG, review |
+| 2026-11-01 17:42 +07:00 | Claude Code (Opus 5.5) | P2-R9 | DONE | Cập nhật STATUS (số đo render, kiểm tra theme/S13 bằng smoke test, quyết định mới), CHANGELOG (mục Fixed), kết quả trong `docs/reviews/PHASE2.md`. 218/218 test, Lunar 100%, Core 99.22%. Chưa push; tiếp theo: chủ dự án push và kiểm tra CI (UI smoke trên windows-latest) |

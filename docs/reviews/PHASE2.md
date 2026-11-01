@@ -157,3 +157,22 @@ Thứ tự đề xuất: theo số thứ tự. Mỗi task làm theo quy tắc "1
 - [ ] **P2-R7** · FR-UI-2, FR-LUNAR-6, FR-I18N-5 · Siết test: thêm test tháng thiếu 29 ngày và ô ngoài phạm vi 1900–2100 cho MonthView; `DayDetailViewModelTests.cs:131` assert text âm lịch rỗng khi tắt; test gloss assert `en != vi` cho chi và tiết khí; `LocalizationTests.cs:43` assert `vi-VN`; `TimeFormattingHelperTests.cs:47` assert chuỗi chính xác. · Xong khi: các test mới pass và không test nào bị nới lỏng.
 - [ ] **P2-R8** · spec §9 · Sửa `SmokeTests.cs`: assert regex ngày âm ở subtitle và ở ít nhất một ô tháng/header tuần; thay `Thread.Sleep` bằng `Retry`; assert view cũ biến mất sau khi chuyển; chọn bản build theo cấu hình của test (không ưu tiên Debug). · Xong khi: test pass local 5 lần liên tiếp và pass trên CI; STATUS ghi kết quả local và run ID CI.
 - [ ] **P2-R9** · spec §13 · Sau P2-R1..R8: cập nhật `STATUS.md` (bỏ dòng commit cũ ở `:41`, ghi run ID CI xanh), TRACEABILITY cho các test mới, CHANGELOG. · Xong khi: CI xanh, có run ID trong STATUS.
+
+## Kết quả sửa (Claude Code, 2026-11-01 17:42 +07:00)
+
+Chủ dự án yêu cầu Claude Code sửa luôn thay vì giao Antigravity. Mỗi task một commit, mỗi commit đều pass build Release, format, test và cổng coverage.
+
+| Task | Commit | Kết quả |
+| --- | --- | --- |
+| P2-R1 múi giờ | `165b601` | `CalendarTime` (Core) + `IDisplayPreferences`; bỏ 6 chỗ +7. Phát hiện thêm: smoke test chạy bản Debug làm cổng coverage Lunar tụt còn 89%; đã sửa |
+| P2-R2 setting Giao diện | `71bc871` | Setting áp dụng ngay; đầu tuần không bị ngôn ngữ ghi đè; nút ⚙ mở S13. Phát hiện thêm: S13 crash khi mở (thiếu resource `Loc`) |
+| P2-R3 async | `9aacaee` | Bỏ `async partial void` (làm ở R2); nạp lại theo phiên, kết quả cũ bị bỏ; bỏ `catch` rỗng |
+| P2-R4 i18n | `8b0e8c5` | `CalendarText` + ~40 key resx; không còn chuỗi UI trong VM/XAML |
+| P2-R5 token | `71302de` | Thay hết literal trong `Views/` và cả `Controls/` (review trước bỏ sót `Controls/`); test chặn literal; smoke đổi theme |
+| P2-R6 NFR-PERF | `da63264` | Đo trên view thật: trước 132 ms median, **vượt ngưỡng**; sau tái sử dụng ô/chip: ~21 ms median, ~43 ms max |
+| P2-R7 test yếu | `da95572` | Thêm test tháng thiếu, ngoài phạm vi; DayDetail xoá giá trị âm lịch khi tắt. Sửa lại đề xuất sai của review: `ResolveDefaultCulture(null)` hỏi OS, không phải luôn vi-VN |
+| P2-R8 smoke | `0c3e59a` | Assert nội dung âm lịch, view cũ biến mất, bỏ `Thread.Sleep`; pass 5/5 |
+| P2-R9 tài liệu | commit cuối | STATUS, CHANGELOG, TRACEABILITY |
+
+Còn mở: chưa có run CI sau các commit này (chưa push); UI smoke trên CI cần xác nhận lại.
+

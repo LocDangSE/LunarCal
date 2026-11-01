@@ -29,6 +29,16 @@
 - Appearance settings page and culture-aware time formatting (Figma S13): `AppearancePage.xaml`, `AppearanceSettingsViewModel`, `TimeFormattingHelper` supporting 12h/24h formats across cultures, `SettingKeys.TimeFormat`, week start configuration (Monday/Sunday) synchronized with MonthView grid calculation, timezone selection, and lunar master toggle (FR-UI-7, FR-I18N-4, P2-11).
 - Out-of-process FlaUI UI smoke test suite in `tests/LunarCal.App.UiTests`: removed Skip annotation, verifies application startup and main window display, TopBar presence and lunar subtitle inspectability, and programmatic view mode transitions between Month, Week, Day, and Agenda views using UIA3 SelectionItem pattern; enabled for local and CI execution (spec §9, P2-12).
 
+### Fixed
+- Events are bucketed and displayed in the time zone chosen in settings instead of a hard-coded UTC+7 offset; DST-safe day boundaries, exclusive end times, multi-day and all-day events (`CalendarTime`, `IDisplayPreferences`) (FR-UI-7, FR-I18N-4, P2-R1).
+- Appearance settings (week start, 12h/24h, time zone, lunar toggle) now apply immediately to every view; the week start no longer resets when switching language; Settings > Appearance (S13) opens from the top bar and no longer crashes on load (missing `Loc` resource); the saved theme is applied at startup (FR-UI-7, FR-I18N-4, FR-LUNAR-6, P2-R2).
+- Settings saves no longer use `async void`; failures are shown instead of crashing. Overlapping view refreshes keep the latest result; store failures show an empty grid (P2-R3).
+- Calendar titles, weekday headers, lunar month names, the leap marker (vi "n", en "L") and accessible names come from resx in both languages (FR-I18N-3, FR-I18N-4, FR-I18N-5, FR-UI-2, P2-R4).
+- Views and controls use design tokens only; new tokens for icon glyphs, badge, lunar hero, stripes and the AI bar; badge text follows the theme (FR-UI-11, FR-UI-7, FR-UI-8, P2-R5).
+- Month view switching renders in about 20 ms (was about 130 ms) by reusing cells and chip slots; measured on the real WPF view (NFR-PERF, P2-R6).
+- Day detail hides every lunar value when the lunar toggle is off (FR-LUNAR-6, P2-R7).
+- UI smoke tests launch the build matching their configuration, assert lunar content and the visible view, and no longer sleep (spec §9, P2-R8).
+
 ### Changed
 - Fixed XAML GridLength casting exceptions by declaring layout metrics directly on RowDefinition and ColumnDefinition in `MonthView.xaml`, `WeekView.xaml`, and `DayView.xaml`.
 - `.editorconfig`: constants are PascalCase (the `_camelCase` rule applies to other private fields).

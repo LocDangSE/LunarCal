@@ -3,15 +3,15 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 15:43 +07:00, Antigravity. Hoàn thành P2-13: Kết thúc Phase 2 (spec §13: rà soát Definition of Done Phase 2 đạt, 182/182 tests pass, coverage gate Lunar 100%, Core 99.69%, cập nhật TRACEABILITY.md, CHANGELOG.md; Phase 2 hoàn thành 100%).
+**Cập nhật lần cuối:** 2026-11-01 17:42 +07:00, Claude Code (Opus 5.5). Review Phase 2 (`docs/reviews/PHASE2.md`) và sửa toàn bộ 9 mục P2-R1..P2-R9 theo yêu cầu chủ dự án; 218/218 test, coverage Lunar 100%, Core 99.22%.
 
-**Trước đó:** 2026-11-01 12:40 +07:00, Claude Code (Opus 5.5). Hỗ trợ P2-00 (task 👤): đo token từ Figma 01–05 vào `.agents/rules/ui.md`, vẽ nháp S06–S09 và S13 trong Figma. Không sửa code.
+**Trước đó:** 2026-11-01 15:43 +07:00, Antigravity. Hoàn thành P2-13 (kết thúc Phase 2, 182/182 test).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 hoàn thành 100%. Phase 2 hoàn thành 100% (P2-00..P2-13 xong, Definition of Done đạt, 182/182 tests pass, coverage gate đạt, UI smoke test đạt). Sẵn sàng chuyển sang Phase 3.
+- **Phase hiện tại:** Phase 0, 1, 2 hoàn thành. Phase 2 có thêm 9 task sửa sau review (P2-R1..P2-R9), đã xong hết. Sẵn sàng chuyển sang Phase 3.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Phiên 2026-11-01 12:40: hỗ trợ chủ dự án làm P2-00 (task 👤, vẫn `[!]`). (1) Đo token từ node Figma 01–05 và ghi bảng mới vào `.agents/rules/ui.md` mục "Design token". (2) Vẽ nháp trong file Figma `4vwWjHGoSu9naj5ou86QYs`, hàng y=2300: S06 Tuần `23:2`, S07 Ngày `23:493`, S08 Lịch biểu `23:984`, S09 Chi tiết ngày `23:1475` và bảng trạng thái `26:127`, S13 Cài đặt > Giao diện `23:1966`; component `Day detail panel` `25:2`, component set `Day cell` `26:126`. Logo trong các frame mới đổi thành "LunarCal" (frame 01–05 vẫn ghi "GCalendar"). Bước tiếp theo: chủ dự án duyệt hoặc sửa các frame. Khi đã duyệt thì đánh dấu P2-00 `[x]`, đóng Q-002 và tạo task sửa `Tokens.xaml`/`Themes/Light.xaml` cho khớp Figma (xem Q-005). File đang sửa dở: không có. Chưa commit.
+  - **Claude Code:** không giữ task nào. Phiên 2026-11-01: review Phase 2 rồi làm P2-R1..P2-R9, mỗi task một commit (`165b601`, `71bc871`, `9aacaee`, `8b0e8c5`, `71302de`, `da63264`, `da95572`, `0c3e59a`, cùng commit P2-R9). Chưa push. Bước tiếp theo: chủ dự án push và xem CI; nếu job Windows không có desktop tương tác thì UI smoke test sẽ fail ở CI (xem mục Build). File đang sửa dở: không có.
   - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-13 (kết thúc Phase 2). Bước tiếp theo: bắt đầu Phase 3 (chủ dự án chuẩn bị OAuth Client ID ở P3-00, và agent triển khai P3-01 Serilog logging với redaction).
 - **Task tiếp theo đề xuất:**
   1. Phase 3 chuẩn bị: P3-00 (👤 OAuth Client ID và các màn hình S10, S14, S18, S20).
@@ -28,20 +28,22 @@
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
-## Build, test, format (chạy ngày 2026-11-01, Windows 11, .NET SDK 10.0.403)
+## Build, test, format (chạy ngày 2026-11-01, Windows 11, .NET SDK 10.0.403, Release)
 
 | Lệnh | Kết quả |
 | --- | --- |
-| `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 182 test: 182 pass, 0 fail, 0 skip |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.69% (ngưỡng 95% và 85%) |
-| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar và chuyển đổi mượt mà giữa Tháng, Tuần, Ngày, Lịch biểu, Panel chi tiết ngày |
-| `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 218 test: 218 pass, 0 fail, 0 skip |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.22% (ngưỡng 95% và 85%) |
+| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 5/5 lần liên tiếp ở máy local (P2-R8) |
+| `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
-- **Quyết định về UI smoke tests trên CI (P2-12):** Chạy trực tiếp trên CI trong bước `dotnet test --solution LunarCal.slnx` trên Windows runner (`windows-latest`). Do tests sử dụng FlaUI UIA3 SelectionItem pattern thuần programmatic API thay vì mô phỏng chuột phần cứng Win32 `SendInput`, test chạy mượt mà, ổn định và không bị lỗi Access is denied hay phụ thuộc phần cứng chuột.
-- CI đầu tiên (commit f418386) đỏ ở job `core-linux-container`: `FR_LUNAR_2_A_month_grid_is_computed_in_under_5_ms` đo 7–9 ms (tái hiện bằng `docker run --cpus=2`). Nguyên nhân: `.Should().HaveCount(42)` nằm trong vùng bấm giờ, nên test đo cả chi phí lần gọi đầu của AwesomeAssertions (reflection, tìm tên biến). Engine thật chỉ mất 0,02–0,3 ms mỗi tháng. Đã chuyển assertion ra sau `stopwatch.Stop()` ở cả hai test hiệu năng, giữ nguyên ngưỡng 5 ms. Sau khi sửa: 9/9 lần pass với `--cpus` 0.5, 1 và 2; commit 159781c xanh trên GitHub Actions run 41267053678.
+- **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Lần đo đầu (code P2-07): median 132 ms, max 166 ms, **không đạt**. Sau khi tái sử dụng ô và khe chip, 5 lượt: median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms. Chưa đo lần render đầu tiên lúc khởi động app (thuộc NFR khởi động nguội).
+- **Kiểm tra đổi theme khi đang chạy (P2-03):** thay kiểm tra thủ công bằng smoke test `Settings_button_opens_appearance_page`: mở Cài đặt > Giao diện, chọn lần lượt Tối, Tương phản cao, Sáng, Theo hệ thống; app không thoát, radio được chọn đúng. Pass 5/5.
+- **Mở được S13 (P2-11, P2-R2):** cùng smoke test trên. Trước P2-R2 trang này crash ngay khi mở vì thiếu resource `Loc`.
+- **UI smoke test trên CI (P2-12):** quyết định cũ là chạy trong `dotnet test` trên `windows-latest`. Chưa có run CI nào sau các thay đổi này (chưa push). Nếu CI fail vì không có phiên desktop, phương án an toàn: tách UiTests khỏi bước test chính và chỉ chạy local, ghi ADR.
+- CI cũ (commit f418386) đỏ ở job `core-linux-container` do assertion nằm trong vùng bấm giờ; đã sửa ở commit 159781c (run 41267053678).
 
 ## Quyết định đã chốt mà spec chưa ghi
 
@@ -58,6 +60,10 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - `.editorconfig`: hằng số đặt PascalCase, field private đặt `_camelCase`.
 - ADR-0023: tên dự án **LunarCal** đã chốt (chủ dự án, 2026-11-01); nhánh `main`, remote `LocDangSE/LunarCal`; `Dockerfile` Linux chỉ build/test Core, image ghim digest; CI có job `core-linux-container`. Spec dòng 3 vẫn ghi "LunarCal là tên tạm". Agent không tự sửa spec, chủ dự án cập nhật khi cần.
 - ADR-0024: Hạ tầng song ngữ i18n và quy ước đặt key (`area.element.variant` cho UI, `Toast_*` cho thông báo, `Strings.resx` làm neutral fallback chứa tiếng Việt cho `ResourceManager`, `LocalizationService` live switching qua `INotifyPropertyChanged`).
+- P2-R1: múi giờ hiển thị lấy từ setting `timezone` (mặc định múi hệ thống); sự kiện cả ngày giữ ngày theo múi của chính sự kiện (`CalendarEvent.TimeZone`), không dời theo múi người xem.
+- P2-R4: ký hiệu tháng nhuận ở ô lịch tiếng Anh là "L" (ví dụ `1/2L`), tiếng Việt giữ "n". "Đủ/Thiếu" ở tiêu đề âm lịch tiếng Anh là "30 days/29 days". Spec và Figma chưa quy định; đổi được trong resx (`lunar.leap_marker`, `lunar.month_full`, `lunar.month_short`).
+- P2-R2: Cài đặt > Giao diện (S13) tạm mở bằng cửa sổ con từ nút ⚙ trên thanh trên cùng, chờ màn hình Cài đặt đầy đủ ở phase sau.
+- P2-R5: thêm token `FontSizeBadge`, `FontSizeLunarHero`, `IconSize*`, `CornerRadiusStripe`, `CornerRadiusAiBar`, `OnWarningBrush` với giá trị giữ nguyên như đang hiển thị; bảng ở `.agents/rules/ui.md`.
 
 ## Câu hỏi mở
 

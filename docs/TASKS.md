@@ -47,7 +47,7 @@ Tên test ghi trong "Xong khi" là tên đề xuất; được đổi tên, như
 - [x] **P2-R6** · NFR-PERF · Phụ thuộc: — · File: test đo render MonthView · Đo render MonthView thật (layout WPF) với ~200 sự kiện. · Xong khi: STATUS ghi min/median/max, cấu hình, < 100 ms. · Xong: Claude Code (Opus 5.5), 2026-11-01 17:32 +07:00
 - [x] **P2-R7** · FR-UI-2, FR-LUNAR-6, FR-I18N-5 · Phụ thuộc: — · File: tests · Siết test yếu (tháng thiếu, ngoài phạm vi, ẩn âm lịch ở DayDetail, gloss en ≠ vi, fallback vi-VN, 12h vi). · Xong khi: test mới pass. · Xong: Claude Code (Opus 5.5), 2026-11-01 17:35 +07:00
 - [x] **P2-R8** · spec §9 · Phụ thuộc: P2-R4 · File: `tests/LunarCal.App.UiTests/SmokeTests.cs` · Assert có ngày âm, bỏ `Thread.Sleep`, assert view cũ biến mất, chọn bản build đúng cấu hình. · Xong khi: pass local 5 lần, ghi STATUS. · Xong: Claude Code (Opus 5.5), 2026-11-01 17:41 +07:00
-- [~] **P2-R9** · spec §13 · Phụ thuộc: P2-R1..R8 · Cập nhật STATUS, TRACEABILITY, CHANGELOG. · Xong khi: build, test, format xanh. · Đang làm: Claude Code (Opus 5.5), 2026-11-01 17:41 +07:00
+- [x] **P2-R9** · spec §13 · Phụ thuộc: P2-R1..R8 · Cập nhật STATUS, TRACEABILITY, CHANGELOG. · Xong khi: build, test, format xanh. · Xong: Claude Code (Opus 5.5), 2026-11-01 17:42 +07:00
 
 ## Phase 3: Google OAuth, SyncEngine, SQLCipher cache, CRUD (DoD: FR-AUTH, FR-SYNC, FR-UI-4 đạt; integration test xanh)
 
