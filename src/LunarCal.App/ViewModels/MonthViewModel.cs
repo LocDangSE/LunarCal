@@ -25,6 +25,8 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     // latest request always wins even when earlier store calls complete later.
     private int _loadVersion;
 
+    private DateOnly? _selectedDate;
+
     [ObservableProperty]
     private DateOnly _displayDate;
 
@@ -156,6 +158,7 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
         }
 
         SelectedDay = day;
+        _selectedDate = day.SolarDate;
         day.IsSelected = true;
 
         DaySelected?.Invoke(this, day.SolarDate);
@@ -180,31 +183,14 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
         var timeZone = _preferences.TimeZone;
         var today = TodayInDisplayZone();
-        var cells = new List<MonthDayViewModel>(42);
-
+        var lunarDates = new LunarDate?[42];
         for (int i = 0; i < 42; i++)
         {
             var cellDate = startGridDate.AddDays(i);
-            LunarDate? lunar = null;
             if (cellDate >= LunarCalendar.MinSolarDate && cellDate <= LunarCalendar.MaxSolarDate)
             {
-                lunar = LunarCalendar.ToLunar(cellDate);
+                lunarDates[i] = LunarCalendar.ToLunar(cellDate);
             }
-
-            var cell = new MonthDayViewModel(
-                cellDate,
-                lunar,
-                isCurrentMonth: cellDate.Month == date.Month && cellDate.Year == date.Year,
-                isToday: cellDate == today,
-                isLunarVisible: IsLunarVisible,
-                leapMarker: leapMarker);
-
-            if (SelectedDay is not null && cellDate == SelectedDay.SolarDate)
-            {
-                cell.IsSelected = true;
-            }
-
-            cells.Add(cell);
         }
 
         // Query events for the whole 6-week window, bounded by local midnights in the display time zone.
@@ -223,8 +209,6 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
         {
             return; // superseded by a newer request
         }
-
-        MonthTitle = monthTitle;
 
         // Bucket events by every local date they cover (multi-day events appear on each day).
         var eventsByDate = new Dictionary<DateOnly, List<CalendarEvent>>();
@@ -250,22 +234,52 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
         var moreEventsFormat = _localizationService.GetString("month.more_events", _localizationService.CurrentCulture);
 
-        foreach (var cell in cells)
+        // Reuse the existing 42 cells when possible: WPF then only refreshes bindings instead of regenerating
+        // every cell container, which dominates the month switch cost (NFR-PERF).
+        var reuse = Days.Count == 42;
+        var cells = reuse ? Days.ToList() : new List<MonthDayViewModel>(42);
+        MonthDayViewModel? selected = null;
+        for (int i = 0; i < 42; i++)
         {
-            if (eventsByDate.TryGetValue(cell.SolarDate, out var dayEvents))
+            var cellDate = startGridDate.AddDays(i);
+            var isCurrentMonth = cellDate.Month == date.Month && cellDate.Year == date.Year;
+            MonthDayViewModel cell;
+            if (reuse)
             {
-                cell.SetEvents(dayEvents, moreEventsFormat);
+                cell = cells[i];
+                cell.Reset(cellDate, lunarDates[i], isCurrentMonth, cellDate == today, IsLunarVisible, leapMarker);
+            }
+            else
+            {
+                cell = new MonthDayViewModel(cellDate, lunarDates[i], isCurrentMonth, cellDate == today, IsLunarVisible, leapMarker);
+                cells.Add(cell);
+            }
+
+            if (cellDate == _selectedDate)
+            {
+                cell.IsSelected = true;
+                selected = cell;
+            }
+
+            cell.SetEvents(
+                eventsByDate.TryGetValue(cellDate, out var dayEvents) ? dayEvents : Array.Empty<CalendarEvent>(),
+                moreEventsFormat);
+        }
+
+        MonthTitle = monthTitle;
+        SelectedDay = selected;
+
+        if (!reuse)
+        {
+            Days.Clear();
+            foreach (var cell in cells)
+            {
+                Days.Add(cell);
             }
         }
 
         stopwatch.Stop();
         RenderDuration = stopwatch.Elapsed;
-
-        Days.Clear();
-        foreach (var cell in cells)
-        {
-            Days.Add(cell);
-        }
     }
 
     private DateOnly TodayInDisplayZone() => CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);

@@ -11,10 +11,10 @@ namespace LunarCal.App.ViewModels;
 /// </summary>
 public sealed partial class MonthDayViewModel : ObservableObject
 {
-    private readonly string _leapMarker;
+    private string _leapMarker;
 
     /// <summary>The Gregorian solar date for this cell.</summary>
-    public DateOnly SolarDate { get; }
+    public DateOnly SolarDate { get; private set; }
 
     /// <summary>Gregorian day of month (1–31).</summary>
     public int SolarDay => SolarDate.Day;
@@ -23,7 +23,7 @@ public sealed partial class MonthDayViewModel : ObservableObject
     public string SolarDayString => SolarDay.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>The calculated Vietnamese lunar date, or null if outside supported range.</summary>
-    public LunarDate? LunarDate { get; }
+    public LunarDate? LunarDate { get; private set; }
 
     /// <summary>Lunar day of month (1–30).</summary>
     public int LunarDay => LunarDate?.Day ?? 0;
@@ -58,6 +58,13 @@ public sealed partial class MonthDayViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<CalendarEvent> _visibleEvents = Array.Empty<CalendarEvent>();
 
+    /// <summary>Maximum number of event chips shown in a cell before the "+N more" counter.</summary>
+    public const int MaxVisibleChips = 3;
+
+    /// <summary>The fixed chip slots bound by the month view (always <see cref="MaxVisibleChips"/> items).</summary>
+    public IReadOnlyList<EventChipViewModel> Chips { get; } =
+        Enumerable.Range(0, MaxVisibleChips).Select(_ => new EventChipViewModel()).ToArray();
+
     [ObservableProperty]
     private int _moreEventsCount;
 
@@ -89,6 +96,37 @@ public sealed partial class MonthDayViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Re-targets this cell to another date so the month grid can reuse its 42 cells (and their WPF containers)
+    /// when the month changes, instead of regenerating them (NFR-PERF).
+    /// </summary>
+    public void Reset(
+        DateOnly solarDate,
+        LunarDate? lunarDate,
+        bool isCurrentMonth,
+        bool isToday,
+        bool isLunarVisible,
+        string leapMarker)
+    {
+        SolarDate = solarDate;
+        LunarDate = lunarDate;
+        _leapMarker = leapMarker;
+        IsCurrentMonth = isCurrentMonth;
+        IsToday = isToday;
+        IsSelected = false;
+        IsLunarVisible = isLunarVisible;
+
+        OnPropertyChanged(nameof(SolarDate));
+        OnPropertyChanged(nameof(SolarDay));
+        OnPropertyChanged(nameof(SolarDayString));
+        OnPropertyChanged(nameof(LunarDate));
+        OnPropertyChanged(nameof(LunarDay));
+        OnPropertyChanged(nameof(LunarMonth));
+        OnPropertyChanged(nameof(IsLeapMonth));
+        OnPropertyChanged(nameof(IsFirstLunarDay));
+        UpdateLunarDayText();
+    }
+
+    /// <summary>
     /// Updates whether the lunar day text is visible according to the global setting (FR-LUNAR-6).
     /// </summary>
     public void SetLunarVisibility(bool visible)
@@ -103,8 +141,15 @@ public sealed partial class MonthDayViewModel : ObservableObject
     public void SetEvents(IReadOnlyList<CalendarEvent> events, string moreEventsFormat)
     {
         Events = events ?? Array.Empty<CalendarEvent>();
-        VisibleEvents = Events.Take(3).ToList();
-        MoreEventsCount = Math.Max(0, Events.Count - 3);
+        VisibleEvents = Events.Take(MaxVisibleChips).ToList();
+        for (var i = 0; i < Chips.Count; i++)
+        {
+            var visible = i < VisibleEvents.Count;
+            Chips[i].Title = visible ? VisibleEvents[i].Title : string.Empty;
+            Chips[i].IsVisible = visible;
+        }
+
+        MoreEventsCount = Math.Max(0, Events.Count - MaxVisibleChips);
         HasMoreEvents = MoreEventsCount > 0;
         MoreEventsText = HasMoreEvents && !string.IsNullOrWhiteSpace(moreEventsFormat)
             ? string.Format(CultureInfo.CurrentCulture, moreEventsFormat, MoreEventsCount)

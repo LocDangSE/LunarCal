@@ -4,7 +4,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
-             xmlns:models="clr-namespace:LunarCal.Core.Calendar;assembly=LunarCal.Core"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MonthViewModel}"
              AutomationProperties.AutomationId="MonthView">
@@ -162,10 +161,11 @@
 
                 <!-- EVENTS LIST (Up to 3 chips + More indicator) -->
                 <StackPanel Grid.Row="1" Margin="0,4,0,0" VerticalAlignment="Top">
-                  <ItemsControl ItemsSource="{Binding VisibleEvents}">
+                  <ItemsControl ItemsSource="{Binding Chips}">
                     <ItemsControl.ItemTemplate>
-                      <DataTemplate DataType="{x:Type models:CalendarEvent}">
+                      <DataTemplate DataType="{x:Type vm:EventChipViewModel}">
                         <Border Background="{DynamicResource AccentSubtleBrush}"
+                                Visibility="{Binding IsVisible, Converter={StaticResource BoolToVis}}"
                                 CornerRadius="{DynamicResource CornerRadiusSmall}"
                                 Padding="6,2"
                                 Margin="0,1"

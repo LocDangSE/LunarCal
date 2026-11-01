@@ -63,3 +63,5 @@
 | 2026-11-01 17:21 +07:00 | Claude Code (Opus 5.5) | P2-R5 | START | Thay cỡ chữ/bo góc/màu literal bằng token |
 | 2026-11-01 17:26 +07:00 | Claude Code (Opus 5.5) | P2-R5 | DONE | Thêm 9 token + `OnWarningBrush` (3 theme), thay toàn bộ literal FontSize/FontWeight/CornerRadius/màu trong Views + Controls (cả Controls/ mà review trước bỏ sót); gộp màu fallback calendar vào `CalendarColors.DefaultHex`; test chặn literal; smoke test đổi theme khi đang chạy (thay kiểm tra thủ công của P2-03). Ghi bảng token bổ sung vào `ui.md`. 215/215 test. Tiếp theo: P2-R6 |
 | 2026-11-01 17:26 +07:00 | Claude Code (Opus 5.5) | P2-R6 | START | Đo render MonthView thật (layout WPF) |
+| 2026-11-01 17:32 +07:00 | Claude Code (Opus 5.5) | P2-R6 | DONE | Test đo MonthView thật (STA, Tokens + Light, 200 sự kiện/tháng). Lần đo đầu vượt NFR-PERF: median 132 ms, max 166 ms. Sửa: tái sử dụng 42 ô (`MonthDayViewModel.Reset`) và 3 khe chip cố định (`EventChipViewModel`). Sau sửa (5 lần chạy, Release, i7-12700H): median 20–23 ms, max 39–43 ms. 216/216 test. Tiếp theo: P2-R7 |
+| 2026-11-01 17:32 +07:00 | Claude Code (Opus 5.5) | P2-R7 | START | Siết các test yếu |
