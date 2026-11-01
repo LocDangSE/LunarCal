@@ -3,19 +3,20 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 13:02 +07:00, Antigravity. Hoàn thành P2-06b (Cân chỉnh Design Tokens và Theme Palettes theo bảng đo Figma trong `ui.md`: màu `#2F6BFF`, sidebar 280, topbar 64, thanh AI 92, typography Inter fallback, thêm các brush token thiếu cho 3 theme). Đóng câu hỏi mở Q-005. 144 test (143 pass, 1 skip).
+**Cập nhật lần cuối:** 2026-11-01 13:16 +07:00, Antigravity. Hoàn thành P2-07 (Lưới tháng 6×7 `MonthView.xaml`, `MonthViewModel`, `MonthDayViewModel`: ngày dương lớn, ngày âm nhỏ, mùng 1 dạng `1/tháng` có ký hiệu nhuận "n", ẩn khi tắt âm lịch qua master toggle, đo render < 100 ms per NFR-PERF - kết quả thực tế ~0.05–0.3 ms/tháng). 155 test (154 pass, 1 skip).
 
 **Trước đó:** 2026-11-01 12:40 +07:00, Claude Code (Opus 5.5). Hỗ trợ P2-00 (task 👤): đo token từ Figma 01–05 vào `.agents/rules/ui.md`, vẽ nháp S06–S09 và S13 trong Figma. Không sửa code.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-00, P2-01, P2-02, P2-03, P2-04, P2-05, P2-06, P2-06b đã xong; tiếp theo: P2-07).
+- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-00, P2-01, P2-02, P2-03, P2-04, P2-05, P2-06, P2-06b, P2-07 đã xong; tiếp theo: P2-08).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Phiên 2026-11-01 12:40: hỗ trợ chủ dự án làm P2-00 (task 👤, vẫn `[!]`). (1) Đo token từ node Figma 01–05 và ghi bảng mới vào `.agents/rules/ui.md` mục "Design token". (2) Vẽ nháp trong file Figma `4vwWjHGoSu9naj5ou86QYs`, hàng y=2300: S06 Tuần `23:2`, S07 Ngày `23:493`, S08 Lịch biểu `23:984`, S09 Chi tiết ngày `23:1475` và bảng trạng thái `26:127`, S13 Cài đặt > Giao diện `23:1966`; component `Day detail panel` `25:2`, component set `Day cell` `26:126`. Logo trong các frame mới đổi thành "LunarCal" (frame 01–05 vẫn ghi "GCalendar"). Bước tiếp theo: chủ dự án duyệt hoặc sửa các frame. Khi đã duyệt thì đánh dấu P2-00 `[x]`, đóng Q-002 và tạo task sửa `Tokens.xaml`/`Themes/Light.xaml` cho khớp Figma (xem Q-005). File đang sửa dở: không có. Chưa commit.
-  - **Antigravity:** không giữ task nào (P2-06b vừa xong). Đã cập nhật `Tokens.xaml`, `Light.xaml`, `Dark.xaml`, `HighContrast.xaml` theo đúng bảng đo Figma trong `ui.md`. Đóng Q-005. Sẵn sàng tiếp tục task P2-07 (lưới Tháng 6×7). File đang sửa dở: không có.
+  - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-07 (Lưới tháng 6×7 MonthView, MonthViewModel, MonthDayViewModel, unit tests). Tiếp theo: P2-08 (View Tuần và Ngày: lưới giờ, sự kiện cả ngày, vạch giờ hiện tại, ngày âm ở tiêu đề cột).
 - **Task tiếp theo đề xuất:**
-  1. Phase 2 Month view: P2-07 (lưới tháng 6×7 có ngày âm, mùng 1 dạng `1/tháng` có ký hiệu nhuận; ẩn khi tắt lịch âm; đo render < 100 ms).
-  2. Phase 2 Week/Day view: P2-08 (view Tuần và Ngày: lưới giờ, sự kiện cả ngày, vạch giờ hiện tại, ngày âm ở tiêu đề cột).
+  1. Phase 2 Week/Day view: P2-08 (view Tuần và Ngày: lưới giờ, sự kiện cả ngày, vạch giờ hiện tại, ngày âm ở tiêu đề cột).
+  2. Phase 2 Agenda view: P2-09 (Lịch biểu: danh sách nhóm theo ngày, có ngày âm, lọc theo calendar).
+  3. Phase 2 Day detail panel: P2-10 (Panel chi tiết ngày: can chi ngày/tháng/năm, tiết khí, ký hiệu nhuận, danh sách sự kiện).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -23,7 +24,7 @@
 | --- | --- | --- |
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2 | Đang thực hiện: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma) xong | `src/LunarCal.App/Views/MainWindow.xaml`, `src/LunarCal.App/Controls/`, `src/LunarCal.App/ViewModels/`, `src/LunarCal.App/Themes/`, `src/LunarCal.App/Resources/Tokens.xaml`, `src/LunarCal.Core/Calendar/`, `src/LunarCal.Infrastructure/Storage/`, `.agents/rules/ui.md`, `tests/` |
+| 2 | Đang thực hiện: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms) xong | `src/LunarCal.App/Views/MonthView.xaml`, `src/LunarCal.App/Views/MainWindow.xaml`, `src/LunarCal.App/Controls/`, `src/LunarCal.App/ViewModels/MonthViewModel.cs`, `MonthDayViewModel.cs`, `tests/` |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -35,9 +36,9 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 144 test: 143 pass, 0 fail, 1 skip |
+| `dotnet test --solution LunarCal.slnx` | 155 test: 154 pass, 0 fail, 1 skip |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.67% (ngưỡng 95% và 85%) |
-| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar |
+| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar và lưới Tháng 6×7 |
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
 
 - Test skip: `LunarCal.App.UiTests.SmokeTests.App_starts_and_shows_main_window`, lý do "UI shell is implemented in Phase 2". Bỏ skip ở P2-12.

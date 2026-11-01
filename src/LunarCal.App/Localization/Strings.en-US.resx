@@ -385,4 +385,7 @@
   <data name="topbar.next" xml:space="preserve">
     <value>Next</value>
   </data>
+  <data name="month.more_events" xml:space="preserve">
+    <value>+{0} more</value>
+  </data>
 </root>

@@ -33,3 +33,6 @@ Maps requirement IDs from the spec to the tests that cover them. Fill in as each
 | FR-UI-10 Sync status block, manual sync trigger, pending AI command badge | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_10_*` | Covered (P2-06) |
 | FR-UI-11 Screen design in Figma (S06–S09, S13) and design token extraction | Figma file 4vwWjHGoSu9naj5ou86QYs nodes 23:2, 23:493, 23:984, 23:1475, 23:1966; .agents/rules/ui.md | Covered (P2-00) |
 | FR-UI-7, FR-UI-11 Alignment of Tokens and Light/Dark/HC themes with Figma measurement | `LunarCal.App.Tests.Themes.ThemeDictionaryTests.FR_UI_11_Light_theme_matches_figma_palette_and_metrics` | Covered (P2-06b) |
+| FR-UI-1, FR-UI-2 MonthView 6×7 calendar grid with solar and lunar dates, first lunar day formatting ("1/tháng", leap suffix "n") | `LunarCal.App.Tests.ViewModels.MonthViewModelTests.FR_UI_1_*`, `FR_UI_2_*` | Covered (P2-07) |
+| FR-LUNAR-6 Hide lunar text in MonthView when lunar toggle is disabled | `LunarCal.App.Tests.ViewModels.MonthViewModelTests.FR_LUNAR_6_Lunar_text_hidden_when_disabled` | Covered (P2-07) |
+| NFR-PERF Month grid render duration < 100 ms across all months | `LunarCal.App.Tests.ViewModels.MonthViewModelTests.NFR_PERF_Month_grid_generation_takes_less_than_100_ms` | Covered (P2-07) |

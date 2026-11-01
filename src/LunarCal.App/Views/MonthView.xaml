@@ -1,0 +1,196 @@
+<UserControl x:Class="LunarCal.App.Views.MonthView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:models="clr-namespace:LunarCal.Core.Calendar;assembly=LunarCal.Core"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:MonthViewModel}"
+             AutomationProperties.AutomationId="MonthView">
+
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+    <!-- Style for Day Cell Container -->
+    <Style x:Key="DayCellStyle" TargetType="Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,0,1,1" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+          <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+          <Setter Property="Background" Value="{DynamicResource SelectedDayBackgroundBrush}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </UserControl.Resources>
+
+  <Grid Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid.RowDefinitions>
+      <!-- Row 0: Weekday Headers (36 px) -->
+      <RowDefinition Height="{DynamicResource WeekdayHeaderHeight}" />
+      <!-- Row 1: 6×7 Calendar Day Grid -->
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- WEEKDAY HEADERS (7 columns) -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource SurfaceBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            AutomationProperties.AutomationId="WeekdayHeadersBar">
+      <ItemsControl ItemsSource="{Binding WeekdayHeaders}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Rows="1" Columns="7" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       FontWeight="{DynamicResource FontWeightSemiBold}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
+    <!-- 6×7 DAY GRID (42 cells) -->
+    <Border Grid.Row="1"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1,0,0,0"
+            AutomationProperties.AutomationId="MonthGridContainer">
+      <ItemsControl ItemsSource="{Binding Days}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Rows="6" Columns="7" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="{x:Type vm:MonthDayViewModel}">
+            <Border Style="{StaticResource DayCellStyle}"
+                    AutomationProperties.AutomationId="DayCell">
+              <Border.InputBindings>
+                <MouseBinding MouseAction="LeftClick"
+                              Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}" />
+              </Border.InputBindings>
+
+              <Grid Margin="6,4">
+                <Grid.RowDefinitions>
+                  <!-- Day Numbers Row: Solar on left, Lunar on right -->
+                  <RowDefinition Height="Auto" />
+                  <!-- Events List Row -->
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- TOP ROW: SOLAR DAY + LUNAR DAY -->
+                <Grid Grid.Row="0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+
+                  <!-- Solar Day Number -->
+                  <!-- Today Highlight (Circle 26×26) -->
+                  <Border Width="26" Height="26"
+                          CornerRadius="{DynamicResource CornerRadiusDayNumber}"
+                          Background="{DynamicResource AccentPrimaryBrush}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center"
+                          Visibility="{Binding IsToday, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{Binding SolarDayString}"
+                               FontSize="{DynamicResource FontSizeBodyStrong}"
+                               FontWeight="{DynamicResource FontWeightBold}"
+                               Foreground="{DynamicResource OnAccentBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                  </Border>
+
+                  <!-- Regular Solar Day Number (when not today) -->
+                  <TextBlock Grid.Column="0"
+                             Text="{Binding SolarDayString}"
+                             FontSize="{DynamicResource FontSizeBodyStrong}"
+                             FontWeight="{DynamicResource FontWeightMedium}"
+                             VerticalAlignment="Center"
+                             Margin="2,0,0,0">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsToday}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+
+                  <!-- Lunar Day Text (Right Aligned) -->
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding LunarDayText}"
+                             FontSize="{DynamicResource FontSizeCaption}"
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Center"
+                             Visibility="{Binding IsLunarVisible, Converter={StaticResource BoolToVis}}"
+                             AutomationProperties.AutomationId="LunarDayLabel">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource LunarTextPrimaryBrush}" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsFirstLunarDay}" Value="True">
+                            <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                </Grid>
+
+                <!-- EVENTS LIST (Up to 3 chips + More indicator) -->
+                <StackPanel Grid.Row="1" Margin="0,4,0,0" VerticalAlignment="Top">
+                  <ItemsControl ItemsSource="{Binding VisibleEvents}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate DataType="{x:Type models:CalendarEvent}">
+                        <Border Background="{DynamicResource AccentSubtleBrush}"
+                                CornerRadius="{DynamicResource CornerRadiusSmall}"
+                                Padding="6,2"
+                                Margin="0,1"
+                                ToolTip="{Binding Title}">
+                          <TextBlock Text="{Binding Title}"
+                                     FontSize="{DynamicResource FontSizeCaption}"
+                                     Foreground="{DynamicResource AccentTextBrush}"
+                                     TextTrimming="CharacterEllipsis" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                  <!-- More Events Counter -->
+                  <TextBlock Text="{Binding MoreEventsText}"
+                             FontSize="{DynamicResource FontSizeCaption}"
+                             Foreground="{DynamicResource TextSecondaryBrush}"
+                             Margin="4,2,0,0"
+                             Visibility="{Binding HasMoreEvents, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+  </Grid>
+</UserControl>

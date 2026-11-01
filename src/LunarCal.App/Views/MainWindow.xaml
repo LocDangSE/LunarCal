@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+        xmlns:views="clr-namespace:LunarCal.App.Views"
         xmlns:controls="clr-namespace:LunarCal.App.Controls"
         xmlns:loc="clr-namespace:LunarCal.App.Localization"
         mc:Ignorable="d"
@@ -31,16 +32,42 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
 
-      <!-- Calendar View Placeholder (Wired up with MonthView in P2-07) -->
+      <!-- Calendar View Area (FR-UI-1, FR-UI-2, FR-LUNAR-6) -->
       <Border Grid.Row="0"
               Margin="16"
               Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
               BorderBrush="{DynamicResource BorderBrush}"
               BorderThickness="1"
               CornerRadius="{DynamicResource CornerRadiusMedium}"
+              ClipToBounds="True"
               AutomationProperties.AutomationId="MainViewContainer">
         <Grid>
+          <!-- 6×7 Month View Grid -->
+          <views:MonthView DataContext="{Binding MonthView}">
+            <views:MonthView.Style>
+              <Style TargetType="views:MonthView">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Month">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </views:MonthView.Style>
+          </views:MonthView>
+
+          <!-- Placeholder for other view modes (Day, Week, Agenda) until implemented -->
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel.Style>
+              <Style TargetType="StackPanel">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding ActiveViewMode}" Value="Month">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </StackPanel.Style>
             <TextBlock Text="{Binding HeaderTitle}"
                        FontSize="{DynamicResource FontSizeDisplay}"
                        FontWeight="{DynamicResource FontWeightBold}"
@@ -52,7 +79,7 @@
                        Foreground="{DynamicResource LunarTextPrimaryBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,16" />
-            <TextBlock Text="Chế độ xem: Tháng (Month View)"
+            <TextBlock Text="{Binding ActiveViewMode, StringFormat='Chế độ xem: {0}'}"
                        FontSize="{DynamicResource FontSizeBody}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center" />

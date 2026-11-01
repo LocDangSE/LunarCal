@@ -59,6 +59,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Child view model for the sidebar mini calendar.</summary>
     public MiniCalendarViewModel MiniCalendar { get; }
 
+    /// <summary>Child view model for the main 6×7 month view grid (FR-UI-1, FR-UI-2, FR-LUNAR-6).</summary>
+    public MonthViewModel MonthView { get; }
+
     /// <summary>List of calendars displayed in the sidebar (FR-UI-10).</summary>
     public ObservableCollection<CalendarItemViewModel> Calendars { get; } = new();
 
@@ -79,6 +82,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MiniCalendar = new MiniCalendarViewModel();
         MiniCalendar.DateSelected += OnMiniCalendarDateSelected;
 
+        MonthView = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        MonthView.DaySelected += OnMonthViewDaySelected;
+        MonthView.SetLunarVisibility(IsLunarVisible);
+        _ = MonthView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
+
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
         UpdateLanguageState();
@@ -88,6 +96,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = LoadCalendarsAsync();
     }
 
+    partial void OnIsLunarVisibleChanged(bool value)
+    {
+        MonthView.SetLunarVisibility(value);
+        UpdateTitles();
+    }
+
     /// <summary>
     /// Navigates to today's date (FR-UI-9).
     /// </summary>
@@ -95,7 +109,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public void GoToToday()
     {
         SelectedDate = DateTime.Today;
-        MiniCalendar.SetSelectedDate(DateOnly.FromDateTime(SelectedDate));
+        var dateOnly = DateOnly.FromDateTime(SelectedDate);
+        MiniCalendar.SetSelectedDate(dateOnly);
+        _ = MonthView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -112,7 +128,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             _ => SelectedDate.AddMonths(-1),
         };
 
-        MiniCalendar.SetSelectedDate(DateOnly.FromDateTime(SelectedDate));
+        var dateOnly = DateOnly.FromDateTime(SelectedDate);
+        MiniCalendar.SetSelectedDate(dateOnly);
+        _ = MonthView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -129,7 +147,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             _ => SelectedDate.AddMonths(1),
         };
 
-        MiniCalendar.SetSelectedDate(DateOnly.FromDateTime(SelectedDate));
+        var dateOnly = DateOnly.FromDateTime(SelectedDate);
+        MiniCalendar.SetSelectedDate(dateOnly);
+        _ = MonthView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -235,6 +255,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         var weekStart = IsVietnameseActive ? DayOfWeek.Monday : DayOfWeek.Sunday;
         MiniCalendar.SetCultureAndWeekStart(culture, weekStart);
+        MonthView.SetWeekStart(weekStart);
 
         NetworkStatusText = IsOnline
             ? _localizationService["network.online"]
@@ -288,6 +309,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void OnMiniCalendarDateSelected(object? sender, DateOnly date)
     {
         SelectedDate = date.ToDateTime(TimeOnly.MinValue);
+        _ = MonthView.SetDisplayDateAsync(date);
+        UpdateTitles();
+    }
+
+    private void OnMonthViewDaySelected(object? sender, DateOnly date)
+    {
+        SelectedDate = date.ToDateTime(TimeOnly.MinValue);
+        MiniCalendar.SetSelectedDate(date);
         UpdateTitles();
     }
 
@@ -301,6 +330,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         MiniCalendar.DateSelected -= OnMiniCalendarDateSelected;
+        MonthView.DaySelected -= OnMonthViewDaySelected;
         _localizationService.PropertyChanged -= OnLocalizationChanged;
+        MonthView.Dispose();
     }
 }
