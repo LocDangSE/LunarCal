@@ -19,3 +19,4 @@
 
 ### Changed
 - `.editorconfig`: constants are PascalCase (the `_camelCase` rule applies to other private fields).
+- Upgraded `github/codeql-action` to version 4.39.1 (`9b3254085494b55a0f7c4c2b3d2d52cc712ce370`) via Dependabot PR #1 for `init` and `analyze` steps (SEC-SC-3).

@@ -19,5 +19,5 @@ Maps requirement IDs from the spec to the tests that cover them. Fill in as each
 | FR-I18N-3 Every string in resx (vi-VN and en-US), non-empty, pseudo-localization | `LunarCal.App.Tests.LocalizationTests.FR_I18N_3_Every_key_has_non_empty_vi_and_en`, `..._Pseudo_locale_transforms_every_key`, `..._Pseudo_locale_preserves_format_placeholders_and_formats_cleanly`, `..._Pseudo_locale_can_be_enabled_and_disabled_via_flag_and_culture` | Covered (ADR-0024, P2-02) |
 | FR-I18N-7 Mandatory strings in spec §4.11 and toast notifications | `LunarCal.App.Tests.LocalizationTests.FR_I18N_7_Required_spec_table_strings_match_exact_values`, `..._Toast_strings_match_exact_values_and_support_formatting` | Covered (ADR-0024) |
 | SEC-KEY-5 Secret scanning (gitleaks on CI and pre-commit hook) | CI job `gitleaks`, `.gitleaks.toml`, `.pre-commit-config.yaml`, `.githooks/pre-commit` | Covered |
-| SEC-SC-3 CI static analysis and scanning | CI job `gitleaks` (P0-02), CodeQL workflow `.github/workflows/codeql.yml` (P0-03) | Covered |
+| SEC-SC-3 CI static analysis and scanning | CI job `gitleaks` (P0-02), CodeQL workflow `.github/workflows/codeql.yml` v4.39.1 (P0-03) | Covered |
 | SEC-SC-4 SourceLink for reproducible builds | `Directory.Build.props`, `Directory.Packages.props` (`Microsoft.SourceLink.GitHub`), custom debug info in PDB verified (P0-04) | Covered |
