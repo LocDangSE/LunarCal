@@ -26,8 +26,15 @@ Tên view dự kiến ở cột 4 là đề xuất (CHƯA XÁC MINH), chốt khi
 | 03 · Offline & hàng chờ AI (`3:2`; drawer `3:493`) | Banner offline, ngăn kéo hàng chờ | FR-QUEUE-2, 3, 6 | `Views/AiQueueDrawer` + `AiQueueViewModel` | P4-09 |
 | 04 · Cài đặt & quyền riêng tư (`4:2`; nav `4:3`, content `4:18`) | Chung, Tài khoản Google, AI và dữ liệu huấn luyện | FR-LUNAR-6, FR-I18N-1, FR-BYOK, FR-DATA-1 | `Views/SettingsWindow` có các trang `Settings/General`, `Settings/Account`, `Settings/Ai` | P2-04, P3-15, P4-02, P6a-01 |
 | 05 · Nhắc việc Windows (`4:97`; toast `6:270`) | Toast Hoãn và Hoàn thành | FR-NOTIFY-5..8 | Toast XML (không phải view WPF), builder trong App | P7-07, P7-08 |
+| S06 · Tuần (`23:2`; body `24:2`) | Lưới 7 cột theo giờ (48 px/giờ), hàng cả ngày, vạch giờ hiện tại, ngày âm cạnh ngày dương ở tiêu đề cột, sự kiện trùng giờ chia làn | FR-UI-1 | `Views/WeekView` + `WeekViewModel` | P2-08 |
+| S07 · Ngày (`23:493`; body `25:48`) | Như S06 một cột, panel chi tiết ngày gắn bên phải | FR-UI-1, FR-UI-3 | `Views/DayView` + `DayViewModel` | P2-08 |
+| S08 · Lịch biểu (`23:984`; body `25:145`) | Thanh lọc calendar (chip), danh sách nhóm theo ngày, ngày âm, mùng 1 in đậm | FR-UI-1 | `Views/AgendaView` + `AgendaViewModel` | P2-09 |
+| S09 · Chi tiết ngày (`23:1475`; trạng thái `26:127`; component `Day detail panel` `25:2`, `Day cell` `26:126`) | Panel 360 px: khối âm lịch, can chi ngày/tháng/năm, tiết khí, sự kiện, nút thêm sự kiện / luật âm lịch. Ô ngày ở 7 trạng thái, gồm mùng 1 tháng nhuận (`1/6n`) và tắt lịch âm | FR-UI-2, FR-UI-3, FR-LUNAR-6 | `Views/DayDetailPanel` + `DayDetailViewModel`, `Controls/DayCell` | P2-07, P2-10 |
+| S13 · Cài đặt > Giao diện (`23:1966`) | Chủ đề (Sáng/Tối/Theo hệ thống), mật độ, ngày đầu tuần, 12h/24h, múi giờ hiển thị, chi tiết âm lịch | FR-UI-7, FR-I18N-4 | `Views/Settings/AppearancePage` | P2-11 |
 
-Màn hình chưa có trong Figma (S06–S20): bảng ở spec §15.4. Phải có thiết kế trước khi làm phase tương ứng (spec §13); nếu chưa có thì ghi vào `docs/STATUS.md` mục "Câu hỏi mở" và dừng task UI đó.
+S06–S09 và S13 là bản nháp Claude Code vẽ ngày 2026-11-01, **chờ chủ dự án duyệt** (P2-00). Dữ liệu mẫu (16/10/2026 = mùng 7 tháng 9 Bính Ngọ, ngày Quý Hợi, tháng Mậu Tuất, tiết Hàn lộ) đã tính tay để khớp với engine. Ký hiệu tháng nhuận `n` (ví dụ `1/6n`) là đề xuất.
+
+Màn hình chưa có trong Figma (S10–S12, S14–S20): bảng ở spec §15.4. Phải có thiết kế trước khi làm phase tương ứng (spec §13); nếu chưa có thì ghi vào `docs/STATUS.md` mục "Câu hỏi mở" và dừng task UI đó.
 
 Lưu ý từ spec §15.3: thanh lệnh AI thay cho chat panel; chuỗi `settings.byok.desc` và chuỗi "nhận thay đổi gần như tức thì" đã được sửa theo spec, không theo Figma.
 
@@ -36,30 +43,85 @@ Lưu ý từ spec §15.3: thanh lệnh AI thay cho chat panel; chuỗi `settings
 - Thư viện style: **ADR-0011 đã chốt** chọn tự định nghĩa hệ thống token bằng ResourceDictionary thuần WPF (`src/LunarCal.App/Resources/Tokens.xaml`), cùng 3 theme (`Themes/Light.xaml`, `Dark.xaml`, `HighContrast.xaml`), quản lý qua `IThemeService`.
 - XAML chỉ được tham chiếu token qua `{DynamicResource ...}` (để đổi theme khi đang chạy), không đặt màu hay cỡ chữ hard-code trong view.
 
-### Bảng Token Design System (`Tokens.xaml` & Themes)
+### Bảng token đo từ Figma 01–05 (P2-00, Claude Code, 2026-11-01)
 
-| Loại token | Key DynamicResource | Giá trị / Mô tả |
+File Figma không có Variables, paint style hay text style nào (đã kiểm tra ngày 2026-11-01). Các giá trị dưới đây được đo trực tiếp từ node của frame 01–05 (đếm tần suất màu, font, radius, padding), và là **nguồn sự thật cho `Tokens.xaml` và `Themes/Light.xaml`**. Cột "Code hiện tại" ghi giá trị trong code lúc đo; chỗ nào khác Figma thì code phải sửa theo Figma.
+
+Figma chỉ có theme Sáng. Theme Tối và Tương phản cao **chưa có thiết kế**: tạm giữ giá trị trong code, coi là đề xuất, chờ chủ dự án duyệt.
+
+#### Chữ
+
+| Key | Figma | Code hiện tại | Dùng cho |
+| --- | --- | --- | --- |
+| `FontFamilyBase` | Inter (toàn bộ frame) | Segoe UI | Xem ghi chú font bên dưới |
+| `FontSizeCaption` | 11 (Regular/Medium/SemiBold) | 11 | Ngày âm, chip sự kiện, nhãn nhỏ |
+| `FontSizeBody` | 12 (Regular) | 13 | Mô tả, nhãn phụ |
+| `FontSizeBodyStrong` | 13 (Medium) | — | Số ngày dương, nút, mục danh sách |
+| `FontSizeSubtitle` | 14 (Medium) | 15 | Tiêu đề hàng cài đặt, mục nav |
+| `FontSizeSection` | 16 (SemiBold) | — | Tiêu đề nhóm cài đặt |
+| `FontSizeTitle` | 20 (Bold) | 18 | Tiêu đề top bar ("Tháng 10, 2026") |
+| `FontSizeDisplay` | 24 (SemiBold) | 24 | "Cài đặt" |
+| Weight | 400, 500, 600, 700 | như Figma | |
+
+Font: Figma dùng Inter, nhưng Inter không có sẵn trên Windows. Phải chọn giữa nhúng Inter vào app (license SIL OFL 1.1, cần ghi ADR) hoặc dùng Segoe UI Variable/Segoe UI và chấp nhận lệch so với Figma. **Chưa quyết**, xem câu hỏi mở trong `docs/STATUS.md`.
+
+#### Khoảng cách, bo góc, kích thước
+
+| Key | Figma | Code hiện tại |
 | --- | --- | --- |
-| **Typography** | `FontFamilyBase` | Segoe UI, sans-serif |
-| | `FontSizeCaption` | 11 pt |
-| | `FontSizeBody` | 13 pt |
-| | `FontSizeSubtitle` | 14 pt |
-| | `FontSizeTitle` | 18 pt |
-| | `FontSizeDisplay` | 24 pt |
-| | `FontWeightRegular` / `Medium` / `SemiBold` / `Bold` | 400, 500, 600, 700 |
-| **Spacing** | `SpacingXSmall` (4), `SpacingSmall` (8), `SpacingMedium` (16), `SpacingLarge` (24), `SpacingXLarge` (32) | Khoảng cách margin/padding chuẩn |
-| **Radius** | `CornerRadiusSmall` (4), `CornerRadiusMedium` (8), `CornerRadiusLarge` (12), `CornerRadiusFull` (999) | Bo góc border / button / chip |
-| **Metrics** | `TopBarHeight` (56), `SidebarWidth` (240), `AiCommandBarHeight` (48) | Chiều cao / rộng cố định |
-| **Brushes (Theme)** | `WindowBackgroundBrush` | Nền chính của cửa sổ |
-| | `SurfaceBackgroundBrush` | Nền bề mặt (TopBar, Sidebar) |
-| | `SurfaceElevatedBackgroundBrush` | Nền card/dialog nổi bật |
-| | `BorderBrush` | Đường viền phân cách |
-| | `TextPrimaryBrush`, `TextSecondaryBrush`, `TextTertiaryBrush` | Màu chữ theo cấp độ phân cấp |
-| | `AccentPrimaryBrush`, `AccentHoverBrush`, `AccentTextBrush` | Màu nhấn chủ đạo (Google Blue / Tương phản) |
-| | `LunarTextPrimaryBrush`, `LunarTextSecondaryBrush` | Màu chữ âm lịch (đỏ gạch / cam đất) |
-| | `HoverBackgroundBrush`, `SelectedBackgroundBrush` | Trạng thái hover và active |
-| | `TodayHighlightBrush` | Highlight ngày hôm nay |
-| | `SuccessBrush`, `WarningBrush`, `ErrorBrush` | Màu trạng thái trực tuyến / cảnh báo / lỗi |
+| Spacing | 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28 (gap hay gặp nhất: 4, 8, 10) | 4, 8, 12, 16, 24, 32 |
+| Padding ô ngày (lưới Tháng) | 8/8/6/8 (trên/phải/dưới/trái) | — |
+| Padding chip sự kiện | 3/6 | — |
+| Padding nút | 9/14 (nút thường), 6/14 (segmented) | 6/12 |
+| Padding hàng cài đặt | 14/18 | — |
+| `CornerRadiusSmall` | 5 (chip sự kiện) | 4 |
+| `CornerRadiusMedium` | 8 (nút, mục nav), 7 (ô segmented), 9 (khung segmented) | 8 |
+| `CornerRadiusLarge` | 12 (card cài đặt), 14 (card lớn, thanh lệnh AI) | 12 |
+| `CornerRadiusDayNumber` | 13 (vòng tròn số ngày 26×26) | — |
+| `CornerRadiusFull` | 999 (chip trạng thái, toggle) | 999 |
+| `SidebarWidth` | 280 | 240 |
+| `TopBarHeight` | 64 | 52 |
+| `AiCommandBarHeight` | 92 (ô nhập 59, lề 24) | 48 |
+| `WeekdayHeaderHeight` | 36 | — |
+| Ô lưới Tháng | 165×115, kẻ lưới 1 px | — |
+| `MiniCalendarCellSize` | 28 (hàng 28, giãn 34) | 28 |
+| `DayDetailPanelWidth` | 360 (S07, S09) | — |
+| Lưới giờ (S06, S07) | 48 px/giờ, cột giờ 56 | — |
+
+#### Màu (theme Sáng)
+
+| Key | Figma | Code hiện tại | Dùng cho |
+| --- | --- | --- | --- |
+| `WindowBackgroundBrush` | `#F6F7F9` | `#FFFFFF` | Nền cửa sổ, nền vùng nội dung Cài đặt |
+| `SurfaceBackgroundBrush` | `#FFFFFF` | `#F8F9FA` | Sidebar, top bar, ô ngày, card |
+| `SurfaceMutedBrush` | `#F9FAFB` / `#FAFAFB` | — | Khối trạng thái đồng bộ, ô ngoài tháng |
+| `ControlTrackBrush` | `#F2F4F7` | — | Nền segmented, chip VI/EN |
+| `BorderBrush` | `#EAECF0` | `#DADCE0` | Kẻ lưới, viền card |
+| `BorderStrongBrush` | `#D0D5DD` | — | Viền nút phụ, ô nhập |
+| `TextPrimaryBrush` | `#101828` | `#202124` | Chữ chính |
+| `TextBodyBrush` | `#344054` | — | Nút phụ, nhãn sidebar |
+| `TextSecondaryBrush` | `#667085` | `#5F6368` | Thứ trong tuần, mô tả |
+| `TextTertiaryBrush` | `#98A2B3` | `#80868B` | Nhãn mục, số ngày ngoài tháng |
+| `TextDisabledBrush` | `#D0D5DD` | — | Số âm ngoài tháng, placeholder |
+| `AccentPrimaryBrush` | `#2F6BFF` | `#1A73E8` | Nút chính, hôm nay, toggle bật |
+| `AccentSubtleBrush` | `#EAF1FF` (nav chọn: `#EDF2FF`) | `#E8F0FE` | Nền chip sự kiện xanh, mục nav đang chọn |
+| `AccentTextBrush` | `#1D4ED8` | `#FFFFFF` (đang dùng làm chữ trên nền accent) | Chữ trên chip xanh. Chữ trên nền accent: `#FFFFFF` (`OnAccentBrush`) |
+| `LunarTextBrush` | `#B54708` | `#D93025` | Số ngày âm, dòng "Âm lịch: …" |
+| `LunarSubtleBrush` | `#FFF4E5` | — | Chip sự kiện âm lịch, khối âm lịch trong panel |
+| `LunarStrongBrush` | `#93370D` | — | Chữ đậm trong khối âm lịch |
+| `AiAccentBrush` | `#7A5AF8` | — | Viền thanh lệnh AI, nút gửi, lịch "Nhắc việc từ AI" |
+| `AiSubtleBrush` | `#F1ECFF` / `#FAF8FF` | — | Chip sự kiện AI, nền ô nhập lệnh |
+| `AiTextBrush` | `#5925DC` | — | Chữ chip AI, chip "VI · EN" |
+| `SuccessBrush` | `#12B76A` (chấm), chữ `#067647`, nền `#ECFDF3` / `#E7F8EF` | `#0B8043` | Online, đã đồng bộ, lịch Công việc |
+| `WarningBrush` | `#F79009`, chữ `#B54708`, nền `#FFFAEB` | `#F29900` | Offline, lịch Âm lịch cục bộ |
+| `DangerBrush` | chữ `#B42318`, viền `#FDA29B`, nền `#FEF3F2` | `#D93025` | Ngắt kết nối, xoá dữ liệu |
+| `NowLineBrush` | `#F04438` (S06, S07, đề xuất) | — | Vạch giờ hiện tại |
+| `ScrimBrush` | `#101828` @ 45% | — | Nền mờ sau hộp thoại (02) |
+| Màu calendar | `#2F6BFF`, `#12B76A`, `#F79009`, `#7A5AF8` | — | Cá nhân, Công việc, Âm lịch, AI |
+
+Bóng: card nổi `#101828` @ 4%, offset (4,0), blur 16; drawer `#0F1729` @ 18%, offset (−8,0), blur 32; hộp thoại `#0F1729` @ 25%, offset (0,20), blur 50.
+
+Tên key ở cột 1 là đề xuất để khớp Figma; key nào chưa có trong code thì thêm khi sửa `Tokens.xaml`.
 
 ## Quy ước component (WPF + MVVM)
 

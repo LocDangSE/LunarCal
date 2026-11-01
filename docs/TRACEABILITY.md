@@ -31,3 +31,4 @@ Maps requirement IDs from the spec to the tests that cover them. Fill in as each
 | FR-UI-1 MainWindow UI shell (TopBar, Sidebar, MiniCalendar, view switching, GoToToday) | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_1_*` | Covered (P2-06) |
 | FR-UI-9 Runtime language switcher (VI \| EN), online/offline network indicator | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_9_*` | Covered (P2-06) |
 | FR-UI-10 Sync status block, manual sync trigger, pending AI command badge | `LunarCal.App.Tests.ViewModels.MainWindowViewModelTests.FR_UI_10_*` | Covered (P2-06) |
+| FR-UI-11 Screen design in Figma (S06–S09, S13) and design token extraction | Figma file 4vwWjHGoSu9naj5ou86QYs nodes 23:2, 23:493, 23:984, 23:1475, 23:1966; .agents/rules/ui.md | Covered (P2-00) |
