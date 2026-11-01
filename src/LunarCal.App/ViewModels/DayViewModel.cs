@@ -19,6 +19,10 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
 
+    // Incremented by every load request; a load whose version is no longer current drops its result, so the
+    // latest request always wins even when earlier store calls complete later.
+    private int _loadVersion;
+
     [ObservableProperty]
     private DateOnly _displayDate;
 
@@ -111,6 +115,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task PopulateDayAsync(DateOnly targetDate, CancellationToken cancellationToken = default)
     {
+        var version = ++_loadVersion;
         var sw = Stopwatch.StartNew();
 
         var timeZone = _preferences.TimeZone;
@@ -136,9 +141,14 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
         {
             events = await _eventStore.GetEventsAsync(startUtc, endUtc, cancellationToken: cancellationToken);
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             events = Array.Empty<CalendarEvent>();
+        }
+
+        if (version != _loadVersion)
+        {
+            return; // superseded by a newer request
         }
 
         col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture);

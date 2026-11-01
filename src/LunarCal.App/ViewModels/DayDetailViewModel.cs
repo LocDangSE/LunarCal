@@ -22,6 +22,10 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
 
+    // Incremented by every load request; a load whose version is no longer current drops its result, so the
+    // latest request always wins even when earlier store calls complete later.
+    private int _loadVersion;
+
     [ObservableProperty]
     private DateOnly _date;
 
@@ -227,6 +231,7 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 
     private async Task LoadEventsAsync(DateOnly date, CancellationToken cancellationToken)
     {
+        var version = ++_loadVersion;
         var timeZone = _preferences.TimeZone;
         var culture = _localizationService.CurrentCulture;
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(date, date.AddDays(1), timeZone);
@@ -239,10 +244,15 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
             calendars = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken);
             dayEvents = await _eventStore.GetEventsAsync(startUtc, endUtc, cancellationToken: cancellationToken);
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             calendars = Array.Empty<CalendarInfo>();
             dayEvents = Array.Empty<CalendarEvent>();
+        }
+
+        if (version != _loadVersion)
+        {
+            return; // superseded by a newer request
         }
 
         var calendarLookup = calendars.ToDictionary(c => c.Id, c => c, StringComparer.Ordinal);

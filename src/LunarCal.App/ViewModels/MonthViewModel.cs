@@ -21,6 +21,10 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
 
+    // Incremented by every load request; a load whose version is no longer current drops its result, so the
+    // latest request always wins even when earlier store calls complete later.
+    private int _loadVersion;
+
     [ObservableProperty]
     private DateOnly _displayDate;
 
@@ -163,10 +167,11 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task PopulateMonthAsync(DateOnly date)
     {
+        var version = ++_loadVersion;
         var stopwatch = Stopwatch.StartNew();
 
         var culture = _localizationService.CurrentCulture;
-        MonthTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
+        var monthTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
             ? $"Tháng {date.Month}, {date.Year}"
             : date.ToString("MMMM yyyy", culture);
 
@@ -205,7 +210,22 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
         // Query events for the whole 6-week window, bounded by local midnights in the display time zone.
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(startGridDate, endGridDate, timeZone);
-        var events = await _eventStore.GetEventsAsync(startUtc, endUtc);
+        IReadOnlyList<CalendarEvent> events;
+        try
+        {
+            events = await _eventStore.GetEventsAsync(startUtc, endUtc);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            events = Array.Empty<CalendarEvent>();
+        }
+
+        if (version != _loadVersion)
+        {
+            return; // superseded by a newer request
+        }
+
+        MonthTitle = monthTitle;
 
         // Bucket events by every local date they cover (multi-day events appear on each day).
         var eventsByDate = new Dictionary<DateOnly, List<CalendarEvent>>();

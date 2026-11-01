@@ -290,7 +290,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 });
             }
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             // Fallback gracefully
         }
@@ -393,7 +393,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 LunarHeaderSubtitle = string.Empty;
             }
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             LunarHeaderSubtitle = string.Empty;
         }

@@ -20,6 +20,10 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
 
+    // Incremented by every load request; a load whose version is no longer current drops its result, so the
+    // latest request always wins even when earlier store calls complete later.
+    private int _loadVersion;
+
     [ObservableProperty]
     private DateOnly _displayDate;
 
@@ -122,6 +126,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task LoadDataAsync(CancellationToken cancellationToken = default)
     {
+        var version = ++_loadVersion;
         var sw = Stopwatch.StartNew();
 
         var monthStart = new DateOnly(DisplayDate.Year, DisplayDate.Month, 1);
@@ -129,16 +134,26 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
 
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(monthStart, monthEnd.AddDays(1), _preferences.TimeZone);
 
+        IReadOnlyList<CalendarInfo> calendars;
+        IReadOnlyList<CalendarEvent> events;
         try
         {
-            _cachedCalendars = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken);
-            _cachedEvents = await _eventStore.GetEventsAsync(startUtc, endUtc, cancellationToken: cancellationToken);
+            calendars = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken);
+            events = await _eventStore.GetEventsAsync(startUtc, endUtc, cancellationToken: cancellationToken);
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            _cachedCalendars = Array.Empty<CalendarInfo>();
-            _cachedEvents = Array.Empty<CalendarEvent>();
+            calendars = Array.Empty<CalendarInfo>();
+            events = Array.Empty<CalendarEvent>();
         }
+
+        if (version != _loadVersion)
+        {
+            return; // superseded by a newer request
+        }
+
+        _cachedCalendars = calendars;
+        _cachedEvents = events;
 
         // Sync calendar filter chips
         SyncCalendarFilters();

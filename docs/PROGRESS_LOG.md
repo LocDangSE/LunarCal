@@ -57,3 +57,5 @@
 | 2026-11-01 16:59 +07:00 | Claude Code (Opus 5.5) | P2-R2 | START | Nối setting Giao diện vào mọi view, gắn trang S13 |
 | 2026-11-01 17:07 +07:00 | Claude Code (Opus 5.5) | P2-R2 | DONE | MainWindowViewModel nghe `IDisplayPreferences`: week_start/12h-24h/timezone/lunar áp dụng ngay cho mọi view; bỏ suy đầu tuần theo ngôn ngữ; nút Cài đặt (TopBar) mở S13 trong cửa sổ con; sửa crash S13 (thiếu resource `Loc`); theme đã lưu được áp dụng khi khởi động; AppearanceSettingsViewModel bỏ 5 `async partial void` (chuỗi lưu tuần tự, báo lỗi qua `SaveErrorText`). 207/207 test. Tiếp theo: P2-R3 |
 | 2026-11-01 17:07 +07:00 | Claude Code (Opus 5.5) | P2-R3 | START | Phần `async partial void` đã xong trong P2-R2; còn nạp lại lưới tuần tự/huỷ được |
+| 2026-11-01 17:14 +07:00 | Claude Code (Opus 5.5) | P2-R3 | DONE | Month/Week/Day/Agenda/DayDetail: bộ đếm phiên nạp, kết quả cũ bị bỏ; lỗi store không làm crash; bỏ `catch` rỗng ở các VM này và MainWindowViewModel. 209/209 test. Tiếp theo: P2-R4 |
+| 2026-11-01 17:14 +07:00 | Claude Code (Opus 5.5) | P2-R4 | START | Chuyển chuỗi UI hard-code vào resx |
