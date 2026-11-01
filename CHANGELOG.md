@@ -12,6 +12,7 @@
 - Git repository on `main` with remote `https://github.com/LocDangSE/LunarCal.git`; `.gitattributes` line-ending rules, `CODEOWNERS`, PR template (ADR-0023).
 - `Dockerfile` (digest-pinned .NET 10 SDK, Linux) that builds and tests `LunarCal.Core`; CI job `core-linux-container`; Dependabot for Docker (ADR-0023).
 - Phase 2 localization infrastructure: `Strings.vi-VN.resx`, `Strings.en-US.resx`, and neutral `Strings.resx`; runtime culture switching with `LocalizationService` (INotifyPropertyChanged, live indexer binding, `LocExtension` in XAML); OS culture auto-detection; test suite `tests/LunarCal.App.Tests/` covering all mandated spec strings (FR-I18N-1, FR-I18N-3, FR-I18N-7, ADR-0024).
+- Gitleaks secret scanning in GitHub Actions CI (`.github/workflows/ci.yml`) and pre-commit configuration (`.pre-commit-config.yaml`, `.githooks/pre-commit`, `.gitleaks.toml`) (SEC-KEY-5, SEC-SC-3).
 
 ### Changed
 - `.editorconfig`: constants are PascalCase (the `_camelCase` rule applies to other private fields).

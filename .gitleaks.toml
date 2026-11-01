@@ -1,0 +1,16 @@
+title = "LunarCal Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "google-api-key-custom"
+description = "Detected Google API Key (AIza...)"
+regex = '''AIza[0-9A-Za-z\\-_]{35}'''
+keywords = ["AIza"]
+
+[[rules]]
+id = "google-oauth-access-token"
+description = "Detected Google OAuth Access Token (ya29...)"
+regex = '''ya29\.[0-9A-Za-z\\-_]+'''
+keywords = ["ya29"]

@@ -1,0 +1,16 @@
+#!/bin/sh
+# LunarCal pre-commit secret scan hook (SEC-KEY-5)
+
+if command -v gitleaks >/dev/null 2>&1; then
+    gitleaks protect --staged --verbose
+    exit $?
+fi
+
+# Fallback basic scan if gitleaks CLI is not installed locally
+if git diff --cached | grep -E "AIza[0-9A-Za-z_-]{35}|ya29\.[0-9A-Za-z_-]+" >/dev/null; then
+    echo "ERROR: Attempting to commit suspected secret (AIza... or ya29...)!"
+    echo "Please remove the secret before committing."
+    exit 1
+fi
+
+exit 0

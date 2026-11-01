@@ -4,7 +4,7 @@
 
 A Windows desktop client for Google Calendar with a Vietnamese lunar calendar and an AI command bar powered by Gemini (bring your own key).
 
-> Status: **Phase 1 (lunar engine) done**. Not yet usable. Current state: `docs/STATUS.md`; agent instructions: `AGENTS.md`.
+> Status: **Phase 1 (lunar engine) done, Phase 2 in progress**. Not yet usable. Current state: `docs/STATUS.md`; agent instructions: `AGENTS.md`.
 
 ## Build
 
@@ -22,5 +22,11 @@ The domain layer (`LunarCal.Core`) is OS-agnostic and can also be built and test
 ```powershell
 docker build --target test -t lunarcal-core-test .
 ```
+
+## Secret scanning (SEC-KEY-5, SEC-SC-3)
+
+Gitleaks runs automatically on GitHub Actions CI. To enable pre-commit secret scanning locally:
+- With `pre-commit`: run `pre-commit install`.
+- Or with native Git hooks: run `git config core.hooksPath .githooks`.
 
 The spec is in `docs/`; architecture decisions are in `docs/adr/` (index: `docs/DECISIONS.md`).

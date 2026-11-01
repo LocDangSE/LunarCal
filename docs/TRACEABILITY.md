@@ -18,3 +18,5 @@ Maps requirement IDs from the spec to the tests that cover them. Fill in as each
 | FR-I18N-1 UI supports vi-VN and en-US, default follows OS, runtime switch | `LunarCal.App.Tests.LocalizationTests.FR_I18N_1_Default_language_follows_OS`, `..._falls_back_to_vietnamese_when_os_culture_is_null`, `..._Runtime_language_switch_updates_immediately_without_restart` | Covered (ADR-0024) |
 | FR-I18N-3 Every string in resx (vi-VN and en-US), non-empty, test enforced | `LunarCal.App.Tests.LocalizationTests.FR_I18N_3_Every_key_has_non_empty_vi_and_en` | Covered (ADR-0024) |
 | FR-I18N-7 Mandatory strings in spec §4.11 and toast notifications | `LunarCal.App.Tests.LocalizationTests.FR_I18N_7_Required_spec_table_strings_match_exact_values`, `..._Toast_strings_match_exact_values_and_support_formatting` | Covered (ADR-0024) |
+| SEC-KEY-5 Secret scanning (gitleaks on CI and pre-commit hook) | CI job `gitleaks`, `.gitleaks.toml`, `.pre-commit-config.yaml`, `.githooks/pre-commit` | Covered |
+| SEC-SC-3 CI static analysis and scanning | CI job `gitleaks` (P0-02), CodeQL (P0-03) | In progress |

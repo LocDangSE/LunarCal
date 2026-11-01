@@ -51,7 +51,20 @@ jobs:
           $out
           if ($out -match 'has the following vulnerable packages') { exit 1 }
 
-      # gitleaks and CodeQL are added in a later phase (SEC-SC-3).
+      # CodeQL is added in P0-03 (SEC-SC-3).
+
+  # Secret scanning with gitleaks (SEC-KEY-5, SEC-SC-3).
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Core is net10.0 and must stay OS-agnostic (ADR-0002). Build and test it in the
   # digest-pinned Linux SDK container from the Dockerfile (ADR-0023).
