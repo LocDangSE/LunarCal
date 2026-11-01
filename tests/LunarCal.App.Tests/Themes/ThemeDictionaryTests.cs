@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Markup;
+using System.Windows.Media;
 using AwesomeAssertions;
 using Xunit;
 
@@ -48,20 +49,43 @@ public sealed class ThemeDictionaryTests
         {
             "WindowBackgroundBrush",
             "SurfaceBackgroundBrush",
+            "SurfaceMutedBrush",
             "SidebarBackgroundBrush",
+            "ControlTrackBrush",
             "BorderBrush",
+            "BorderSubtleBrush",
+            "BorderStrongBrush",
             "TextPrimaryBrush",
+            "TextBodyBrush",
             "TextSecondaryBrush",
+            "TextTertiaryBrush",
+            "TextDisabledBrush",
             "AccentPrimaryBrush",
             "AccentHoverBrush",
+            "AccentSubtleBrush",
+            "AccentTextBrush",
+            "OnAccentBrush",
             "TodayHighlightBrush",
             "TodayBackgroundBrush",
+            "SelectedDayBackgroundBrush",
             "LunarTextPrimaryBrush",
             "LunarTextSecondaryBrush",
+            "LunarSubtleBrush",
+            "LunarStrongBrush",
+            "AiAccentBrush",
+            "AiSubtleBrush",
+            "AiTextBrush",
             "DangerBrush",
+            "DangerSubtleBrush",
             "SuccessBrush",
+            "SuccessTextBrush",
+            "SuccessSubtleBrush",
             "WarningBrush",
+            "WarningTextBrush",
+            "WarningSubtleBrush",
             "HoverBackgroundBrush",
+            "NowLineBrush",
+            "ScrimBrush",
         };
 
         foreach (var brushKey in requiredBrushes)
@@ -86,6 +110,28 @@ public sealed class ThemeDictionaryTests
         tokensDict.Contains("CornerRadiusMedium").Should().BeTrue();
         tokensDict.Contains("TopBarHeight").Should().BeTrue();
         tokensDict.Contains("SidebarWidth").Should().BeTrue();
+        tokensDict.Contains("AiCommandBarHeight").Should().BeTrue();
+    }
+
+    [Fact]
+    public void FR_UI_11_Light_theme_matches_figma_palette_and_metrics()
+    {
+        var lightPath = Path.Combine(_appDirectory, "Themes", "Light.xaml");
+        var lightDict = LoadDictionary(lightPath);
+        var tokensPath = Path.Combine(_appDirectory, "Resources", "Tokens.xaml");
+        var tokensDict = LoadDictionary(tokensPath);
+
+        // Figma accent blue #2F6BFF
+        ((SolidColorBrush)lightDict["AccentPrimaryBrush"]).Color.Should().Be(Color.FromRgb(0x2F, 0x6B, 0xFF));
+        // Figma lunar orange/brown #B54708
+        ((SolidColorBrush)lightDict["LunarTextPrimaryBrush"]).Color.Should().Be(Color.FromRgb(0xB5, 0x47, 0x08));
+        // Figma window background #F6F7F9
+        ((SolidColorBrush)lightDict["WindowBackgroundBrush"]).Color.Should().Be(Color.FromRgb(0xF6, 0xF7, 0xF9));
+
+        // Layout metrics from Figma
+        ((double)tokensDict["TopBarHeight"]).Should().Be(64);
+        ((double)tokensDict["SidebarWidth"]).Should().Be(280);
+        ((double)tokensDict["AiCommandBarHeight"]).Should().Be(92);
     }
 
     private static ResourceDictionary LoadDictionary(string filePath)

@@ -3,40 +3,60 @@
 
   <!-- Windows High Contrast Theme Palette (FR-UI-8, accessibility ≥ 4.5:1) -->
 
-  <!-- Backgrounds -->
+  <!-- Backgrounds & Surfaces -->
   <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="SurfaceElevatedBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="SurfaceMutedBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="ControlTrackBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{x:Static SystemColors.HighlightColor}" />
 
   <!-- Borders -->
   <SolidColorBrush x:Key="BorderBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
   <SolidColorBrush x:Key="BorderSubtleBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
+  <SolidColorBrush x:Key="BorderStrongBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
 
   <!-- Typography -->
   <SolidColorBrush x:Key="TextPrimaryBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="TextBodyBrush" Color="{x:Static SystemColors.WindowTextColor}" />
   <SolidColorBrush x:Key="TextSecondaryBrush" Color="{x:Static SystemColors.WindowTextColor}" />
   <SolidColorBrush x:Key="TextTertiaryBrush" Color="{x:Static SystemColors.GrayTextColor}" />
+  <SolidColorBrush x:Key="TextDisabledBrush" Color="{x:Static SystemColors.GrayTextColor}" />
 
   <!-- Accents & Actions -->
   <SolidColorBrush x:Key="AccentPrimaryBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="AccentHoverBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="AccentSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="AccentTextBrush" Color="{x:Static SystemColors.HighlightTextColor}" />
+  <SolidColorBrush x:Key="OnAccentBrush" Color="{x:Static SystemColors.HighlightTextColor}" />
 
   <!-- Calendar Day Highlights -->
   <SolidColorBrush x:Key="TodayHighlightBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="TodayBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="SelectedDayBackgroundBrush" Color="{x:Static SystemColors.HighlightColor}" />
 
-  <!-- Lunar Text -->
+  <!-- Lunar Calendar -->
   <SolidColorBrush x:Key="LunarTextPrimaryBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="LunarTextSecondaryBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="LunarSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="LunarStrongBrush" Color="{x:Static SystemColors.WindowTextColor}" />
 
-  <!-- Status Feedback -->
+  <!-- AI Elements -->
+  <SolidColorBrush x:Key="AiAccentBrush" Color="{x:Static SystemColors.HighlightColor}" />
+  <SolidColorBrush x:Key="AiSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="AiTextBrush" Color="{x:Static SystemColors.HighlightTextColor}" />
+
+  <!-- Status & Feedback -->
   <SolidColorBrush x:Key="DangerBrush" Color="{x:Static SystemColors.HighlightColor}" />
+  <SolidColorBrush x:Key="DangerSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="SuccessBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="SuccessTextBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="SuccessSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="WarningBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="WarningTextBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="WarningSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="NowLineBrush" Color="{x:Static SystemColors.HighlightColor}" />
+  <SolidColorBrush x:Key="ScrimBrush" Color="{x:Static SystemColors.WindowColor}" />
 
 </ResourceDictionary>

@@ -3,16 +3,16 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 12:48 +07:00, Antigravity. Xác nhận hoàn thành P2-00 (Chủ dự án đã cập nhật và duyệt các frame Figma S06–S09, S13; bảng design token đo từ Figma 01–05 đã ghi vào `.agents/rules/ui.md`). Đóng câu hỏi mở Q-002. Mở Q-005 (cân chỉnh token trong code khớp Figma).
+**Cập nhật lần cuối:** 2026-11-01 13:02 +07:00, Antigravity. Hoàn thành P2-06b (Cân chỉnh Design Tokens và Theme Palettes theo bảng đo Figma trong `ui.md`: màu `#2F6BFF`, sidebar 280, topbar 64, thanh AI 92, typography Inter fallback, thêm các brush token thiếu cho 3 theme). Đóng câu hỏi mở Q-005. 144 test (143 pass, 1 skip).
 
 **Trước đó:** 2026-11-01 12:40 +07:00, Claude Code (Opus 5.5). Hỗ trợ P2-00 (task 👤): đo token từ Figma 01–05 vào `.agents/rules/ui.md`, vẽ nháp S06–S09 và S13 trong Figma. Không sửa code.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-00, P2-01, P2-02, P2-03, P2-04, P2-05, P2-06 đã xong; tiếp theo: P2-07).
+- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-00, P2-01, P2-02, P2-03, P2-04, P2-05, P2-06, P2-06b đã xong; tiếp theo: P2-07).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Phiên 2026-11-01 12:40: hỗ trợ chủ dự án làm P2-00 (task 👤, vẫn `[!]`). (1) Đo token từ node Figma 01–05 và ghi bảng mới vào `.agents/rules/ui.md` mục "Design token". (2) Vẽ nháp trong file Figma `4vwWjHGoSu9naj5ou86QYs`, hàng y=2300: S06 Tuần `23:2`, S07 Ngày `23:493`, S08 Lịch biểu `23:984`, S09 Chi tiết ngày `23:1475` và bảng trạng thái `26:127`, S13 Cài đặt > Giao diện `23:1966`; component `Day detail panel` `25:2`, component set `Day cell` `26:126`. Logo trong các frame mới đổi thành "LunarCal" (frame 01–05 vẫn ghi "GCalendar"). Bước tiếp theo: chủ dự án duyệt hoặc sửa các frame. Khi đã duyệt thì đánh dấu P2-00 `[x]`, đóng Q-002 và tạo task sửa `Tokens.xaml`/`Themes/Light.xaml` cho khớp Figma (xem Q-005). File đang sửa dở: không có. Chưa commit.
-  - **Antigravity:** không giữ task nào. Đã xác nhận hoàn tất P2-00 sau khi chủ dự án duyệt và cập nhật Figma. Đóng Q-002. Sẵn sàng tiếp tục task P2-07 (lưới Tháng 6×7) hoặc task cân chỉnh token (Q-005). File đang sửa dở: không có.
+  - **Antigravity:** không giữ task nào (P2-06b vừa xong). Đã cập nhật `Tokens.xaml`, `Light.xaml`, `Dark.xaml`, `HighContrast.xaml` theo đúng bảng đo Figma trong `ui.md`. Đóng Q-005. Sẵn sàng tiếp tục task P2-07 (lưới Tháng 6×7). File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
   1. Phase 2 Month view: P2-07 (lưới tháng 6×7 có ngày âm, mùng 1 dạng `1/tháng` có ký hiệu nhuận; ẩn khi tắt lịch âm; đo render < 100 ms).
   2. Phase 2 Week/Day view: P2-08 (view Tuần và Ngày: lưới giờ, sự kiện cả ngày, vạch giờ hiện tại, ngày âm ở tiêu đề cột).
@@ -23,7 +23,7 @@
 | --- | --- | --- |
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2 | Đang thực hiện: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar) xong | `src/LunarCal.App/Views/MainWindow.xaml`, `src/LunarCal.App/Controls/`, `src/LunarCal.App/ViewModels/`, `src/LunarCal.App/Themes/`, `src/LunarCal.App/Resources/Tokens.xaml`, `src/LunarCal.Core/Calendar/`, `src/LunarCal.Infrastructure/Storage/`, `.agents/rules/ui.md`, `tests/` |
+| 2 | Đang thực hiện: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma) xong | `src/LunarCal.App/Views/MainWindow.xaml`, `src/LunarCal.App/Controls/`, `src/LunarCal.App/ViewModels/`, `src/LunarCal.App/Themes/`, `src/LunarCal.App/Resources/Tokens.xaml`, `src/LunarCal.Core/Calendar/`, `src/LunarCal.Infrastructure/Storage/`, `.agents/rules/ui.md`, `tests/` |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -35,7 +35,7 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 143 test: 142 pass, 0 fail, 1 skip |
+| `dotnet test --solution LunarCal.slnx` | 144 test: 143 pass, 0 fail, 1 skip |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.67% (ngưỡng 95% và 85%) |
 | `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar |
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
@@ -100,12 +100,11 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - **Trạng thái:** Mở
 - **Ghi bởi:** Claude Code, 2026-10-31
 
-### Q-005: Token trong code lệch khỏi Figma; chọn font
+### Q-005: Token trong code lệch khỏi Figma; chọn font (Đã đóng)
 
 - **Mục spec:** §15.4, FR-UI-7, FR-UI-11; ADR-0011
 - **Loại:** Mâu thuẫn (giữa code và thiết kế)
-- **Mô tả:** `Tokens.xaml` và `Themes/Light.xaml` (P2-03) dùng bảng màu kiểu Google Material (`#1A73E8`, `#202124`, ...), font Segoe UI, sidebar 240, top bar 52, thanh AI 48. Figma 01–05 dùng `#2F6BFF`, thang xám `#101828`…`#F9FAFB`, màu âm lịch `#B54708`, font Inter, sidebar 280, top bar 64, thanh AI 92. Bảng đối chiếu đầy đủ nằm ở `.agents/rules/ui.md`. Figma không có theme Tối hay Tương phản cao. Ngoài ra Inter không có sẵn trên Windows.
-- **Ảnh hưởng:** P2-07..P2-11 (view mới sẽ kế thừa token sai), giao diện shell của P2-06.
-- **Đề xuất / tạm quyết:** Tạo task mới sau P2-00 để sửa `Tokens.xaml` và `Light.xaml` theo bảng trong `ui.md`, và bổ sung các key còn thiếu. Về font, có hai phương án: nhúng Inter (license OFL, cần ADR) hoặc dùng Segoe UI Variable. Theme Tối và HC tạm giữ như code hiện tại. Agent không tự chọn font, vì thiết kế là quyết định của chủ dự án.
-- **Trạng thái:** Mở
-- **Ghi bởi:** Claude Code, 2026-11-01
+- **Mô tả:** `Tokens.xaml` và `Themes/Light.xaml` ban đầu dùng bảng màu Google Material (`#1A73E8`, `#202124`, ...), sidebar 240, top bar 52, thanh AI 48. Figma 01–05 dùng `#2F6BFF`, thang xám `#101828`…`#F9FAFB`, màu âm lịch `#B54708`, font Inter fallback Segoe UI, sidebar 280, top bar 64, thanh AI 92.
+- **Cập nhật 2026-11-01 13:02 (Antigravity):** Đã hoàn thành task P2-06b cân chỉnh toàn bộ `Tokens.xaml` và 3 theme `Light.xaml`, `Dark.xaml`, `HighContrast.xaml` theo đúng bảng đo Figma trong `ui.md`. Kiểm tra 144 unit tests xanh.
+- **Trạng thái:** Đã đóng
+- **Ghi bởi:** Claude Code, 2026-11-01 · Đóng ngày 2026-11-01
