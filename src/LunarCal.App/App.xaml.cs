@@ -1,5 +1,6 @@
 using System.Windows;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views;
 using LunarCal.Infrastructure;
@@ -31,10 +32,15 @@ public partial class App : Application
         LocalizationService.Instance.IsPseudoLocaleEnabled = enablePseudo;
         builder.Services.AddSingleton<ILocalizationService>(LocalizationService.Instance);
 
+        builder.Services.AddSingleton<IThemeService, ThemeService>();
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
 
         _host = builder.Build();
+
+        // Initialize active theme
+        var themeService = _host.Services.GetRequiredService<IThemeService>();
+        themeService.ApplyTheme("System");
 
         // Hosted services are started in a later phase (sync engine, AI queue); nothing to start yet.
         var window = _host.Services.GetRequiredService<MainWindow>();

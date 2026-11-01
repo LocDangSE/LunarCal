@@ -1,0 +1,42 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Light Theme Color Palette (Figma 01-05 & spec §4.3) -->
+
+  <!-- Backgrounds -->
+  <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FFFFFF" />
+  <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="#F8F9FA" />
+  <SolidColorBrush x:Key="SurfaceElevatedBackgroundBrush" Color="#FFFFFF" />
+  <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#F8F9FA" />
+  <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#F1F3F4" />
+
+  <!-- Borders -->
+  <SolidColorBrush x:Key="BorderBrush" Color="#DADCE0" />
+  <SolidColorBrush x:Key="BorderSubtleBrush" Color="#E8EAED" />
+
+  <!-- Typography -->
+  <SolidColorBrush x:Key="TextPrimaryBrush" Color="#202124" />
+  <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5F6368" />
+  <SolidColorBrush x:Key="TextTertiaryBrush" Color="#80868B" />
+
+  <!-- Accents & Actions -->
+  <SolidColorBrush x:Key="AccentPrimaryBrush" Color="#1A73E8" />
+  <SolidColorBrush x:Key="AccentHoverBrush" Color="#1557D0" />
+  <SolidColorBrush x:Key="AccentSubtleBrush" Color="#E8F0FE" />
+  <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+
+  <!-- Calendar Day Highlights -->
+  <SolidColorBrush x:Key="TodayHighlightBrush" Color="#1A73E8" />
+  <SolidColorBrush x:Key="TodayBackgroundBrush" Color="#E8F0FE" />
+  <SolidColorBrush x:Key="SelectedDayBackgroundBrush" Color="#D2E3FC" />
+
+  <!-- Lunar Text -->
+  <SolidColorBrush x:Key="LunarTextPrimaryBrush" Color="#D93025" />
+  <SolidColorBrush x:Key="LunarTextSecondaryBrush" Color="#70757A" />
+
+  <!-- Status Feedback -->
+  <SolidColorBrush x:Key="DangerBrush" Color="#D93025" />
+  <SolidColorBrush x:Key="SuccessBrush" Color="#0B8043" />
+  <SolidColorBrush x:Key="WarningBrush" Color="#F29900" />
+
+</ResourceDictionary>

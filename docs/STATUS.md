@@ -3,17 +3,17 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 11:38 +07:00, Antigravity. Hoàn thành P2-05 (CalendarInfo, CalendarEvent, IEventStore, InMemoryEventStore có dữ liệu mẫu, đăng ký DI, 10 unit test pass). Tổng 124 test (123 pass, 1 skip).
+**Cập nhật lần cuối:** 2026-11-01 11:47 +07:00, Antigravity. Hoàn thành P2-03 (chốt ADR-0011, Tokens.xaml, Themes/Light.xaml, Dark.xaml, HighContrast.xaml, IThemeService/ThemeService, 12 unit test pass). Tổng 136 test (135 pass, 1 skip).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01, P2-02, P2-04, P2-05 đã xong).
+- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01, P2-02, P2-03, P2-04, P2-05 đã xong).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào (P0-01 vừa xong). Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. P0-01 xong: CI run 41267053678 (commit 159781c) xanh cả `build-test` và `core-linux-container`. Không giữ task nào. File đang sửa dở: không có.
-  - **Antigravity:** không giữ task nào (P2-05 vừa xong). Đã: `CalendarInfo`, `CalendarEvent` (Core/Calendar), `IEventStore` (Core/Abstractions), `InMemoryEventStore` với dữ liệu mẫu (Infrastructure/Storage), đăng ký DI, 10 unit test pass kiểm tra truy vấn khoảng ngày, lọc calendar, cascade delete, spec fields (FR-UI-1, FR-AUTH-5, FR-SYNC-6). File đang sửa dở: không có.
+  - **Antigravity:** không giữ task nào (P2-03 vừa xong). Đã: ADR-0011 Accepted (tự style ResourceDictionary), `Tokens.xaml`, `Themes/Light.xaml`, `Dark.xaml`, `HighContrast.xaml`, `IThemeService`/`ThemeService`, đăng ký DI trong App, 12 unit test pass kiểm tra hệ thống theme, phát hiện OS mode, tính tương thích brush giữa các theme (FR-UI-7, FR-UI-8). File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
-  1. Phase 2 UI token & themes: P2-00 (chờ Figma từ chủ dự án), P2-03 (theme sáng/tối/hệ thống, ADR-0011).
-  2. Phase 2 UI shell: P2-06 (MainWindow shell theo Figma 01, TopBar, Sidebar, MiniCalendar).
+  1. Phase 2 UI shell: P2-06 (MainWindow shell theo Figma 01, TopBar, Sidebar, MiniCalendar, kết nối IEventStore và ILocalizationService).
+  2. Phase 2 Month view: P2-07 (lưới tháng 6×7 có ngày âm).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -21,7 +21,7 @@
 | --- | --- | --- |
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2 | Đang thực hiện: P2-01 (resx, i18n service), P2-02 (pseudo-locale), P2-04 (settings store), P2-05 (event & calendar model, IEventStore, InMemoryEventStore) xong | `src/LunarCal.Core/Calendar/`, `src/LunarCal.Core/Abstractions/`, `src/LunarCal.Infrastructure/Storage/`, `src/LunarCal.App/Localization/`, `tests/` |
+| 2 | Đang thực hiện: P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store) xong | `src/LunarCal.App/Themes/`, `src/LunarCal.App/Resources/Tokens.xaml`, `src/LunarCal.Core/Calendar/`, `src/LunarCal.Infrastructure/Storage/`, `tests/` |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -33,7 +33,7 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 124 test: 123 pass, 0 fail, 1 skip |
+| `dotnet test --solution LunarCal.slnx` | 136 test: 135 pass, 0 fail, 1 skip |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.67% (ngưỡng 95% và 85%) |
 | `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được (shell còn trống; kiểm tra ngày 2026-10-31) |
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
@@ -50,6 +50,7 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - ADR-0007 tiết khí được gán cho ngày (UTC+7) mà Mặt Trời đạt kinh độ; sai số tối đa khoảng 25 phút quanh nửa đêm.
 - ADR-0008 tên can chi và tiết khí tiếng Việt nằm trong Core; chú giải tiếng Anh nằm trong resx (Phase 2).
 - ADR-0009 bảng HKO 1901–2100 làm nguồn đối chiếu (trang Hồ Ngọc Đức trả HTTP 404).
+- ADR-0010: WPF + MVVM + Generic Host. ADR-0011: Thư viện style WPF chốt chọn tự style bằng ResourceDictionary thuần WPF (`Tokens.xaml`, `Themes/Light.xaml`, `Dark.xaml`, `HighContrast.xaml`), không thêm dependency bên ngoài, đổi theme thời gian thực qua `IThemeService`.
 - ADR-0018 dùng DPAPI, không dùng Credential Manager. ADR-0020 hồ sơ bàn giao. ADR-0021 workflow Antigravity gọi qua skill (`.agents/skills/`), vì `.agents/workflows/` không còn được index sau 19/10/2026.
 - ADR-0022 đồng bộ tiến độ giữa Claude Code và Antigravity: người giữ task ghi trong TASKS.md, log chỉ ghi nối tiếp ở `docs/PROGRESS_LOG.md`, STATUS có mục riêng cho từng agent, commit có trailer `Agent:`.
 - `.editorconfig`: hằng số đặt PascalCase, field private đặt `_camelCase`.

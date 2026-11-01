@@ -16,7 +16,7 @@ Trạng thái: Proposed / Accepted / Superseded.
 | [0008](adr/0008-lunar-names-in-core.md) | Tên Can Chi và tiết khí tiếng Việt nằm trong Core | Accepted |
 | [0009](adr/0009-hko-lunar-reference.md) | Bảng HKO làm nguồn đối chiếu lịch âm | Accepted |
 | [0010](adr/0010-wpf-mvvm-generic-host.md) | WPF + MVVM + Generic Host | Accepted |
-| [0011](adr/0011-wpf-style-library.md) | Thư viện style WPF | Proposed |
+| [0011](adr/0011-wpf-style-library.md) | Thư viện style WPF | Accepted |
 | [0012](adr/0012-packaging-msix-or-velopack.md) | Đóng gói MSIX hay Velopack | Proposed |
 | [0013](adr/0013-local-storage-sqlcipher.md) | Lưu trữ cục bộ SQLCipher | Accepted (migration: Proposed) |
 | [0014](adr/0014-tray-and-toast-libraries.md) | Thư viện tray và toast | Accepted (AUMID: Proposed) |

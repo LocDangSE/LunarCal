@@ -4,7 +4,10 @@
              ShutdownMode="OnMainWindowClose">
   <Application.Resources>
     <ResourceDictionary>
-      <!-- Theme and localization dictionaries are merged here in Phase 2. -->
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/LunarCal;component/Resources/Tokens.xaml" />
+        <ResourceDictionary Source="/LunarCal;component/Themes/Light.xaml" />
+      </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 </Application>
