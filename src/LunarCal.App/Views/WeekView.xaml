@@ -35,7 +35,7 @@
       <Grid>
         <Grid.ColumnDefinitions>
           <!-- Left hour column width (56 px) -->
-          <ColumnDefinition Width="{DynamicResource HourColumnWidth}" />
+          <ColumnDefinition Width="56" />
           <!-- 7 day columns -->
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
@@ -131,7 +131,7 @@
             AutomationProperties.AutomationId="AllDayRow">
       <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="{DynamicResource HourColumnWidth}" />
+          <ColumnDefinition Width="56" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -188,7 +188,7 @@
       <Grid Height="1152">
         <Grid.ColumnDefinitions>
           <!-- Left hour label column (56 px) -->
-          <ColumnDefinition Width="{DynamicResource HourColumnWidth}" />
+          <ColumnDefinition Width="56" />
           <!-- 7 day columns -->
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>

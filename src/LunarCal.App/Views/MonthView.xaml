@@ -32,7 +32,7 @@
   <Grid Background="{DynamicResource WindowBackgroundBrush}">
     <Grid.RowDefinitions>
       <!-- Row 0: Weekday Headers (36 px) -->
-      <RowDefinition Height="{DynamicResource WeekdayHeaderHeight}" />
+      <RowDefinition Height="36" />
       <!-- Row 1: 6×7 Calendar Day Grid -->
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
