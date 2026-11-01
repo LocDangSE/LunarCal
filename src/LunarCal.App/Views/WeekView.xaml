@@ -1,0 +1,329 @@
+<UserControl x:Class="LunarCal.App.Views.WeekView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:WeekViewModel}"
+             AutomationProperties.AutomationId="WeekView">
+
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <conv:LaneMarginConverter x:Key="LaneMarginConverter" />
+    <conv:LaneWidthConverter x:Key="LaneWidthConverter" />
+  </UserControl.Resources>
+
+  <Grid Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid.RowDefinitions>
+      <!-- Row 0: Column headers (Thứ + Ngày dương + Ngày âm) -->
+      <RowDefinition Height="Auto" />
+      <!-- Row 1: All-day events row -->
+      <RowDefinition Height="Auto" />
+      <!-- Row 2: Scrollable 24-hour timed grid -->
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- ROW 0: HEADERS (7 columns with day of week, solar date and lunar date) -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource SurfaceBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            AutomationProperties.AutomationId="WeekHeadersBar">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <!-- Left hour column width (56 px) -->
+          <ColumnDefinition Width="{DynamicResource HourColumnWidth}" />
+          <!-- 7 day columns -->
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding DayColumns}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Rows="1" Columns="7" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type vm:DayColumnViewModel}">
+              <Border BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1,0,0,0"
+                      Padding="8,6"
+                      HorizontalAlignment="Stretch"
+                      AutomationProperties.AutomationId="WeekHeaderCell">
+                <StackPanel HorizontalAlignment="Center">
+                  <TextBlock Text="{Binding DayOfWeekName}"
+                             FontSize="{DynamicResource FontSizeCaption}"
+                             FontWeight="{DynamicResource FontWeightSemiBold}"
+                             Foreground="{DynamicResource TextSecondaryBrush}"
+                             HorizontalAlignment="Center" />
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
+                    <!-- Solar day circle if today, else normal text -->
+                    <Border CornerRadius="{DynamicResource CornerRadiusDayNumber}"
+                            Width="26" Height="26"
+                            HorizontalAlignment="Center">
+                      <Border.Style>
+                        <Style TargetType="Border">
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                              <Setter Property="Background" Value="{DynamicResource TodayHighlightBrush}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </Border.Style>
+                      <TextBlock Text="{Binding SolarDayString}"
+                                 FontSize="{DynamicResource FontSizeBodyStrong}"
+                                 FontWeight="{DynamicResource FontWeightBold}"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                        <TextBlock.Style>
+                          <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </TextBlock.Style>
+                      </TextBlock>
+                    </Border>
+
+                    <!-- Lunar day text (FR-UI-1, FR-UI-2, FR-LUNAR-6) -->
+                    <TextBlock Text="{Binding LunarDayText}"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               FontWeight="{DynamicResource FontWeightMedium}"
+                               Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0"
+                               AutomationProperties.AutomationId="LunarDateText">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="Visibility" Value="Visible" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding LunarDayText}" Value="">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsLunarVisible}" Value="False">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Border>
+
+    <!-- ROW 1: ALL-DAY ROW (FR-UI-1) -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource SurfaceBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            MinHeight="28"
+            AutomationProperties.AutomationId="AllDayRow">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="{DynamicResource HourColumnWidth}" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0"
+                   Text="{loc:Loc calendar.all_day}"
+                   FontSize="{DynamicResource FontSizeMini}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center" />
+
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding DayColumns}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Rows="1" Columns="7" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type vm:DayColumnViewModel}">
+              <Border BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1,0,0,0"
+                      Padding="2">
+                <ItemsControl ItemsSource="{Binding AllDayEvents}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border Background="{DynamicResource AccentSubtleBrush}"
+                              BorderBrush="{DynamicResource AccentPrimaryBrush}"
+                              BorderThickness="1"
+                              CornerRadius="{DynamicResource CornerRadiusSmall}"
+                              Padding="{DynamicResource ThicknessPaddingEventChip}"
+                              Margin="0,1"
+                              ToolTip="{Binding Title}"
+                              AutomationProperties.AutomationId="AllDayEventChip">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   FontWeight="{DynamicResource FontWeightMedium}"
+                                   Foreground="{DynamicResource AccentTextBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Border>
+
+    <!-- ROW 2: SCROLLABLE 24-HOUR TIMED GRID -->
+    <ScrollViewer Grid.Row="2"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  AutomationProperties.AutomationId="WeekScrollViewer">
+      <Grid Height="1152">
+        <Grid.ColumnDefinitions>
+          <!-- Left hour label column (56 px) -->
+          <ColumnDefinition Width="{DynamicResource HourColumnWidth}" />
+          <!-- 7 day columns -->
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Hour labels (00:00 .. 23:00) -->
+        <ItemsControl Grid.Column="0" ItemsSource="{Binding HourLabels}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Rows="24" Columns="1" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Height="{DynamicResource HourRowHeight}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="0,0,1,1"
+                      Background="{DynamicResource SurfaceBackgroundBrush}">
+                <TextBlock Text="{Binding}"
+                           FontSize="{DynamicResource FontSizeMini}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Top"
+                           Margin="0,-7,6,0" />
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 7 Days Grid Area -->
+        <Grid Grid.Column="1">
+          <!-- Background Hour Horizontal Grid Lines (24 rows) -->
+          <ItemsControl ItemsSource="{Binding HourLabels}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Rows="24" Columns="1" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Height="{DynamicResource HourRowHeight}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- 7 Columns Container -->
+          <ItemsControl ItemsSource="{Binding DayColumns}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Rows="1" Columns="7" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type vm:DayColumnViewModel}">
+                <Border BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1,0,0,0">
+                  <Canvas Height="1152" ClipToBounds="True">
+                    <!-- Timed Events on Canvas -->
+                    <ItemsControl ItemsSource="{Binding TimedEvents}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <Canvas />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                          <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                          <Setter Property="Height" Value="{Binding Height}" />
+                          <Setter Property="Panel.ZIndex" Value="10" />
+                        </Style>
+                      </ItemsControl.ItemContainerStyle>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:TimedEventViewModel}">
+                          <Border Background="{DynamicResource AccentSubtleBrush}"
+                                  BorderBrush="{DynamicResource AccentPrimaryBrush}"
+                                  BorderThickness="2,0,0,0"
+                                  CornerRadius="{DynamicResource CornerRadiusSmall}"
+                                  Padding="4,2"
+                                  ToolTip="{Binding Title}"
+                                  Height="{Binding Height}"
+                                  AutomationProperties.AutomationId="TimedEventChip">
+                            <Border.Width>
+                              <MultiBinding Converter="{StaticResource LaneWidthConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Canvas}" />
+                                <Binding Path="TotalColumns" />
+                              </MultiBinding>
+                            </Border.Width>
+                            <Border.Margin>
+                              <MultiBinding Converter="{StaticResource LaneMarginConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Canvas}" />
+                                <Binding Path="ColumnIndex" />
+                                <Binding Path="TotalColumns" />
+                              </MultiBinding>
+                            </Border.Margin>
+                            <Grid>
+                              <StackPanel>
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="{DynamicResource FontSizeCaption}"
+                                           FontWeight="{DynamicResource FontWeightSemiBold}"
+                                           Foreground="{DynamicResource AccentTextBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding TimeRangeText}"
+                                           FontSize="{DynamicResource FontSizeMini}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                              </StackPanel>
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Now Indicator Line (S06, NowLineBrush) -->
+                    <Grid Canvas.Top="{Binding NowIndicatorTop}"
+                          Visibility="{Binding ShowNowIndicator, Converter={StaticResource BoolToVis}}"
+                          Panel.ZIndex="100"
+                          AutomationProperties.AutomationId="NowIndicator">
+                      <Ellipse Width="8" Height="8"
+                               Fill="{DynamicResource NowLineBrush}"
+                               Margin="-4,-4,0,0"
+                               HorizontalAlignment="Left" />
+                      <Line X1="0" Y1="0"
+                            X2="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                            Y2="0"
+                            Stroke="{DynamicResource NowLineBrush}"
+                            StrokeThickness="2" />
+                    </Grid>
+                  </Canvas>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

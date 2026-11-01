@@ -62,6 +62,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Child view model for the main 6×7 month view grid (FR-UI-1, FR-UI-2, FR-LUNAR-6).</summary>
     public MonthViewModel MonthView { get; }
 
+    /// <summary>Child view model for the 7-day week view (Figma S06, FR-UI-1).</summary>
+    public WeekViewModel WeekView { get; }
+
+    /// <summary>Child view model for the single day view (Figma S07, FR-UI-1).</summary>
+    public DayViewModel DayView { get; }
+
     /// <summary>List of calendars displayed in the sidebar (FR-UI-10).</summary>
     public ObservableCollection<CalendarItemViewModel> Calendars { get; } = new();
 
@@ -87,6 +93,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MonthView.SetLunarVisibility(IsLunarVisible);
         _ = MonthView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
+        WeekView = new WeekViewModel(_eventStore, _localizationService, _settingsStore);
+        WeekView.SetLunarVisibility(IsLunarVisible);
+        _ = WeekView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
+
+        DayView = new DayViewModel(_eventStore, _localizationService, _settingsStore);
+        DayView.SetLunarVisibility(IsLunarVisible);
+        _ = DayView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
+
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
         UpdateLanguageState();
@@ -99,6 +113,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     partial void OnIsLunarVisibleChanged(bool value)
     {
         MonthView.SetLunarVisibility(value);
+        WeekView.SetLunarVisibility(value);
+        DayView.SetLunarVisibility(value);
         UpdateTitles();
     }
 
@@ -112,6 +128,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var dateOnly = DateOnly.FromDateTime(SelectedDate);
         MiniCalendar.SetSelectedDate(dateOnly);
         _ = MonthView.SetDisplayDateAsync(dateOnly);
+        _ = WeekView.SetDisplayDateAsync(dateOnly);
+        _ = DayView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -131,6 +149,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var dateOnly = DateOnly.FromDateTime(SelectedDate);
         MiniCalendar.SetSelectedDate(dateOnly);
         _ = MonthView.SetDisplayDateAsync(dateOnly);
+        _ = WeekView.SetDisplayDateAsync(dateOnly);
+        _ = DayView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -150,6 +170,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var dateOnly = DateOnly.FromDateTime(SelectedDate);
         MiniCalendar.SetSelectedDate(dateOnly);
         _ = MonthView.SetDisplayDateAsync(dateOnly);
+        _ = WeekView.SetDisplayDateAsync(dateOnly);
+        _ = DayView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -256,6 +278,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var weekStart = IsVietnameseActive ? DayOfWeek.Monday : DayOfWeek.Sunday;
         MiniCalendar.SetCultureAndWeekStart(culture, weekStart);
         MonthView.SetWeekStart(weekStart);
+        WeekView.SetCultureAndWeekStart(culture, weekStart);
+        DayView.SetCulture(culture);
 
         NetworkStatusText = IsOnline
             ? _localizationService["network.online"]
@@ -270,9 +294,36 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var dateOnly = DateOnly.FromDateTime(SelectedDate);
 
         // 1. Solar Header Title
-        HeaderTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-            ? $"Tháng {SelectedDate.Month}, {SelectedDate.Year}"
-            : SelectedDate.ToString("MMMM yyyy", culture);
+        switch (ActiveViewMode)
+        {
+            case CalendarViewMode.Day:
+                HeaderTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
+                    ? $"{culture.DateTimeFormat.GetDayName(dateOnly.DayOfWeek)}, {SelectedDate.Day} Tháng {SelectedDate.Month}, {SelectedDate.Year}"
+                    : SelectedDate.ToString("dddd, MMMM d, yyyy", culture);
+                break;
+            case CalendarViewMode.Week:
+                int diff = (7 + (dateOnly.DayOfWeek - (IsVietnameseActive ? DayOfWeek.Monday : DayOfWeek.Sunday))) % 7;
+                var weekStart = dateOnly.AddDays(-diff);
+                var weekEnd = weekStart.AddDays(6);
+                if (culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
+                {
+                    HeaderTitle = weekStart.Month == weekEnd.Month
+                        ? $"{weekStart.Day} – {weekEnd.Day} Tháng {weekStart.Month}, {weekStart.Year}"
+                        : $"{weekStart.Day}/{weekStart.Month} – {weekEnd.Day}/{weekEnd.Month}, {weekStart.Year}";
+                }
+                else
+                {
+                    HeaderTitle = weekStart.Month == weekEnd.Month
+                        ? $"{weekStart:MMM d} – {weekEnd.Day}, {weekStart.Year}"
+                        : $"{weekStart:MMM d} – {weekEnd:MMM d, yyyy}";
+                }
+                break;
+            default:
+                HeaderTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
+                    ? $"Tháng {SelectedDate.Month}, {SelectedDate.Year}"
+                    : SelectedDate.ToString("MMMM yyyy", culture);
+                break;
+        }
 
         // 2. Lunar Header Subtitle (FR-UI-9, FR-LUNAR-1, FR-LUNAR-6)
         if (!IsLunarVisible)
@@ -291,9 +342,21 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 var monthQuality = daysInMonth == 30 ? "Đủ" : "Thiếu";
                 var leapText = lunar.IsLeapMonth ? " (Nhuận)" : string.Empty;
 
-                LunarHeaderSubtitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                    ? $"Tháng {lunar.Month}{leapText} ({monthQuality}) · Năm {yearCanChi}"
-                    : $"Lunar M{lunar.Month}{leapText} · {yearCanChi}";
+                if (ActiveViewMode == CalendarViewMode.Day)
+                {
+                    var dayCanChi = LunarCalendar.GetDayCanChi(dateOnly);
+                    var tietKhi = LunarCalendar.GetTietKhi(dateOnly);
+                    var tietKhiName = tietKhi.VietnameseName;
+                    LunarHeaderSubtitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
+                        ? $"Ngày {lunar.Day} tháng {lunar.Month}{leapText} · {dayCanChi} · Tiết {tietKhiName}"
+                        : $"Lunar {lunar.Day}/{lunar.Month}{leapText} · {dayCanChi} · Term {tietKhiName}";
+                }
+                else
+                {
+                    LunarHeaderSubtitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
+                        ? $"Tháng {lunar.Month}{leapText} ({monthQuality}) · Năm {yearCanChi}"
+                        : $"Lunar M{lunar.Month}{leapText} · {yearCanChi}";
+                }
             }
             else
             {
@@ -310,6 +373,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         SelectedDate = date.ToDateTime(TimeOnly.MinValue);
         _ = MonthView.SetDisplayDateAsync(date);
+        _ = WeekView.SetDisplayDateAsync(date);
+        _ = DayView.SetDisplayDateAsync(date);
         UpdateTitles();
     }
 
@@ -317,6 +382,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         SelectedDate = date.ToDateTime(TimeOnly.MinValue);
         MiniCalendar.SetSelectedDate(date);
+        _ = WeekView.SetDisplayDateAsync(date);
+        _ = DayView.SetDisplayDateAsync(date);
         UpdateTitles();
     }
 
@@ -333,5 +400,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MonthView.DaySelected -= OnMonthViewDaySelected;
         _localizationService.PropertyChanged -= OnLocalizationChanged;
         MonthView.Dispose();
+        WeekView.Dispose();
+        DayView.Dispose();
     }
 }

@@ -1,0 +1,278 @@
+using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using LunarCal.Core.Calendar;
+using LunarCal.Core.Lunar;
+
+namespace LunarCal.App.ViewModels;
+
+/// <summary>
+/// View model representing a single day column in WeekView or DayView (FR-UI-1, FR-UI-2, FR-LUNAR-6).
+/// </summary>
+public sealed partial class DayColumnViewModel : ObservableObject
+{
+    /// <summary>Height of each 1-hour row in pixels (from design tokens).</summary>
+    public const double HourRowHeight = 48.0;
+
+    /// <summary>Minimum height of a timed event chip in pixels.</summary>
+    public const double MinEventHeight = 24.0;
+
+    /// <summary>Gregorian solar date of this day column.</summary>
+    public DateOnly Date { get; }
+
+    /// <summary>Calculated Vietnamese lunar date (null if out of supported range).</summary>
+    public LunarDate? LunarDate { get; }
+
+    /// <summary>Day of month in lunar calendar.</summary>
+    public int LunarDay => LunarDate?.Day ?? 0;
+
+    /// <summary>Month number in lunar calendar.</summary>
+    public int LunarMonth => LunarDate?.Month ?? 0;
+
+    /// <summary>Whether this lunar month is a leap month.</summary>
+    public bool IsLeapMonth => LunarDate?.IsLeapMonth ?? false;
+
+    /// <summary>Formatted day of week name (e.g. "Thứ Hai", "Mon").</summary>
+    public string DayOfWeekName { get; }
+
+    /// <summary>Day of month number as string.</summary>
+    public string SolarDayString { get; }
+
+    /// <summary>Whether this date is the current local today.</summary>
+    public bool IsToday { get; }
+
+    /// <summary>Formatted lunar day text (e.g. "10", "1/9", "1/6n").</summary>
+    [ObservableProperty]
+    private string _lunarDayText = string.Empty;
+
+    /// <summary>Whether lunar dates are visible per global settings (FR-LUNAR-6).</summary>
+    [ObservableProperty]
+    private bool _isLunarVisible = true;
+
+    /// <summary>Whether this day column is selected.</summary>
+    [ObservableProperty]
+    private bool _isSelected;
+
+    /// <summary>Whether to display the current time indicator line (red Now line).</summary>
+    [ObservableProperty]
+    private bool _showNowIndicator;
+
+    /// <summary>Top offset in pixels for the current time indicator.</summary>
+    [ObservableProperty]
+    private double _nowIndicatorTop = -1;
+
+    /// <summary>Events spanning the whole day (displayed in the top all-day row).</summary>
+    public ObservableCollection<CalendarEvent> AllDayEvents { get; } = new();
+
+    /// <summary>Timed events positioned on the 24-hour vertical grid.</summary>
+    public ObservableCollection<TimedEventViewModel> TimedEvents { get; } = new();
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="DayColumnViewModel"/>.
+    /// </summary>
+    public DayColumnViewModel(
+        DateOnly date,
+        LunarDate? lunarDate,
+        string dayOfWeekName,
+        bool isToday,
+        bool isLunarVisible)
+    {
+        Date = date;
+        LunarDate = lunarDate;
+        DayOfWeekName = dayOfWeekName;
+        SolarDayString = date.Day.ToString(CultureInfo.InvariantCulture);
+        IsToday = isToday;
+        IsLunarVisible = isLunarVisible;
+
+        UpdateLunarText();
+        UpdateNowIndicator();
+    }
+
+    /// <summary>
+    /// Toggles lunar text visibility (FR-LUNAR-6).
+    /// </summary>
+    public void SetLunarVisibility(bool visible)
+    {
+        IsLunarVisible = visible;
+        UpdateLunarText();
+    }
+
+    /// <summary>
+    /// Formats lunar day string: mùng 1 as "1/tháng" (with "n" if leap month), otherwise day number (FR-UI-2).
+    /// </summary>
+    public void UpdateLunarText()
+    {
+        if (!IsLunarVisible || LunarDate is null)
+        {
+            LunarDayText = string.Empty;
+            return;
+        }
+
+        if (LunarDay == 1)
+        {
+            LunarDayText = $"1/{LunarMonth}{(IsLeapMonth ? "n" : string.Empty)}";
+        }
+        else
+        {
+            LunarDayText = LunarDay.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    /// <summary>
+    /// Computes the top pixel offset for the current time indicator if this day is today.
+    /// </summary>
+    public void UpdateNowIndicator(DateTimeOffset? now = null)
+    {
+        var current = now ?? DateTimeOffset.Now;
+        var todayDate = DateOnly.FromDateTime(current.DateTime);
+
+        if (Date == todayDate)
+        {
+            ShowNowIndicator = true;
+            var minutes = current.Hour * 60.0 + current.Minute + current.Second / 60.0;
+            NowIndicatorTop = (minutes / 60.0) * HourRowHeight;
+        }
+        else
+        {
+            ShowNowIndicator = false;
+            NowIndicatorTop = -1;
+        }
+    }
+
+    /// <summary>
+    /// Populates all-day and timed events for this day, calculating positions and clustering lanes.
+    /// </summary>
+    public void PopulateEvents(
+        IReadOnlyList<CalendarEvent> events,
+        IReadOnlyDictionary<string, string>? calendarColors = null,
+        TimeSpan? timezoneOffset = null)
+    {
+        AllDayEvents.Clear();
+        TimedEvents.Clear();
+
+        var offset = timezoneOffset ?? TimeSpan.FromHours(7);
+        var dayStart = new DateTimeOffset(Date.ToDateTime(TimeOnly.MinValue), offset);
+        var dayEnd = dayStart.AddDays(1);
+
+        var timedList = new List<TimedEventViewModel>();
+
+        foreach (var ev in events)
+        {
+            if (ev.AllDay)
+            {
+                AllDayEvents.Add(ev);
+                continue;
+            }
+
+            var evStart = ev.StartUtc.ToOffset(offset);
+            var evEnd = ev.EndUtc.ToOffset(offset);
+
+            // Clamp to this day boundary
+            if (evStart < dayStart)
+            {
+                evStart = dayStart;
+            }
+
+            if (evEnd > dayEnd)
+            {
+                evEnd = dayEnd;
+            }
+
+            if (evEnd <= evStart)
+            {
+                evEnd = evStart.AddMinutes(15);
+            }
+
+            var startMinute = (evStart - dayStart).TotalMinutes;
+            var durationMinutes = (evEnd - evStart).TotalMinutes;
+
+            var top = (startMinute / 60.0) * HourRowHeight;
+            var height = Math.Max(MinEventHeight, (durationMinutes / 60.0) * HourRowHeight);
+
+            var timeText = $"{ev.StartUtc.ToOffset(offset):HH:mm} – {ev.EndUtc.ToOffset(offset):HH:mm}";
+            var color = (calendarColors != null && calendarColors.TryGetValue(ev.CalendarId, out var c))
+                ? c
+                : "#2F6BFF";
+
+            timedList.Add(new TimedEventViewModel(ev, evStart, evEnd, top, height, color, timeText));
+        }
+
+        AssignLanes(timedList);
+
+        foreach (var item in timedList)
+        {
+            TimedEvents.Add(item);
+        }
+    }
+
+    /// <summary>
+    /// Clusters overlapping timed events and assigns lane columns so overlapping events don't obscure each other (S06).
+    /// </summary>
+    public static void AssignLanes(List<TimedEventViewModel> timedEvents)
+    {
+        if (timedEvents.Count == 0)
+        {
+            return;
+        }
+
+        var sorted = timedEvents.OrderBy(e => e.Top).ThenByDescending(e => e.Height).ToList();
+
+        var clusters = new List<List<TimedEventViewModel>>();
+        List<TimedEventViewModel>? currentCluster = null;
+        double clusterEnd = -1;
+
+        foreach (var ev in sorted)
+        {
+            var evEnd = ev.Top + ev.Height;
+            if (currentCluster == null || ev.Top >= clusterEnd)
+            {
+                currentCluster = new List<TimedEventViewModel> { ev };
+                clusters.Add(currentCluster);
+                clusterEnd = evEnd;
+            }
+            else
+            {
+                currentCluster.Add(ev);
+                if (evEnd > clusterEnd)
+                {
+                    clusterEnd = evEnd;
+                }
+            }
+        }
+
+        foreach (var cluster in clusters)
+        {
+            var laneEnds = new List<double>();
+
+            foreach (var ev in cluster)
+            {
+                var evEnd = ev.Top + ev.Height;
+                int assignedLane = -1;
+
+                for (int i = 0; i < laneEnds.Count; i++)
+                {
+                    if (laneEnds[i] <= ev.Top)
+                    {
+                        assignedLane = i;
+                        laneEnds[i] = evEnd;
+                        break;
+                    }
+                }
+
+                if (assignedLane == -1)
+                {
+                    assignedLane = laneEnds.Count;
+                    laneEnds.Add(evEnd);
+                }
+
+                ev.ColumnIndex = assignedLane;
+            }
+
+            int totalLanes = Math.Max(1, laneEnds.Count);
+            foreach (var ev in cluster)
+            {
+                ev.TotalColumns = totalLanes;
+            }
+        }
+    }
+}

@@ -56,14 +56,42 @@
             </views:MonthView.Style>
           </views:MonthView>
 
-          <!-- Placeholder for other view modes (Day, Week, Agenda) until implemented -->
+          <!-- 7-Day Week View Grid (Figma S06, FR-UI-1) -->
+          <views:WeekView DataContext="{Binding WeekView}">
+            <views:WeekView.Style>
+              <Style TargetType="views:WeekView">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Week">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </views:WeekView.Style>
+          </views:WeekView>
+
+          <!-- Single Day View Grid (Figma S07, FR-UI-1) -->
+          <views:DayView DataContext="{Binding DayView}">
+            <views:DayView.Style>
+              <Style TargetType="views:DayView">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Day">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </views:DayView.Style>
+          </views:DayView>
+
+          <!-- Placeholder for Agenda view mode until P2-09 -->
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel.Style>
               <Style TargetType="StackPanel">
-                <Setter Property="Visibility" Value="Visible" />
+                <Setter Property="Visibility" Value="Collapsed" />
                 <Style.Triggers>
-                  <DataTrigger Binding="{Binding ActiveViewMode}" Value="Month">
-                    <Setter Property="Visibility" Value="Collapsed" />
+                  <DataTrigger Binding="{Binding ActiveViewMode}" Value="Agenda">
+                    <Setter Property="Visibility" Value="Visible" />
                   </DataTrigger>
                 </Style.Triggers>
               </Style>

@@ -388,4 +388,10 @@
   <data name="month.more_events" xml:space="preserve">
     <value>+{0} sự kiện khác</value>
   </data>
+  <data name="calendar.all_day" xml:space="preserve">
+    <value>Cả ngày</value>
+  </data>
+  <data name="calendar.no_events" xml:space="preserve">
+    <value>Không có sự kiện</value>
+  </data>
 </root>
