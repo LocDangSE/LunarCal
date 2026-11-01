@@ -25,7 +25,14 @@
     <NuGetAuditLevel>low</NuGetAuditLevel>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- SourceLink reproducible build (SEC-SC-4) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
+
+  <ItemGroup Label="SourceLink (SEC-SC-4)">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
 
   <PropertyGroup Label="Product metadata">
     <!-- Product name LunarCal is final (ADR-0023); publisher/company name is still open (spec §14.1). -->

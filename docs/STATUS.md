@@ -3,28 +3,28 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 10:48 +07:00, Antigravity. Phiên này hoàn thành P0-03: thêm workflow CodeQL (.github/workflows/codeql.yml, ghim SHA, permissions tối thiểu, build-mode manual locked-mode) cho C# (SEC-SC-3).
+**Cập nhật lần cuối:** 2026-11-01 10:55 +07:00, Antigravity. Phiên này hoàn thành toàn bộ Phase 0: hoàn tất P0-02 (gitleaks), P0-03 (CodeQL), P0-04 (SourceLink cho reproducible builds, SEC-SC-4).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 1 xong, đã xanh trên CI. Phase 0 còn P0-04 (SourceLink). Phase 2 đang thực hiện (P2-01 đã xong).
+- **Phase hiện tại:** Phase 0 đã hoàn thành 100% (P0-00..P0-04). Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01 đã xong).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào (P0-01 vừa xong). Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. P0-01 xong: CI run 41267053678 (commit 159781c) xanh cả `build-test` và `core-linux-container`. Không giữ task nào. File đang sửa dở: không có.
-  - **Antigravity:** không giữ task nào (P0-03 vừa xong). Đã thêm: workflow CodeQL trong `.github/workflows/codeql.yml`. File đang sửa dở: không có.
+  - **Antigravity:** không giữ task nào (P0-04 hoàn tất). Đã xong P2-01, P0-02, P0-03, P0-04. File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
-  1. P0-04 (SourceLink: PublishRepositoryUrl, EmbedUntrackedSources).
-  2. Phase 2 (không phụ thuộc Figma): P2-02 (pseudo-localization), P2-04 (setting store in-memory), P2-05 (model sự kiện, fake store).
+  1. Phase 2 (không phụ thuộc Figma): P2-02 (pseudo-localization), P2-04 (setting store in-memory), P2-05 (model sự kiện, fake store).
+  2. Phase 2 UI token & themes: P2-00 (chờ Figma từ chủ dự án), P2-03 (theme sáng/tối/hệ thống).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
 | Phase | Trạng thái | Bằng chứng |
 | --- | --- | --- |
-| 0 | P0-00, P0-01, P0-02, P0-03 xong; CI xanh trên GitHub. Còn P0-04 | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml` |
+| 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
 | 2 | Đang thực hiện: P2-01 (hạ tầng resx, i18n service, ADR-0024) xong | `src/LunarCal.App/Localization/`, `tests/LunarCal.App.Tests/`, ADR-0024 |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
-Còn thiếu so với spec §10 (CI): gitleaks và CodeQL (P0-02, P0-03); SourceLink (P0-04, SEC-SC-4); `release.yml` (P8-02).
+Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
 ## Build, test, format (chạy ngày 2026-11-01, Windows 11, .NET SDK 10.0.403)
 
