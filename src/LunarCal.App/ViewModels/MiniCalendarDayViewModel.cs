@@ -21,4 +21,8 @@ public sealed partial class MiniCalendarDayViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isSelected;
+
+    /// <summary>Localized accessible name announced by screen readers (FR-I18N-3, FR-UI-8).</summary>
+    [ObservableProperty]
+    private string _accessibleName = string.Empty;
 }

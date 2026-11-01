@@ -131,7 +131,8 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
         var dayName = culture.DateTimeFormat.GetDayName(targetDate.DayOfWeek);
         var isToday = targetDate == today;
 
-        var col = new DayColumnViewModel(targetDate, lunar, dayName, isToday, IsLunarVisible);
+        var col = new DayColumnViewModel(
+            targetDate, lunar, dayName, isToday, IsLunarVisible, CalendarText.LeapMarker(_localizationService));
 
         // Query events from store
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(targetDate, targetDate.AddDays(1), timeZone);
@@ -155,9 +156,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
         DayColumn = col;
 
         // Day title
-        DayTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-            ? $"{dayName}, {targetDate.Day} Tháng {targetDate.Month}, {targetDate.Year}"
-            : targetDate.ToString("dddd, MMMM d, yyyy", culture);
+        DayTitle = CalendarText.DayFull(_localizationService, targetDate);
 
         await DetailPanel.SetDateAsync(targetDate, cancellationToken);
 

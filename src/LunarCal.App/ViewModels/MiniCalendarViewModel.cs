@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LunarCal.App.Localization;
 
 namespace LunarCal.App.ViewModels;
 
@@ -19,6 +20,8 @@ public sealed partial class MiniCalendarViewModel : ObservableObject
     [ObservableProperty]
     private string _monthTitle = string.Empty;
 
+    private readonly ILocalizationService _localizationService;
+
     private DayOfWeek _weekStart = DayOfWeek.Monday;
 
     /// <summary>
@@ -35,8 +38,9 @@ public sealed partial class MiniCalendarViewModel : ObservableObject
     /// <summary>
     /// Initializes a new instance of <see cref="MiniCalendarViewModel"/>.
     /// </summary>
-    public MiniCalendarViewModel()
+    public MiniCalendarViewModel(ILocalizationService? localizationService = null)
     {
+        _localizationService = localizationService ?? LocalizationService.Instance;
         var today = DateOnly.FromDateTime(DateTime.Today);
         _selectedDate = today;
         _displayMonth = new DateOnly(today.Year, today.Month, 1);
@@ -50,7 +54,7 @@ public sealed partial class MiniCalendarViewModel : ObservableObject
     public void SetCultureAndWeekStart(CultureInfo culture, DayOfWeek weekStart)
     {
         _weekStart = weekStart;
-        RebuildHeaders(culture);
+        RebuildHeaders();
         RebuildGrid();
     }
 
@@ -91,39 +95,21 @@ public sealed partial class MiniCalendarViewModel : ObservableObject
         DateSelected?.Invoke(this, day.Date);
     }
 
-    private void RebuildHeaders(CultureInfo? culture = null)
+    private void RebuildHeaders()
     {
-        var targetCulture = culture ?? CultureInfo.CurrentUICulture;
         DayHeaders.Clear();
 
         var day = _weekStart;
         for (int i = 0; i < 7; i++)
         {
-            var header = targetCulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                ? day switch
-                {
-                    DayOfWeek.Monday => "T2",
-                    DayOfWeek.Tuesday => "T3",
-                    DayOfWeek.Wednesday => "T4",
-                    DayOfWeek.Thursday => "T5",
-                    DayOfWeek.Friday => "T6",
-                    DayOfWeek.Saturday => "T7",
-                    DayOfWeek.Sunday => "CN",
-                    _ => string.Empty,
-                }
-                : targetCulture.DateTimeFormat.GetAbbreviatedDayName(day).Substring(0, Math.Min(2, targetCulture.DateTimeFormat.GetAbbreviatedDayName(day).Length));
-
-            DayHeaders.Add(header);
+            DayHeaders.Add(CalendarText.WeekdayMin(_localizationService, day));
             day = (DayOfWeek)(((int)day + 1) % 7);
         }
     }
 
     private void RebuildGrid()
     {
-        var culture = CultureInfo.CurrentUICulture;
-        MonthTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-            ? $"Tháng {DisplayMonth.Month}, {DisplayMonth.Year}"
-            : DisplayMonth.ToString("MMMM yyyy", culture);
+        MonthTitle = CalendarText.MonthYear(_localizationService, DisplayMonth);
 
         var firstDayOfMonth = DisplayMonth;
         int diff = ((int)firstDayOfMonth.DayOfWeek - (int)_weekStart + 7) % 7;
@@ -142,6 +128,7 @@ public sealed partial class MiniCalendarViewModel : ObservableObject
                 IsCurrentMonth = cursor.Month == DisplayMonth.Month,
                 IsToday = cursor == today,
                 IsSelected = cursor == SelectedDate,
+                AccessibleName = CalendarText.DayFull(_localizationService, cursor),
             });
 
             cursor = cursor.AddDays(1);

@@ -155,20 +155,8 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     {
         IsToday = date == CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
 
-        var culture = _localizationService.CurrentCulture;
-        var dayOfWeekName = culture.DateTimeFormat.GetDayName(date.DayOfWeek);
-
-        if (culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
-        {
-            SolarDateTitle = $"{dayOfWeekName}, {date.Day} Tháng {date.Month}, {date.Year}";
-            SolarDateShort = $"{date.Day} Tháng {date.Month}, {date.Year}";
-        }
-        else
-        {
-            var dateTime = date.ToDateTime(TimeOnly.MinValue);
-            SolarDateTitle = dateTime.ToString("dddd, MMMM d, yyyy", culture);
-            SolarDateShort = dateTime.ToString("MMM d, yyyy", culture);
-        }
+        SolarDateTitle = CalendarText.DayFull(_localizationService, date);
+        SolarDateShort = CalendarText.DayShort(_localizationService, date);
 
         UpdateLunarDisplay();
         await LoadEventsAsync(date, cancellationToken);
@@ -204,14 +192,8 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
         // Lunar Day Number
         LunarDayNumberText = lunar.Day.ToString(CultureInfo.InvariantCulture);
 
-        // Lunar Month
-        var leapSuffix = lunar.IsLeapMonth
-            ? (isEnglish ? " (Leap)" : " (Nhuận)")
-            : string.Empty;
-
-        LunarMonthText = isEnglish
-            ? $"Month {lunar.Month}{leapSuffix}"
-            : $"Tháng {lunar.Month}{leapSuffix}";
+        // Lunar Month (FR-I18N-5)
+        LunarMonthText = CalendarText.LunarMonthName(_localizationService, lunar.Month, lunar.IsLeapMonth);
 
         // Can Chi calculations (FR-UI-3, FR-I18N-5, ADR-0008)
         var dayCanChi = LunarCalendar.GetDayCanChi(Date);

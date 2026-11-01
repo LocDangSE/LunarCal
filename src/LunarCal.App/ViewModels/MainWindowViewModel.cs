@@ -48,6 +48,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private int _pendingAiCommandsCount;
 
+    /// <summary>Localized pending AI command count for the sidebar badge (FR-I18N-3).</summary>
+    [ObservableProperty]
+    private string _pendingAiCommandsText = string.Empty;
+
     [ObservableProperty]
     private string _currentLanguage = "vi-VN";
 
@@ -92,7 +96,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
         _isLunarVisible = _preferences.LunarEnabled;
 
-        MiniCalendar = new MiniCalendarViewModel();
+        MiniCalendar = new MiniCalendarViewModel(_localizationService);
         MiniCalendar.DateSelected += OnMiniCalendarDateSelected;
 
         MonthView = new MonthViewModel(_eventStore, _localizationService, _preferences);
@@ -121,6 +125,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         // Load calendars from store
         _ = LoadCalendarsAsync();
     }
+
+    partial void OnPendingAiCommandsCountChanged(int value) => UpdatePendingAiCommandsText();
+
+    private void UpdatePendingAiCommandsText() =>
+        PendingAiCommandsText = _localizationService.Format("sidebar.pending_ai_commands", PendingAiCommandsCount);
 
     partial void OnIsLunarVisibleChanged(bool value)
     {
@@ -244,6 +253,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public void SyncNow()
     {
         SyncStatusText = _localizationService["sidebar.sync_status_now"];
+        UpdatePendingAiCommandsText();
     }
 
     /// <summary>
@@ -323,35 +333,19 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var culture = _localizationService.CurrentCulture;
         var dateOnly = DateOnly.FromDateTime(SelectedDate);
 
-        // 1. Solar Header Title
+        // 1. Solar Header Title (FR-I18N-4: wording and order come from resx)
         switch (ActiveViewMode)
         {
             case CalendarViewMode.Day:
-                HeaderTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                    ? $"{culture.DateTimeFormat.GetDayName(dateOnly.DayOfWeek)}, {SelectedDate.Day} Tháng {SelectedDate.Month}, {SelectedDate.Year}"
-                    : SelectedDate.ToString("dddd, MMMM d, yyyy", culture);
+                HeaderTitle = CalendarText.DayFull(_localizationService, dateOnly);
                 break;
             case CalendarViewMode.Week:
                 int diff = (7 + (dateOnly.DayOfWeek - _preferences.WeekStart)) % 7;
                 var weekStart = dateOnly.AddDays(-diff);
-                var weekEnd = weekStart.AddDays(6);
-                if (culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
-                {
-                    HeaderTitle = weekStart.Month == weekEnd.Month
-                        ? $"{weekStart.Day} – {weekEnd.Day} Tháng {weekStart.Month}, {weekStart.Year}"
-                        : $"{weekStart.Day}/{weekStart.Month} – {weekEnd.Day}/{weekEnd.Month}, {weekStart.Year}";
-                }
-                else
-                {
-                    HeaderTitle = weekStart.Month == weekEnd.Month
-                        ? $"{weekStart:MMM d} – {weekEnd.Day}, {weekStart.Year}"
-                        : $"{weekStart:MMM d} – {weekEnd:MMM d, yyyy}";
-                }
+                HeaderTitle = CalendarText.WeekRange(_localizationService, weekStart, weekStart.AddDays(6));
                 break;
             default:
-                HeaderTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                    ? $"Tháng {SelectedDate.Month}, {SelectedDate.Year}"
-                    : SelectedDate.ToString("MMMM yyyy", culture);
+                HeaderTitle = CalendarText.MonthYear(_localizationService, dateOnly);
                 break;
         }
 
@@ -369,23 +363,22 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 var lunar = LunarCalendar.ToLunar(dateOnly);
                 var yearCanChi = LunarCalendar.GetYearCanChi(lunar.Year);
                 var daysInMonth = LunarCalendar.GetDaysInMonth(lunar.Year, lunar.Month, lunar.IsLeapMonth);
-                var monthQuality = daysInMonth == 30 ? "Đủ" : "Thiếu";
-                var leapText = lunar.IsLeapMonth ? " (Nhuận)" : string.Empty;
+                var monthQuality = _localizationService[daysInMonth == 30 ? "lunar.month_full" : "lunar.month_short"];
+                var month = lunar.IsLeapMonth
+                    ? string.Create(culture, $"{lunar.Month} {_localizationService["lunar.leap"]}")
+                    : lunar.Month.ToString(culture);
 
                 if (ActiveViewMode == CalendarViewMode.Day)
                 {
                     var dayCanChi = LunarCalendar.GetDayCanChi(dateOnly);
                     var tietKhi = LunarCalendar.GetTietKhi(dateOnly);
-                    var tietKhiName = tietKhi.VietnameseName;
-                    LunarHeaderSubtitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                        ? $"Ngày {lunar.Day} tháng {lunar.Month}{leapText} · {dayCanChi} · Tiết {tietKhiName}"
-                        : $"Lunar {lunar.Day}/{lunar.Month}{leapText} · {dayCanChi} · Term {tietKhiName}";
+                    LunarHeaderSubtitle = _localizationService.Format(
+                        "lunar.header_day", lunar.Day, month, dayCanChi, tietKhi.VietnameseName);
                 }
                 else
                 {
-                    LunarHeaderSubtitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                        ? $"Tháng {lunar.Month}{leapText} ({monthQuality}) · Năm {yearCanChi}"
-                        : $"Lunar M{lunar.Month}{leapText} · {yearCanChi}";
+                    LunarHeaderSubtitle = _localizationService.Format(
+                        "lunar.header_month", month, monthQuality, yearCanChi);
                 }
             }
             else

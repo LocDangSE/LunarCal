@@ -519,4 +519,106 @@
   <data name="topbar.settings" xml:space="preserve">
     <value>Cài đặt</value>
   </data>
+  <data name="format.month_year" xml:space="preserve">
+    <value>Tháng {0:%M}, {0:yyyy}</value>
+  </data>
+  <data name="format.day_full" xml:space="preserve">
+    <value>{0:dddd}, {0:%d} Tháng {0:%M}, {0:yyyy}</value>
+  </data>
+  <data name="format.day_short" xml:space="preserve">
+    <value>{0:%d} Tháng {0:%M}, {0:yyyy}</value>
+  </data>
+  <data name="format.week_same_month" xml:space="preserve">
+    <value>{0:%d} – {1:%d} Tháng {0:%M}, {0:yyyy}</value>
+  </data>
+  <data name="format.week_cross_month" xml:space="preserve">
+    <value>{0:d'/'M} – {1:d'/'M}, {0:yyyy}</value>
+  </data>
+  <data name="format.agenda_day" xml:space="preserve">
+    <value>{0:dddd}, {0:%d} Tháng {0:%M}</value>
+  </data>
+  <data name="format.agenda_today" xml:space="preserve">
+    <value>Hôm nay, {0:%d} Tháng {0:%M}</value>
+  </data>
+  <data name="weekday.short.mon" xml:space="preserve">
+    <value>Th 2</value>
+  </data>
+  <data name="weekday.short.tue" xml:space="preserve">
+    <value>Th 3</value>
+  </data>
+  <data name="weekday.short.wed" xml:space="preserve">
+    <value>Th 4</value>
+  </data>
+  <data name="weekday.short.thu" xml:space="preserve">
+    <value>Th 5</value>
+  </data>
+  <data name="weekday.short.fri" xml:space="preserve">
+    <value>Th 6</value>
+  </data>
+  <data name="weekday.short.sat" xml:space="preserve">
+    <value>Th 7</value>
+  </data>
+  <data name="weekday.short.sun" xml:space="preserve">
+    <value>CN</value>
+  </data>
+  <data name="weekday.min.mon" xml:space="preserve">
+    <value>T2</value>
+  </data>
+  <data name="weekday.min.tue" xml:space="preserve">
+    <value>T3</value>
+  </data>
+  <data name="weekday.min.wed" xml:space="preserve">
+    <value>T4</value>
+  </data>
+  <data name="weekday.min.thu" xml:space="preserve">
+    <value>T5</value>
+  </data>
+  <data name="weekday.min.fri" xml:space="preserve">
+    <value>T6</value>
+  </data>
+  <data name="weekday.min.sat" xml:space="preserve">
+    <value>T7</value>
+  </data>
+  <data name="weekday.min.sun" xml:space="preserve">
+    <value>CN</value>
+  </data>
+  <data name="lunar.leap_marker" xml:space="preserve">
+    <value>n</value>
+  </data>
+  <data name="lunar.month_name" xml:space="preserve">
+    <value>Tháng {0}</value>
+  </data>
+  <data name="lunar.month_name_leap" xml:space="preserve">
+    <value>Tháng {0} (Nhuận)</value>
+  </data>
+  <data name="lunar.short_suffix" xml:space="preserve">
+    <value>{0} ÂL</value>
+  </data>
+  <data name="lunar.day_label" xml:space="preserve">
+    <value>Âm lịch: {0}</value>
+  </data>
+  <data name="lunar.month_full" xml:space="preserve">
+    <value>Đủ</value>
+  </data>
+  <data name="lunar.month_short" xml:space="preserve">
+    <value>Thiếu</value>
+  </data>
+  <data name="lunar.header_day" xml:space="preserve">
+    <value>Ngày {0} tháng {1} · {2} · Tiết {3}</value>
+  </data>
+  <data name="lunar.header_month" xml:space="preserve">
+    <value>Tháng {0} ({1}) · Năm {2}</value>
+  </data>
+  <data name="lunar.solar_term_vi" xml:space="preserve">
+    <value>Tiết {0}</value>
+  </data>
+  <data name="ai.command_placeholder" xml:space="preserve">
+    <value>Nhập câu lệnh để tạo sự kiện bằng AI (ví dụ: 'Nhắc tôi đi khám răng lúc 15h thứ Sáu')...</value>
+  </data>
+  <data name="minical.prev_month" xml:space="preserve">
+    <value>Tháng trước</value>
+  </data>
+  <data name="minical.next_month" xml:space="preserve">
+    <value>Tháng sau</value>
+  </data>
 </root>

@@ -126,7 +126,7 @@
 
           <!-- Prompt Placeholder -->
           <TextBlock Grid.Column="1"
-                     Text="Nhập câu lệnh để tạo sự kiện bằng AI (ví dụ: 'Nhắc tôi đi khám răng lúc 15h thứ Sáu')..."
+                     Text="{loc:Loc Key=ai.command_placeholder}"
                      FontSize="{DynamicResource FontSizeBody}"
                      Foreground="{DynamicResource TextTertiaryBrush}"
                      VerticalAlignment="Center" />

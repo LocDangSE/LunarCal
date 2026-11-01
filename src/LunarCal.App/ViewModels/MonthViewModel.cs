@@ -170,10 +170,8 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
         var version = ++_loadVersion;
         var stopwatch = Stopwatch.StartNew();
 
-        var culture = _localizationService.CurrentCulture;
-        var monthTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-            ? $"Tháng {date.Month}, {date.Year}"
-            : date.ToString("MMMM yyyy", culture);
+        var monthTitle = CalendarText.MonthYear(_localizationService, date);
+        var leapMarker = CalendarText.LeapMarker(_localizationService);
 
         var firstDayOfMonth = new DateOnly(date.Year, date.Month, 1);
         int diff = ((int)firstDayOfMonth.DayOfWeek - (int)WeekStart + 7) % 7;
@@ -198,7 +196,8 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
                 lunar,
                 isCurrentMonth: cellDate.Month == date.Month && cellDate.Year == date.Year,
                 isToday: cellDate == today,
-                isLunarVisible: IsLunarVisible);
+                isLunarVisible: IsLunarVisible,
+                leapMarker: leapMarker);
 
             if (SelectedDay is not null && cellDate == SelectedDay.SolarDate)
             {
@@ -271,29 +270,14 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
     private DateOnly TodayInDisplayZone() => CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
 
-    private void RebuildWeekdayHeaders(CultureInfo? culture = null)
+    private void RebuildWeekdayHeaders()
     {
-        var targetCulture = culture ?? _localizationService.CurrentCulture;
         WeekdayHeaders.Clear();
 
         var day = WeekStart;
         for (int i = 0; i < 7; i++)
         {
-            var header = targetCulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-                ? day switch
-                {
-                    DayOfWeek.Monday => "Th 2",
-                    DayOfWeek.Tuesday => "Th 3",
-                    DayOfWeek.Wednesday => "Th 4",
-                    DayOfWeek.Thursday => "Th 5",
-                    DayOfWeek.Friday => "Th 6",
-                    DayOfWeek.Saturday => "Th 7",
-                    DayOfWeek.Sunday => "CN",
-                    _ => string.Empty,
-                }
-                : targetCulture.DateTimeFormat.GetAbbreviatedDayName(day);
-
-            WeekdayHeaders.Add(header);
+            WeekdayHeaders.Add(CalendarText.WeekdayShort(_localizationService, day));
             day = (DayOfWeek)(((int)day + 1) % 7);
         }
     }

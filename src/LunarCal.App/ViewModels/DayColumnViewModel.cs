@@ -18,6 +18,9 @@ public sealed partial class DayColumnViewModel : ObservableObject
     /// <summary>Minimum height of a timed event chip in pixels.</summary>
     public const double MinEventHeight = 24.0;
 
+    private readonly string _leapMarker;
+    private readonly string _lunarLabelFormat;
+
     /// <summary>Gregorian solar date of this day column.</summary>
     public DateOnly Date { get; }
 
@@ -45,6 +48,10 @@ public sealed partial class DayColumnViewModel : ObservableObject
     /// <summary>Formatted lunar day text (e.g. "10", "1/9", "1/6n").</summary>
     [ObservableProperty]
     private string _lunarDayText = string.Empty;
+
+    /// <summary>Lunar label for the day view header, e.g. "Âm lịch: 7" / "Lunar: 7" (FR-I18N-5).</summary>
+    [ObservableProperty]
+    private string _lunarLabelText = string.Empty;
 
     /// <summary>Whether lunar dates are visible per global settings (FR-LUNAR-6).</summary>
     [ObservableProperty]
@@ -76,8 +83,11 @@ public sealed partial class DayColumnViewModel : ObservableObject
         LunarDate? lunarDate,
         string dayOfWeekName,
         bool isToday,
-        bool isLunarVisible)
+        bool isLunarVisible,
+        string? leapMarker = null)
     {
+        _leapMarker = leapMarker ?? CalendarText.LeapMarker(LocalizationService.Instance);
+        _lunarLabelFormat = LocalizationService.Instance["lunar.day_label"];
         Date = date;
         LunarDate = lunarDate;
         DayOfWeekName = dayOfWeekName;
@@ -106,17 +116,12 @@ public sealed partial class DayColumnViewModel : ObservableObject
         if (!IsLunarVisible || LunarDate is null)
         {
             LunarDayText = string.Empty;
+            LunarLabelText = string.Empty;
             return;
         }
 
-        if (LunarDay == 1)
-        {
-            LunarDayText = $"1/{LunarMonth}{(IsLeapMonth ? "n" : string.Empty)}";
-        }
-        else
-        {
-            LunarDayText = LunarDay.ToString(CultureInfo.InvariantCulture);
-        }
+        LunarDayText = CalendarText.LunarCell(LunarDate, _leapMarker);
+        LunarLabelText = string.Format(CultureInfo.CurrentCulture, _lunarLabelFormat, LunarDayText);
     }
 
     /// <summary>

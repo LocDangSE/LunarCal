@@ -519,4 +519,106 @@
   <data name="topbar.settings" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="format.month_year" xml:space="preserve">
+    <value>{0:MMMM yyyy}</value>
+  </data>
+  <data name="format.day_full" xml:space="preserve">
+    <value>{0:dddd, MMMM d, yyyy}</value>
+  </data>
+  <data name="format.day_short" xml:space="preserve">
+    <value>{0:MMM d, yyyy}</value>
+  </data>
+  <data name="format.week_same_month" xml:space="preserve">
+    <value>{0:MMM d} – {1:%d}, {0:yyyy}</value>
+  </data>
+  <data name="format.week_cross_month" xml:space="preserve">
+    <value>{0:MMM d} – {1:MMM d, yyyy}</value>
+  </data>
+  <data name="format.agenda_day" xml:space="preserve">
+    <value>{0:dddd, MMM d}</value>
+  </data>
+  <data name="format.agenda_today" xml:space="preserve">
+    <value>Today, {0:MMM d}</value>
+  </data>
+  <data name="weekday.short.mon" xml:space="preserve">
+    <value>Mon</value>
+  </data>
+  <data name="weekday.short.tue" xml:space="preserve">
+    <value>Tue</value>
+  </data>
+  <data name="weekday.short.wed" xml:space="preserve">
+    <value>Wed</value>
+  </data>
+  <data name="weekday.short.thu" xml:space="preserve">
+    <value>Thu</value>
+  </data>
+  <data name="weekday.short.fri" xml:space="preserve">
+    <value>Fri</value>
+  </data>
+  <data name="weekday.short.sat" xml:space="preserve">
+    <value>Sat</value>
+  </data>
+  <data name="weekday.short.sun" xml:space="preserve">
+    <value>Sun</value>
+  </data>
+  <data name="weekday.min.mon" xml:space="preserve">
+    <value>Mo</value>
+  </data>
+  <data name="weekday.min.tue" xml:space="preserve">
+    <value>Tu</value>
+  </data>
+  <data name="weekday.min.wed" xml:space="preserve">
+    <value>We</value>
+  </data>
+  <data name="weekday.min.thu" xml:space="preserve">
+    <value>Th</value>
+  </data>
+  <data name="weekday.min.fri" xml:space="preserve">
+    <value>Fr</value>
+  </data>
+  <data name="weekday.min.sat" xml:space="preserve">
+    <value>Sa</value>
+  </data>
+  <data name="weekday.min.sun" xml:space="preserve">
+    <value>Su</value>
+  </data>
+  <data name="lunar.leap_marker" xml:space="preserve">
+    <value>L</value>
+  </data>
+  <data name="lunar.month_name" xml:space="preserve">
+    <value>Month {0}</value>
+  </data>
+  <data name="lunar.month_name_leap" xml:space="preserve">
+    <value>Month {0} (Leap)</value>
+  </data>
+  <data name="lunar.short_suffix" xml:space="preserve">
+    <value>{0} Lunar</value>
+  </data>
+  <data name="lunar.day_label" xml:space="preserve">
+    <value>Lunar: {0}</value>
+  </data>
+  <data name="lunar.month_full" xml:space="preserve">
+    <value>30 days</value>
+  </data>
+  <data name="lunar.month_short" xml:space="preserve">
+    <value>29 days</value>
+  </data>
+  <data name="lunar.header_day" xml:space="preserve">
+    <value>Lunar {0}/{1} · {2} · Term {3}</value>
+  </data>
+  <data name="lunar.header_month" xml:space="preserve">
+    <value>Lunar month {0} ({1}) · {2}</value>
+  </data>
+  <data name="lunar.solar_term_vi" xml:space="preserve">
+    <value>Solar term {0}</value>
+  </data>
+  <data name="ai.command_placeholder" xml:space="preserve">
+    <value>Type a command to create an event with AI (e.g. 'Remind me about the dentist at 3 pm on Friday')...</value>
+  </data>
+  <data name="minical.prev_month" xml:space="preserve">
+    <value>Previous month</value>
+  </data>
+  <data name="minical.next_month" xml:space="preserve">
+    <value>Next month</value>
+  </data>
 </root>

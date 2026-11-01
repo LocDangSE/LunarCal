@@ -124,7 +124,7 @@ public static class LunarFormattingHelper
         ArgumentNullException.ThrowIfNull(loc);
         if (!isEnglish)
         {
-            return $"Tiết {tietKhi.VietnameseName}";
+            return string.Format(loc.CurrentCulture, loc.GetString("lunar.solar_term_vi", loc.CurrentCulture), tietKhi.VietnameseName);
         }
 
         var engName = GetSolarTermName(tietKhi.Term, loc);

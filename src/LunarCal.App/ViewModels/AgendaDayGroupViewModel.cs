@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LunarCal.App.Localization;
 using LunarCal.Core.Lunar;
 
 namespace LunarCal.App.ViewModels;
@@ -9,6 +11,9 @@ namespace LunarCal.App.ViewModels;
 /// </summary>
 public sealed partial class AgendaDayGroupViewModel : ObservableObject
 {
+    private readonly string _lunarFormat;
+    private readonly string _leapMarker;
+
     /// <summary>The Gregorian solar date for this group.</summary>
     public DateOnly Date { get; }
 
@@ -47,8 +52,12 @@ public sealed partial class AgendaDayGroupViewModel : ObservableObject
         string dayOfWeekName,
         string dateDisplay,
         bool isToday,
-        bool isLunarVisible)
+        bool isLunarVisible,
+        string? lunarFormat = null,
+        string? leapMarker = null)
     {
+        _lunarFormat = lunarFormat ?? LocalizationService.Instance["lunar.short_suffix"];
+        _leapMarker = leapMarker ?? CalendarText.LeapMarker(LocalizationService.Instance);
         Date = date;
         LunarDate = lunarDate;
         DayOfWeekName = dayOfWeekName;
@@ -79,14 +88,11 @@ public sealed partial class AgendaDayGroupViewModel : ObservableObject
             return;
         }
 
+        // Agenda headers always show day/month (FR-I18N-5: "15/9" + Lunar label); the first day gets the leap marker.
         var ld = LunarDate.Value;
-        if (ld.Day == 1)
-        {
-            LunarDayText = $"1/{ld.Month}{(ld.IsLeapMonth ? "n" : string.Empty)} ÂL";
-        }
-        else
-        {
-            LunarDayText = $"{ld.Day}/{ld.Month} ÂL";
-        }
+        var dayMonth = string.Create(
+            CultureInfo.InvariantCulture,
+            $"{ld.Day}/{ld.Month}{(ld.Day == 1 && ld.IsLeapMonth ? _leapMarker : string.Empty)}");
+        LunarDayText = string.Format(CultureInfo.CurrentCulture, _lunarFormat, dayMonth);
     }
 }

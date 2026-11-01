@@ -162,10 +162,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         RebuildDayGroups();
 
         // Update period title
-        var culture = _localizationService.CurrentCulture;
-        PeriodTitle = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase)
-            ? $"Tháng {DisplayDate.Month}, {DisplayDate.Year}"
-            : DisplayDate.ToString("MMMM yyyy", culture);
+        PeriodTitle = CalendarText.MonthYear(_localizationService, DisplayDate);
 
         sw.Stop();
         RenderDuration = sw.Elapsed;
@@ -215,6 +212,8 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         var monthStart = new DateOnly(DisplayDate.Year, DisplayDate.Month, 1);
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
         var allDayLabel = _localizationService["calendar.all_day"];
+        var lunarFormat = _localizationService["lunar.short_suffix"];
+        var leapMarker = CalendarText.LeapMarker(_localizationService);
 
         var filteredEvents = _cachedEvents
             .Where(e => activeCalendarIds.Contains(e.CalendarId))
@@ -256,21 +255,9 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
             var dayName = culture.DateTimeFormat.GetDayName(date.DayOfWeek);
             var isToday = date == today;
 
-            string dateDisplay;
-            if (culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
-            {
-                dateDisplay = isToday
-                    ? $"Hôm nay, {date.Day} Tháng {date.Month}"
-                    : $"{dayName}, {date.Day} Tháng {date.Month}";
-            }
-            else
-            {
-                dateDisplay = isToday
-                    ? $"Today, {date:MMM d}"
-                    : date.ToString("dddd, MMM d", culture);
-            }
+            var dateDisplay = CalendarText.AgendaDay(_localizationService, date, isToday);
 
-            var groupVm = new AgendaDayGroupViewModel(date, lunar, dayName, dateDisplay, isToday, IsLunarVisible);
+            var groupVm = new AgendaDayGroupViewModel(date, lunar, dayName, dateDisplay, isToday, IsLunarVisible, lunarFormat, leapMarker);
 
             // Sort events: all-day first, then by start time
             var sortedEvents = events

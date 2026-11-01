@@ -9,7 +9,7 @@
              d:DataContext="{d:DesignInstance Type=vm:AppearanceSettingsViewModel}"
              Background="{DynamicResource WindowBackgroundBrush}"
              AutomationProperties.AutomationId="AppearanceSettingsPage"
-             AutomationProperties.Name="Appearance Settings">
+             AutomationProperties.Name="{loc:Loc Key=settings.appearance.title}">
 
   <UserControl.Resources>
     <!-- Localization source for the indexer bindings below; refreshes on culture change (FR-I18N-1). -->

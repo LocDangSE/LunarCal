@@ -95,7 +95,7 @@
                            Foreground="{DynamicResource TextPrimaryBrush}" />
 
                 <!-- Lunar Date (FR-UI-1, FR-UI-2, FR-LUNAR-6) -->
-                <TextBlock Text="{Binding LunarDayText, StringFormat='Âm lịch: {0}'}"
+                <TextBlock Text="{Binding LunarLabelText}"
                            FontSize="{DynamicResource FontSizeCaption}"
                            FontWeight="{DynamicResource FontWeightMedium}"
                            Foreground="{DynamicResource LunarTextPrimaryBrush}"

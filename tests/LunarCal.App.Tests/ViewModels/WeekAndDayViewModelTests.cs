@@ -210,7 +210,7 @@ public sealed class WeekAndDayViewModelTests
         // 3. Mùng 1 tháng nhuận: 2023-03-22 is Lunar 2023-02L-01 (Mùng 1 tháng 2 nhuận) -> "1/2n"
         var solarDate3 = new DateOnly(2023, 3, 22);
         var lunarDate3 = LunarCalendar.ToLunar(solarDate3);
-        var col3 = new DayColumnViewModel(solarDate3, lunarDate3, "Th 4", isToday: false, isLunarVisible: true);
+        var col3 = new DayColumnViewModel(solarDate3, lunarDate3, "Th 4", isToday: false, isLunarVisible: true, leapMarker: "n");
         col3.LunarDayText.Should().Be("1/2n");
 
         // 4. FR-LUNAR-6: Lunar hidden when master toggle is off

@@ -103,7 +103,7 @@
             Command="{Binding CreateEventCommand}"
             Style="{StaticResource CreateEventButtonStyle}"
             AutomationProperties.AutomationId="BtnCreateEvent"
-            AutomationProperties.Name="Tạo sự kiện"
+            AutomationProperties.Name="{loc:Loc Key=sidebar.create_event}"
             Margin="0,0,0,16" />
 
     <!-- 2. SCROLLABLE MIDDLE SECTION -->
@@ -172,7 +172,7 @@
                 Margin="0,6,0,0"
                 HorizontalAlignment="Left"
                 Visibility="Collapsed">
-          <TextBlock Text="{Binding PendingAiCommandsCount, StringFormat='{}{0} lệnh đang chờ'}"
+          <TextBlock Text="{Binding PendingAiCommandsText}"
                      FontSize="10"
                      FontWeight="SemiBold"
                      Foreground="#000000" />

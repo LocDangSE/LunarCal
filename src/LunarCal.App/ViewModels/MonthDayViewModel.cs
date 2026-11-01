@@ -1,5 +1,6 @@
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LunarCal.App.Localization;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
 
@@ -10,6 +11,8 @@ namespace LunarCal.App.ViewModels;
 /// </summary>
 public sealed partial class MonthDayViewModel : ObservableObject
 {
+    private readonly string _leapMarker;
+
     /// <summary>The Gregorian solar date for this cell.</summary>
     public DateOnly SolarDate { get; }
 
@@ -72,8 +75,10 @@ public sealed partial class MonthDayViewModel : ObservableObject
         LunarDate? lunarDate,
         bool isCurrentMonth,
         bool isToday,
-        bool isLunarVisible)
+        bool isLunarVisible,
+        string? leapMarker = null)
     {
+        _leapMarker = leapMarker ?? CalendarText.LeapMarker(LocalizationService.Instance);
         SolarDate = solarDate;
         LunarDate = lunarDate;
         IsCurrentMonth = isCurrentMonth;
@@ -114,14 +119,7 @@ public sealed partial class MonthDayViewModel : ObservableObject
             return;
         }
 
-        // FR-UI-2: Mùng 1 âm hiển thị dạng "1/tháng" (kèm ký hiệu "n" nếu là tháng nhuận).
-        if (IsFirstLunarDay)
-        {
-            LunarDayText = $"1/{LunarMonth}{(IsLeapMonth ? "n" : string.Empty)}";
-        }
-        else
-        {
-            LunarDayText = LunarDay.ToString(CultureInfo.InvariantCulture);
-        }
+        // FR-UI-2: the first lunar day shows "1/month" plus the localized leap marker.
+        LunarDayText = CalendarText.LunarCell(LunarDate, _leapMarker);
     }
 }

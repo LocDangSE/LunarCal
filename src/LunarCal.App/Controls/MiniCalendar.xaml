@@ -1,6 +1,7 @@
 <UserControl x:Class="LunarCal.App.Controls.MiniCalendar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
@@ -87,7 +88,7 @@
                 Cursor="Hand"
                 Foreground="{DynamicResource TextSecondaryBrush}"
                 AutomationProperties.AutomationId="MiniPrevMonth"
-                AutomationProperties.Name="Tháng trước" />
+                AutomationProperties.Name="{loc:Loc Key=minical.prev_month}" />
 
         <Button Content="&gt;"
                 Command="{Binding NextMonthCommand}"
@@ -97,7 +98,7 @@
                 Cursor="Hand"
                 Foreground="{DynamicResource TextSecondaryBrush}"
                 AutomationProperties.AutomationId="MiniNextMonth"
-                AutomationProperties.Name="Tháng sau"
+                AutomationProperties.Name="{loc:Loc Key=minical.next_month}"
                 Margin="4,0,0,0" />
       </StackPanel>
     </Grid>
@@ -133,7 +134,7 @@
           <Button Style="{StaticResource MiniDayButtonStyle}"
                   Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   CommandParameter="{Binding}"
-                  AutomationProperties.Name="{Binding Date, StringFormat='Ngày {0:dd/MM/yyyy}'}" />
+                  AutomationProperties.Name="{Binding AccessibleName}" />
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>

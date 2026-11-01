@@ -59,3 +59,5 @@
 | 2026-11-01 17:07 +07:00 | Claude Code (Opus 5.5) | P2-R3 | START | Phần `async partial void` đã xong trong P2-R2; còn nạp lại lưới tuần tự/huỷ được |
 | 2026-11-01 17:14 +07:00 | Claude Code (Opus 5.5) | P2-R3 | DONE | Month/Week/Day/Agenda/DayDetail: bộ đếm phiên nạp, kết quả cũ bị bỏ; lỗi store không làm crash; bỏ `catch` rỗng ở các VM này và MainWindowViewModel. 209/209 test. Tiếp theo: P2-R4 |
 | 2026-11-01 17:14 +07:00 | Claude Code (Opus 5.5) | P2-R4 | START | Chuyển chuỗi UI hard-code vào resx |
+| 2026-11-01 17:21 +07:00 | Claude Code (Opus 5.5) | P2-R4 | DONE | Thêm `CalendarText` + ~40 key resx (format.*, weekday.*, lunar.*, ai.command_placeholder, minical.*); bỏ chuỗi tiếng Việt/Anh viết cứng ở 9 VM và 6 XAML (kể cả AutomationProperties.Name). Quyết định: ký hiệu nhuận en = "L", "Đủ/Thiếu" en = "30 days/29 days" (ghi STATUS). 214/214 test. Tiếp theo: P2-R5 |
+| 2026-11-01 17:21 +07:00 | Claude Code (Opus 5.5) | P2-R5 | START | Thay cỡ chữ/bo góc/màu literal bằng token |

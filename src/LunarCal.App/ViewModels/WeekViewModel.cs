@@ -144,6 +144,8 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
         var today = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, timeZone);
         var culture = _localizationService.CurrentCulture;
 
+        var leapMarker = CalendarText.LeapMarker(_localizationService);
+
         // Build 7 column view models
         var columns = new List<DayColumnViewModel>(7);
         for (int i = 0; i < 7; i++)
@@ -158,7 +160,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
             var dayName = culture.DateTimeFormat.GetAbbreviatedDayName(colDate.DayOfWeek);
             var isToday = colDate == today;
 
-            var colVm = new DayColumnViewModel(colDate, lunar, dayName, isToday, IsLunarVisible);
+            var colVm = new DayColumnViewModel(colDate, lunar, dayName, isToday, IsLunarVisible, leapMarker);
             columns.Add(colVm);
         }
 
@@ -192,19 +194,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
             DayColumns.Add(col);
         }
 
-        // Update week title
-        if (culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
-        {
-            WeekTitle = WeekStartDate.Month == WeekEndDate.Month
-                ? $"{WeekStartDate.Day} – {WeekEndDate.Day} Tháng {WeekStartDate.Month}, {WeekStartDate.Year}"
-                : $"{WeekStartDate.Day}/{WeekStartDate.Month} – {WeekEndDate.Day}/{WeekEndDate.Month}, {WeekStartDate.Year}";
-        }
-        else
-        {
-            WeekTitle = WeekStartDate.Month == WeekEndDate.Month
-                ? $"{WeekStartDate:MMM d} – {WeekEndDate.Day}, {WeekStartDate.Year}"
-                : $"{WeekStartDate:MMM d} – {WeekEndDate:MMM d, yyyy}";
-        }
+        WeekTitle = CalendarText.WeekRange(_localizationService, WeekStartDate, WeekEndDate);
 
         sw.Stop();
         RenderDuration = sw.Elapsed;

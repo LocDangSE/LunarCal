@@ -116,7 +116,7 @@
               Command="{Binding GoToTodayCommand}"
               Style="{StaticResource TopBarButtonStyle}"
               AutomationProperties.AutomationId="BtnToday"
-              AutomationProperties.Name="Hôm nay"
+              AutomationProperties.Name="{loc:Loc Key=topbar.today}"
               Margin="0,0,12,0" />
 
       <!-- Navigation Arrows -->
@@ -124,14 +124,14 @@
               Command="{Binding PreviousPeriodCommand}"
               Style="{StaticResource NavIconButtonStyle}"
               AutomationProperties.AutomationId="BtnPrev"
-              AutomationProperties.Name="Thời gian trước"
+              AutomationProperties.Name="{loc:Loc Key=topbar.prev}"
               ToolTip="{loc:Loc Key=topbar.prev}" />
 
       <Button Content="&gt;"
               Command="{Binding NextPeriodCommand}"
               Style="{StaticResource NavIconButtonStyle}"
               AutomationProperties.AutomationId="BtnNext"
-              AutomationProperties.Name="Thời gian sau"
+              AutomationProperties.Name="{loc:Loc Key=topbar.next}"
               ToolTip="{loc:Loc Key=topbar.next}"
               Margin="2,0,16,0" />
 
