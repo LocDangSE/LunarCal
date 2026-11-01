@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Spec §4.11 (FR-I18N-7) Settings -->
+  <data name="settings.language.title" xml:space="preserve">
+    <value>Interface language</value>
+  </data>
+  <data name="settings.language.desc" xml:space="preserve">
+    <value>Changing the UI language does not change your calendar data</value>
+  </data>
+  <data name="settings.lunar.title" xml:space="preserve">
+    <value>Show lunar calendar</value>
+  </data>
+  <data name="settings.lunar.desc" xml:space="preserve">
+    <value>Lunar events are stored locally and are not synced to Google</value>
+  </data>
+  <data name="settings.training.title" xml:space="preserve">
+    <value>Contribute de-identified data to train AI (opt-in)</value>
+  </data>
+  <data name="settings.training.desc" xml:space="preserve">
+    <value>Names, locations, emails and phone numbers are removed on your device before sending. Off by default.</value>
+  </data>
+  <data name="settings.privacy.title" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="settings.privacy.desc" xml:space="preserve">
+    <value>You can view and delete the data you contributed at any time</value>
+  </data>
+  <data name="settings.privacy.view" xml:space="preserve">
+    <value>View sent data</value>
+  </data>
+  <data name="settings.privacy.delete" xml:space="preserve">
+    <value>Delete contributed data</value>
+  </data>
+  <data name="settings.byok.title" xml:space="preserve">
+    <value>Your Gemini API key (BYOK)</value>
+  </data>
+  <data name="settings.byok.desc" xml:space="preserve">
+    <value>The key is encrypted and stored only on this device; the app calls Gemini directly with it. You can remove or revoke it at any time.</value>
+  </data>
+  <data name="settings.gemini.title" xml:space="preserve">
+    <value>Use Gemini to understand commands</value>
+  </data>
+  <data name="settings.gemini.desc" xml:space="preserve">
+    <value>Only the command text is sent, never your calendar</value>
+  </data>
+
+  <!-- Spec §4.11 (FR-I18N-7) Confirm & Consent Dialogs -->
+  <data name="confirm.privacy.off" xml:space="preserve">
+    <value>Opt-in is off: no training data is sent when you confirm.</value>
+  </data>
+  <data name="confirm.privacy.on" xml:space="preserve">
+    <value>Opt-in is on: a de-identified copy of this request will be sent to train AI.</value>
+  </data>
+  <data name="consent.title" xml:space="preserve">
+    <value>Help improve the AI?</value>
+  </data>
+  <data name="consent.body" xml:space="preserve">
+    <value>If you agree, when you confirm or edit an AI command, a de-identified copy of the command and the final event is sent to our server to train a model. Names, locations, emails and your full calendar are never sent. You can view and delete your data at any time.</value>
+  </data>
+  <data name="consent.accept" xml:space="preserve">
+    <value>I agree to contribute</value>
+  </data>
+  <data name="consent.decline" xml:space="preserve">
+    <value>No thanks</value>
+  </data>
+
+  <!-- Spec §4.11 (FR-I18N-7) Lunar Title Range -->
+  <data name="lunar.title.range" xml:space="preserve">
+    <value>Lunar: months 8 – 9, year of Bính Ngọ (Fire Horse)</value>
+  </data>
+
+  <!-- Spec §4.11 Toast Notifications (FR-NOTIFY) -->
+  <data name="Toast_Header_Reminder" xml:space="preserve">
+    <value>{0} · Reminder</value>
+  </data>
+  <data name="Toast_Time_Remaining" xml:space="preserve">
+    <value>in {0} min</value>
+  </data>
+  <data name="Toast_Time_StartsNow" xml:space="preserve">
+    <value>starting now</value>
+  </data>
+  <data name="Toast_Time_Ongoing" xml:space="preserve">
+    <value>In progress · started {0} min ago</value>
+  </data>
+  <data name="Toast_AllDay_Today" xml:space="preserve">
+    <value>All day · Today</value>
+  </data>
+  <data name="Toast_AllDay_Tomorrow" xml:space="preserve">
+    <value>All day · Tomorrow</value>
+  </data>
+  <data name="Toast_Label_AI" xml:space="preserve">
+    <value>✨ Created by AI</value>
+  </data>
+  <data name="Toast_Label_Lunar" xml:space="preserve">
+    <value>🌙 {0} Lunar</value>
+  </data>
+  <data name="Toast_Action_Snooze" xml:space="preserve">
+    <value>Snooze</value>
+  </data>
+  <data name="Toast_Snooze_Minutes" xml:space="preserve">
+    <value>{0} minutes</value>
+  </data>
+  <data name="Toast_Snooze_AtStart" xml:space="preserve">
+    <value>At start time</value>
+  </data>
+  <data name="Toast_Action_Complete" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Toast_Missed_Summary" xml:space="preserve">
+    <value>You missed {0} reminders</value>
+  </data>
+  <data name="Toast_Hidden_Content" xml:space="preserve">
+    <value>You have an event at {0}</value>
+  </data>
+
+  <!-- Views & Navigation (FR-I18N-4) -->
+  <data name="view.day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="view.week" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="view.month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="view.agenda" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="topbar.today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+
+  <!-- Common UI actions -->
+  <data name="common.close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="common.cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="common.save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="common.confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="common.edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="common.delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="lunar.label" xml:space="preserve">
+    <value>Lunar</value>
+  </data>
+  <data name="lunar.leap" xml:space="preserve">
+    <value>leap</value>
+  </data>
+
+  <!-- Heavenly Stems (Can) -->
+  <data name="can.giap" xml:space="preserve">
+    <value>Yang Wood</value>
+  </data>
+  <data name="can.at" xml:space="preserve">
+    <value>Yin Wood</value>
+  </data>
+  <data name="can.binh" xml:space="preserve">
+    <value>Yang Fire</value>
+  </data>
+  <data name="can.dinh" xml:space="preserve">
+    <value>Yin Fire</value>
+  </data>
+  <data name="can.mau" xml:space="preserve">
+    <value>Yang Earth</value>
+  </data>
+  <data name="can.ky" xml:space="preserve">
+    <value>Yin Earth</value>
+  </data>
+  <data name="can.canh" xml:space="preserve">
+    <value>Yang Metal</value>
+  </data>
+  <data name="can.tan" xml:space="preserve">
+    <value>Yin Metal</value>
+  </data>
+  <data name="can.nham" xml:space="preserve">
+    <value>Yang Water</value>
+  </data>
+  <data name="can.quy" xml:space="preserve">
+    <value>Yin Water</value>
+  </data>
+
+  <!-- Earthly Branches (Chi) -->
+  <data name="chi.ty" xml:space="preserve">
+    <value>Rat</value>
+  </data>
+  <data name="chi.suu" xml:space="preserve">
+    <value>Ox</value>
+  </data>
+  <data name="chi.dan" xml:space="preserve">
+    <value>Tiger</value>
+  </data>
+  <data name="chi.mao" xml:space="preserve">
+    <value>Cat</value>
+  </data>
+  <data name="chi.thin" xml:space="preserve">
+    <value>Dragon</value>
+  </data>
+  <data name="chi.ti" xml:space="preserve">
+    <value>Snake</value>
+  </data>
+  <data name="chi.ngo" xml:space="preserve">
+    <value>Horse</value>
+  </data>
+  <data name="chi.mui" xml:space="preserve">
+    <value>Goat</value>
+  </data>
+  <data name="chi.than" xml:space="preserve">
+    <value>Monkey</value>
+  </data>
+  <data name="chi.dau" xml:space="preserve">
+    <value>Rooster</value>
+  </data>
+  <data name="chi.tuat" xml:space="preserve">
+    <value>Dog</value>
+  </data>
+  <data name="chi.hoi" xml:space="preserve">
+    <value>Pig</value>
+  </data>
+
+  <!-- 24 Solar Terms (Tiết khí) -->
+  <data name="solarterm.xuan_phan" xml:space="preserve">
+    <value>Spring Equinox</value>
+  </data>
+  <data name="solarterm.thanh_minh" xml:space="preserve">
+    <value>Pure Brightness</value>
+  </data>
+  <data name="solarterm.coc_vu" xml:space="preserve">
+    <value>Grain Rain</value>
+  </data>
+  <data name="solarterm.lap_ha" xml:space="preserve">
+    <value>Start of Summer</value>
+  </data>
+  <data name="solarterm.tieu_man" xml:space="preserve">
+    <value>Grain Buds</value>
+  </data>
+  <data name="solarterm.mang_chung" xml:space="preserve">
+    <value>Grain in Ear</value>
+  </data>
+  <data name="solarterm.ha_chi" xml:space="preserve">
+    <value>Summer Solstice</value>
+  </data>
+  <data name="solarterm.tieu_thu" xml:space="preserve">
+    <value>Minor Heat</value>
+  </data>
+  <data name="solarterm.dai_thu" xml:space="preserve">
+    <value>Major Heat</value>
+  </data>
+  <data name="solarterm.lap_thu" xml:space="preserve">
+    <value>Start of Autumn</value>
+  </data>
+  <data name="solarterm.xu_thu" xml:space="preserve">
+    <value>End of Heat</value>
+  </data>
+  <data name="solarterm.bach_lo" xml:space="preserve">
+    <value>White Dew</value>
+  </data>
+  <data name="solarterm.thu_phan" xml:space="preserve">
+    <value>Autumn Equinox</value>
+  </data>
+  <data name="solarterm.han_lo" xml:space="preserve">
+    <value>Cold Dew</value>
+  </data>
+  <data name="solarterm.suong_giang" xml:space="preserve">
+    <value>Frost's Descent</value>
+  </data>
+  <data name="solarterm.lap_dong" xml:space="preserve">
+    <value>Start of Winter</value>
+  </data>
+  <data name="solarterm.tieu_tuyet" xml:space="preserve">
+    <value>Minor Snow</value>
+  </data>
+  <data name="solarterm.dai_tuyet" xml:space="preserve">
+    <value>Major Snow</value>
+  </data>
+  <data name="solarterm.dong_chi" xml:space="preserve">
+    <value>Winter Solstice</value>
+  </data>
+  <data name="solarterm.tieu_han" xml:space="preserve">
+    <value>Minor Cold</value>
+  </data>
+  <data name="solarterm.dai_han" xml:space="preserve">
+    <value>Major Cold</value>
+  </data>
+  <data name="solarterm.lap_xuan" xml:space="preserve">
+    <value>Start of Spring</value>
+  </data>
+  <data name="solarterm.vu_thuy" xml:space="preserve">
+    <value>Rain Water</value>
+  </data>
+  <data name="solarterm.kinh_trap" xml:space="preserve">
+    <value>Awakening of Insects</value>
+  </data>
+</root>

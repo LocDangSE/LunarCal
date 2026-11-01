@@ -29,3 +29,4 @@ Trạng thái: Proposed / Accepted / Superseded.
 | [0021](adr/0021-antigravity-workflows-as-skills.md) | Workflow Antigravity gọi qua skill | Accepted |
 | [0022](adr/0022-agent-progress-sync.md) | Đồng bộ tiến độ giữa Claude Code và Antigravity | Accepted |
 | [0023](adr/0023-git-remote-and-linux-container.md) | Git, remote GitHub và container Linux cho Core | Accepted |
+| [0024](adr/0024-localization-infrastructure-and-key-conventions.md) | Hạ tầng song ngữ (i18n) và quy ước đặt key | Accepted |

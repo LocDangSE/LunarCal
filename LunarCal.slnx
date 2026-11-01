@@ -6,6 +6,7 @@
     <Project Path="src/LunarCal.Tools/LunarCal.Tools.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/LunarCal.App.Tests/LunarCal.App.Tests.csproj" />
     <Project Path="tests/LunarCal.App.UiTests/LunarCal.App.UiTests.csproj" />
     <Project Path="tests/LunarCal.Core.Tests/LunarCal.Core.Tests.csproj" />
     <Project Path="tests/LunarCal.Infrastructure.Tests/LunarCal.Infrastructure.Tests.csproj" />

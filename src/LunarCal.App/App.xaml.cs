@@ -1,4 +1,5 @@
 using System.Windows;
+using LunarCal.App.Localization;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views;
 using LunarCal.Infrastructure;
@@ -24,6 +25,7 @@ public partial class App : Application
         });
 
         builder.Services.AddLunarCalInfrastructure(builder.Configuration);
+        builder.Services.AddSingleton<ILocalizationService>(LocalizationService.Instance);
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
 

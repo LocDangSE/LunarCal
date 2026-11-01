@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Spec §4.11 (FR-I18N-7) Settings -->
+  <data name="settings.language.title" xml:space="preserve">
+    <value>Ngôn ngữ giao diện</value>
+  </data>
+  <data name="settings.language.desc" xml:space="preserve">
+    <value>Đổi ngôn ngữ UI không làm thay đổi dữ liệu lịch</value>
+  </data>
+  <data name="settings.lunar.title" xml:space="preserve">
+    <value>Hiển thị Âm lịch</value>
+  </data>
+  <data name="settings.lunar.desc" xml:space="preserve">
+    <value>Sự kiện Âm lịch lưu cục bộ, không đồng bộ lên Google</value>
+  </data>
+  <data name="settings.training.title" xml:space="preserve">
+    <value>Đóng góp dữ liệu đã loại thông tin nhận dạng để huấn luyện AI (Opt-in)</value>
+  </data>
+  <data name="settings.training.desc" xml:space="preserve">
+    <value>Tên, địa điểm, email, số điện thoại được loại bỏ ngay trên máy bạn trước khi gửi. Mặc định tắt.</value>
+  </data>
+  <data name="settings.privacy.title" xml:space="preserve">
+    <value>Quyền riêng tư</value>
+  </data>
+  <data name="settings.privacy.desc" xml:space="preserve">
+    <value>Bạn có thể xem và xóa dữ liệu đã đóng góp bất cứ lúc nào</value>
+  </data>
+  <data name="settings.privacy.view" xml:space="preserve">
+    <value>Xem dữ liệu đã gửi</value>
+  </data>
+  <data name="settings.privacy.delete" xml:space="preserve">
+    <value>Xóa dữ liệu đã đóng góp</value>
+  </data>
+  <data name="settings.byok.title" xml:space="preserve">
+    <value>Gemini API key của bạn (BYOK)</value>
+  </data>
+  <data name="settings.byok.desc" xml:space="preserve">
+    <value>Key được mã hóa và chỉ lưu trên máy này; app dùng trực tiếp để gọi Gemini. Bạn có thể xóa hoặc thu hồi bất cứ lúc nào.</value>
+  </data>
+  <data name="settings.gemini.title" xml:space="preserve">
+    <value>Dùng Gemini để hiểu câu lệnh</value>
+  </data>
+  <data name="settings.gemini.desc" xml:space="preserve">
+    <value>Chỉ gửi nội dung câu lệnh, không gửi toàn bộ lịch của bạn</value>
+  </data>
+
+  <!-- Spec §4.11 (FR-I18N-7) Confirm & Consent Dialogs -->
+  <data name="confirm.privacy.off" xml:space="preserve">
+    <value>Opt-in đang tắt: không gửi dữ liệu huấn luyện khi bạn xác nhận.</value>
+  </data>
+  <data name="confirm.privacy.on" xml:space="preserve">
+    <value>Opt-in đang bật: bản đã loại thông tin nhận dạng của yêu cầu này sẽ được gửi để huấn luyện AI.</value>
+  </data>
+  <data name="consent.title" xml:space="preserve">
+    <value>Giúp cải thiện AI?</value>
+  </data>
+  <data name="consent.body" xml:space="preserve">
+    <value>Nếu bạn đồng ý, khi bạn xác nhận hoặc sửa một lệnh AI, bản đã loại thông tin nhận dạng của câu lệnh và sự kiện cuối cùng sẽ được gửi lên máy chủ để huấn luyện mô hình. Không gửi tên, địa điểm, email hay toàn bộ lịch. Bạn có thể xem và xóa dữ liệu bất cứ lúc nào.</value>
+  </data>
+  <data name="consent.accept" xml:space="preserve">
+    <value>Đồng ý đóng góp</value>
+  </data>
+  <data name="consent.decline" xml:space="preserve">
+    <value>Không, cảm ơn</value>
+  </data>
+
+  <!-- Spec §4.11 (FR-I18N-7) Lunar Title Range -->
+  <data name="lunar.title.range" xml:space="preserve">
+    <value>Âm lịch: tháng 8 – 9 năm Bính Ngọ</value>
+  </data>
+
+  <!-- Spec §4.11 Toast Notifications (FR-NOTIFY) -->
+  <data name="Toast_Header_Reminder" xml:space="preserve">
+    <value>{0} · Nhắc nhở</value>
+  </data>
+  <data name="Toast_Time_Remaining" xml:space="preserve">
+    <value>còn {0} phút</value>
+  </data>
+  <data name="Toast_Time_StartsNow" xml:space="preserve">
+    <value>bắt đầu ngay</value>
+  </data>
+  <data name="Toast_Time_Ongoing" xml:space="preserve">
+    <value>Đang diễn ra · bắt đầu {0} phút trước</value>
+  </data>
+  <data name="Toast_AllDay_Today" xml:space="preserve">
+    <value>Cả ngày · Hôm nay</value>
+  </data>
+  <data name="Toast_AllDay_Tomorrow" xml:space="preserve">
+    <value>Cả ngày · Ngày mai</value>
+  </data>
+  <data name="Toast_Label_AI" xml:space="preserve">
+    <value>✨ Tạo bởi AI</value>
+  </data>
+  <data name="Toast_Label_Lunar" xml:space="preserve">
+    <value>🌙 {0} ÂL</value>
+  </data>
+  <data name="Toast_Action_Snooze" xml:space="preserve">
+    <value>Hoãn</value>
+  </data>
+  <data name="Toast_Snooze_Minutes" xml:space="preserve">
+    <value>{0} phút</value>
+  </data>
+  <data name="Toast_Snooze_AtStart" xml:space="preserve">
+    <value>Lúc bắt đầu</value>
+  </data>
+  <data name="Toast_Action_Complete" xml:space="preserve">
+    <value>Hoàn thành</value>
+  </data>
+  <data name="Toast_Missed_Summary" xml:space="preserve">
+    <value>Bạn đã lỡ {0} nhắc nhở</value>
+  </data>
+  <data name="Toast_Hidden_Content" xml:space="preserve">
+    <value>Bạn có sự kiện lúc {0}</value>
+  </data>
+
+  <!-- Views & Navigation (FR-I18N-4) -->
+  <data name="view.day" xml:space="preserve">
+    <value>Ngày</value>
+  </data>
+  <data name="view.week" xml:space="preserve">
+    <value>Tuần</value>
+  </data>
+  <data name="view.month" xml:space="preserve">
+    <value>Tháng</value>
+  </data>
+  <data name="view.agenda" xml:space="preserve">
+    <value>Lịch biểu</value>
+  </data>
+  <data name="topbar.today" xml:space="preserve">
+    <value>Hôm nay</value>
+  </data>
+
+  <!-- Common UI actions -->
+  <data name="common.close" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="common.cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="common.save" xml:space="preserve">
+    <value>Lưu</value>
+  </data>
+  <data name="common.confirm" xml:space="preserve">
+    <value>Xác nhận</value>
+  </data>
+  <data name="common.edit" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="common.delete" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="lunar.label" xml:space="preserve">
+    <value>Âm lịch</value>
+  </data>
+  <data name="lunar.leap" xml:space="preserve">
+    <value>nhuận</value>
+  </data>
+
+  <!-- Heavenly Stems (Can) -->
+  <data name="can.giap" xml:space="preserve">
+    <value>Giáp</value>
+  </data>
+  <data name="can.at" xml:space="preserve">
+    <value>Ất</value>
+  </data>
+  <data name="can.binh" xml:space="preserve">
+    <value>Bính</value>
+  </data>
+  <data name="can.dinh" xml:space="preserve">
+    <value>Đinh</value>
+  </data>
+  <data name="can.mau" xml:space="preserve">
+    <value>Mậu</value>
+  </data>
+  <data name="can.ky" xml:space="preserve">
+    <value>Kỷ</value>
+  </data>
+  <data name="can.canh" xml:space="preserve">
+    <value>Canh</value>
+  </data>
+  <data name="can.tan" xml:space="preserve">
+    <value>Tân</value>
+  </data>
+  <data name="can.nham" xml:space="preserve">
+    <value>Nhâm</value>
+  </data>
+  <data name="can.quy" xml:space="preserve">
+    <value>Quý</value>
+  </data>
+
+  <!-- Earthly Branches (Chi) -->
+  <data name="chi.ty" xml:space="preserve">
+    <value>Tý</value>
+  </data>
+  <data name="chi.suu" xml:space="preserve">
+    <value>Sửu</value>
+  </data>
+  <data name="chi.dan" xml:space="preserve">
+    <value>Dần</value>
+  </data>
+  <data name="chi.mao" xml:space="preserve">
+    <value>Mão</value>
+  </data>
+  <data name="chi.thin" xml:space="preserve">
+    <value>Thìn</value>
+  </data>
+  <data name="chi.ti" xml:space="preserve">
+    <value>Tỵ</value>
+  </data>
+  <data name="chi.ngo" xml:space="preserve">
+    <value>Ngọ</value>
+  </data>
+  <data name="chi.mui" xml:space="preserve">
+    <value>Mùi</value>
+  </data>
+  <data name="chi.than" xml:space="preserve">
+    <value>Thân</value>
+  </data>
+  <data name="chi.dau" xml:space="preserve">
+    <value>Dậu</value>
+  </data>
+  <data name="chi.tuat" xml:space="preserve">
+    <value>Tuất</value>
+  </data>
+  <data name="chi.hoi" xml:space="preserve">
+    <value>Hợi</value>
+  </data>
+
+  <!-- 24 Solar Terms (Tiết khí) -->
+  <data name="solarterm.xuan_phan" xml:space="preserve">
+    <value>Xuân phân</value>
+  </data>
+  <data name="solarterm.thanh_minh" xml:space="preserve">
+    <value>Thanh minh</value>
+  </data>
+  <data name="solarterm.coc_vu" xml:space="preserve">
+    <value>Cốc vũ</value>
+  </data>
+  <data name="solarterm.lap_ha" xml:space="preserve">
+    <value>Lập hạ</value>
+  </data>
+  <data name="solarterm.tieu_man" xml:space="preserve">
+    <value>Tiểu mãn</value>
+  </data>
+  <data name="solarterm.mang_chung" xml:space="preserve">
+    <value>Mang chủng</value>
+  </data>
+  <data name="solarterm.ha_chi" xml:space="preserve">
+    <value>Hạ chí</value>
+  </data>
+  <data name="solarterm.tieu_thu" xml:space="preserve">
+    <value>Tiểu thử</value>
+  </data>
+  <data name="solarterm.dai_thu" xml:space="preserve">
+    <value>Đại thử</value>
+  </data>
+  <data name="solarterm.lap_thu" xml:space="preserve">
+    <value>Lập thu</value>
+  </data>
+  <data name="solarterm.xu_thu" xml:space="preserve">
+    <value>Xử thử</value>
+  </data>
+  <data name="solarterm.bach_lo" xml:space="preserve">
+    <value>Bạch lộ</value>
+  </data>
+  <data name="solarterm.thu_phan" xml:space="preserve">
+    <value>Thu phân</value>
+  </data>
+  <data name="solarterm.han_lo" xml:space="preserve">
+    <value>Hàn lộ</value>
+  </data>
+  <data name="solarterm.suong_giang" xml:space="preserve">
+    <value>Sương giáng</value>
+  </data>
+  <data name="solarterm.lap_dong" xml:space="preserve">
+    <value>Lập đông</value>
+  </data>
+  <data name="solarterm.tieu_tuyet" xml:space="preserve">
+    <value>Tiểu tuyết</value>
+  </data>
+  <data name="solarterm.dai_tuyet" xml:space="preserve">
+    <value>Đại tuyết</value>
+  </data>
+  <data name="solarterm.dong_chi" xml:space="preserve">
+    <value>Đông chí</value>
+  </data>
+  <data name="solarterm.tieu_han" xml:space="preserve">
+    <value>Tiểu hàn</value>
+  </data>
+  <data name="solarterm.dai_han" xml:space="preserve">
+    <value>Đại hàn</value>
+  </data>
+  <data name="solarterm.lap_xuan" xml:space="preserve">
+    <value>Lập xuân</value>
+  </data>
+  <data name="solarterm.vu_thuy" xml:space="preserve">
+    <value>Vũ thủy</value>
+  </data>
+  <data name="solarterm.kinh_trap" xml:space="preserve">
+    <value>Kinh trập</value>
+  </data>
+</root>

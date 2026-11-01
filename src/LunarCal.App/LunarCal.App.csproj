@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="LunarCal.App.UiTests" />
+    <InternalsVisibleTo Include="LunarCal.App.Tests" />
   </ItemGroup>
 
 </Project>

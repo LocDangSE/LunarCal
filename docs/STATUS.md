@@ -3,25 +3,26 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 10:45 +07:00, Claude Code (Opus 5.5). Phiên này làm P0-01: chốt tên LunarCal, khởi tạo git, thêm cấu hình git/Docker, push lên `https://github.com/LocDangSE/LunarCal.git` (ADR-0023).
+**Cập nhật lần cuối:** 2026-11-01 10:20 +07:00, Antigravity. Phiên này làm P2-01: hạ tầng song ngữ resx (vi-VN, en-US, neutral), LocalizationService đổi ngôn ngữ trực tiếp khi app chạy, auto-detect OS culture, ADR-0024, và project test `tests/LunarCal.App.Tests/` (FR-I18N-1, FR-I18N-3, FR-I18N-7).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 1 xong, đã xanh trên CI. Phase 0 còn P0-02..P0-04 (gitleaks, CodeQL, SourceLink). Phase 2 chưa bắt đầu.
+- **Phase hiện tại:** Phase 1 xong, đã xanh trên CI. Phase 0 còn P0-02..P0-04 (gitleaks, CodeQL, SourceLink). Phase 2 đang thực hiện (P2-01 đã xong).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào (P0-01 vừa xong). Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. P0-01 xong: CI run 41267053678 (commit 159781c) xanh cả `build-test` và `core-linux-container`. Không giữ task nào. File đang sửa dở: không có.
-  - **Antigravity:** chưa có phiên nào được ghi lại.
+  - **Antigravity:** không giữ task nào (P2-01 vừa xong). Đã thêm: hạ tầng resx `Strings.vi-VN.resx`, `Strings.en-US.resx`, `Strings.resx`; `ILocalizationService`, `LocalizationService`, `LocExtension`, `SupportedCultures`; ADR-0024; project `tests/LunarCal.App.Tests/` với 15 test pass. File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
   1. P0-02 (gitleaks), P0-03 (CodeQL), P0-04 (SourceLink).
-  2. Trong lúc chờ thiết kế S06–S09, S13 (P2-00): các task Phase 2 không phụ thuộc Figma là P2-01 (i18n), P2-04 (setting), P2-05 (model sự kiện, fake store).
+  2. Trong lúc chờ thiết kế S06–S09, S13 (P2-00): các task Phase 2 không phụ thuộc Figma là P2-02 (pseudo-localization), P2-04 (setting store in-memory), P2-05 (model sự kiện, fake store).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
 | Phase | Trạng thái | Bằng chứng |
 | --- | --- | --- |
-| 0 | P0-00, P0-01 xong; CI xanh trên GitHub ngày 2026-11-01 (run 41267053678). Còn P0-02..P0-04 | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, ADR-0001..0005 |
-| 1 | Xong local: FR-LUNAR-1..3, coverage Lunar 100% | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2–8 | Chưa bắt đầu | `docs/TASKS.md` |
+| 0 | P0-00, P0-01 xong; CI xanh trên GitHub ngày 2026-11-01 (run 41267053678). Còn P0-02..P0-04 | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, ADR-0001..0005, ADR-0023 |
+| 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
+| 2 | Đang thực hiện: P2-01 (hạ tầng resx, i18n service, ADR-0024) xong | `src/LunarCal.App/Localization/`, `tests/LunarCal.App.Tests/`, ADR-0024 |
+| 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): gitleaks và CodeQL (P0-02, P0-03); SourceLink (P0-04, SEC-SC-4); `release.yml` (P8-02).
 
@@ -32,13 +33,13 @@ Còn thiếu so với spec §10 (CI): gitleaks và CodeQL (P0-02, P0-03); Source
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 71 test: 70 pass, 0 fail, 1 skip |
+| `dotnet test --solution LunarCal.slnx` | 86 test: 85 pass, 0 fail, 1 skip |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 100% (ngưỡng 95% và 85%) |
 | `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được (shell còn trống; kiểm tra ngày 2026-10-31) |
-| `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 |
+| `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
 
 - Test skip: `LunarCal.App.UiTests.SmokeTests.App_starts_and_shows_main_window`, lý do "UI shell is implemented in Phase 2". Bỏ skip ở P2-12.
-- CI đầu tiên (commit f418386) đỏ ở job `core-linux-container`: `FR_LUNAR_2_A_month_grid_is_computed_in_under_5_ms` đo 7–9 ms (tái hiện bằng `docker run --cpus=2`). Nguyên nhân: `.Should().HaveCount(42)` nằm trong vùng bấm giờ, nên test đo cả chi phí lần gọi đầu của AwesomeAssertions (reflection, tìm tên biến). Engine thật chỉ mất 0,02–0,3 ms mỗi tháng. Đã chuyển assertion ra sau `stopwatch.Stop()` ở cả hai test hiệu năng, giữ nguyên ngưỡng 5 ms. Sau khi sửa: 9/9 lần pass với `--cpus` 0.5, 1 và 2; Windows 71 test: 70 pass, 0 fail, 1 skip; coverage Lunar/Core 100%.
+- CI đầu tiên (commit f418386) đỏ ở job `core-linux-container`: `FR_LUNAR_2_A_month_grid_is_computed_in_under_5_ms` đo 7–9 ms (tái hiện bằng `docker run --cpus=2`). Nguyên nhân: `.Should().HaveCount(42)` nằm trong vùng bấm giờ, nên test đo cả chi phí lần gọi đầu của AwesomeAssertions (reflection, tìm tên biến). Engine thật chỉ mất 0,02–0,3 ms mỗi tháng. Đã chuyển assertion ra sau `stopwatch.Stop()` ở cả hai test hiệu năng, giữ nguyên ngưỡng 5 ms. Sau khi sửa: 9/9 lần pass với `--cpus` 0.5, 1 và 2; commit 159781c xanh trên GitHub Actions run 41267053678.
 
 ## Quyết định đã chốt mà spec chưa ghi
 
@@ -53,6 +54,7 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - ADR-0022 đồng bộ tiến độ giữa Claude Code và Antigravity: người giữ task ghi trong TASKS.md, log chỉ ghi nối tiếp ở `docs/PROGRESS_LOG.md`, STATUS có mục riêng cho từng agent, commit có trailer `Agent:`.
 - `.editorconfig`: hằng số đặt PascalCase, field private đặt `_camelCase`.
 - ADR-0023: tên dự án **LunarCal** đã chốt (chủ dự án, 2026-11-01); nhánh `main`, remote `LocDangSE/LunarCal`; `Dockerfile` Linux chỉ build/test Core, image ghim digest; CI có job `core-linux-container`. Spec dòng 3 vẫn ghi "LunarCal là tên tạm". Agent không tự sửa spec, chủ dự án cập nhật khi cần.
+- ADR-0024: Hạ tầng song ngữ i18n và quy ước đặt key (`area.element.variant` cho UI, `Toast_*` cho thông báo, `Strings.resx` làm neutral fallback chứa tiếng Việt cho `ResourceManager`, `LocalizationService` live switching qua `INotifyPropertyChanged`).
 
 ## Câu hỏi mở
 
@@ -98,7 +100,6 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 
 ## Nợ kỹ thuật
 
-- CI chưa từng chạy trên GitHub (chưa có git repository hay remote). Lệnh trong `ci.yml` đã được chạy giả lập ở local.
 - Thiếu gitleaks, CodeQL, SourceLink (P0-02..P0-04).
 - Các package đã chốt ở spec §2 nhưng chưa thêm và chưa chọn phiên bản: Serilog, Google.Apis.*, Http.Resilience, SQLCipher, Parquet.Net, DuckDB, H.NotifyIcon.Wpf, Microsoft.Toolkit.Uwp.Notifications. Phải kiểm tra package còn được bảo trì trên .NET 10 trước khi thêm (ADR-0014).
 - `docs/THREAT_MODEL.md` và `docs/DATA_LAKE.md` mới là khung; SECURITY.md, PRIVACY.md chưa có (P6b-07, P8-05).
