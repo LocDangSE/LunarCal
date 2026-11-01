@@ -3,19 +3,19 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 17:42 +07:00, Claude Code (Opus 5.5). Review Phase 2 (`docs/reviews/PHASE2.md`) và sửa toàn bộ 9 mục P2-R1..P2-R9 theo yêu cầu chủ dự án; 218/218 test, coverage Lunar 100%, Core 99.22%.
+**Cập nhật lần cuối:** 2026-11-01 18:40 +07:00, Claude Code (Opus 5.5). Hoàn thành P3-00a (OAuth Client ID, consent screen Testing); tách phần thiết kế thành P3-00b; ADR-0026 cho phép làm task Phase 3 không có giao diện trước khi có thiết kế.
 
-**Trước đó:** 2026-11-01 15:43 +07:00, Antigravity. Hoàn thành P2-13 (kết thúc Phase 2, 182/182 test).
+**Trước đó:** 2026-11-01 17:42 +07:00, Claude Code (Opus 5.5). Review Phase 2 và sửa P2-R1..P2-R9.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0, 1, 2 hoàn thành. Phase 2 có thêm 9 task sửa sau review (P2-R1..P2-R9), đã xong hết. Sẵn sàng chuyển sang Phase 3.
+- **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9). P3-00a xong; P3-00b (Figma) còn chặn P3-14, P3-15.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Phiên 2026-11-01: review Phase 2 rồi làm P2-R1..P2-R9, mỗi task một commit (`165b601`, `71bc871`, `9aacaee`, `8b0e8c5`, `71302de`, `da63264`, `da95572`, `0c3e59a`, cùng commit P2-R9). Chưa push. Bước tiếp theo: chủ dự án push và xem CI; nếu job Windows không có desktop tương tác thì UI smoke test sẽ fail ở CI (xem mục Build). File đang sửa dở: không có.
+  - **Claude Code:** không giữ task nào. Vừa xong P3-00a trên branch `task/P3-00` (đã merge vào `main`). File đang sửa dở: không có. Bước tiếp theo: review task `[r]` đầu tiên của Phase 3 khi Antigravity bàn giao.
   - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-13 (kết thúc Phase 2). Bước tiếp theo: bắt đầu Phase 3 (chủ dự án chuẩn bị OAuth Client ID ở P3-00, và agent triển khai P3-01 Serilog logging với redaction).
 - **Task tiếp theo đề xuất:**
-  1. Phase 3 chuẩn bị: P3-00 (👤 OAuth Client ID và các màn hình S10, S14, S18, S20).
-  2. Phase 3 code: P3-01 (SEC-LOG-1, SEC-LOG-2 · Serilog file sink, xoay vòng 14 ngày, redaction; làm trước OAuth theo ADR-0019).
+  1. Antigravity: P3-01 (SEC-LOG-1, SEC-LOG-2 · Serilog, redaction; làm trước OAuth theo ADR-0019), rồi P3-02, P3-03, P3-04, P3-08. Không làm P3-14, P3-15 khi P3-00b chưa xong (ADR-0026).
+  2. Chủ dự án: P3-00b (👤 Figma S10, S14, S18, S20, vẽ đủ nội dung ở spec §15.4), cần xong trước P3-14.
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -24,7 +24,8 @@
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
 | 2 | Hoàn thành 100%: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms), P2-08 (WeekView, DayView, timed event grid, now line, lane clustering), P2-09 (AgendaView, date grouping, calendar filters), P2-10 (DayDetailPanel, Can Chi, solar terms, glosses), P2-11 (AppearancePage, week start, 12h/24h, timezone), P2-12 (FlaUI UI smoke tests out-of-process), P2-13 (kết thúc Phase 2, cập nhật tài liệu, kiểm tra gates) | `tests/LunarCal.App.UiTests/SmokeTests.cs`, `src/LunarCal.App/Views/Settings/AppearancePage.xaml`, `DayDetailPanel.xaml`, `AgendaView.xaml`, `WeekView.xaml`, `DayView.xaml`, `MonthView.xaml`, `MainWindow.xaml`, `tests/`, `docs/TRACEABILITY.md`, `CHANGELOG.md` |
-| 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
+| 3 | Đang làm: P3-00a xong (Client ID trong user-secrets, consent Testing); P3-00b (Figma) còn chặn P3-14, P3-15 | ADR-0026, `docs/TASKS.md` |
+| 4–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
@@ -63,6 +64,7 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - P2-R1: múi giờ hiển thị lấy từ setting `timezone` (mặc định múi hệ thống); sự kiện cả ngày giữ ngày theo múi của chính sự kiện (`CalendarEvent.TimeZone`), không dời theo múi người xem.
 - P2-R4: ký hiệu tháng nhuận ở ô lịch tiếng Anh là "L" (ví dụ `1/2L`), tiếng Việt giữ "n". "Đủ/Thiếu" ở tiêu đề âm lịch tiếng Anh là "30 days/29 days". Spec và Figma chưa quy định; đổi được trong resx (`lunar.leap_marker`, `lunar.month_full`, `lunar.month_short`).
 - P2-R2: Cài đặt > Giao diện (S13) tạm mở bằng cửa sổ con từ nút ⚙ trên thanh trên cùng, chờ màn hình Cài đặt đầy đủ ở phase sau.
+- ADR-0026: consent screen để ở Testing (refresh token hết hạn sau 7 ngày, xử lý ở P3-06). Task Phase 3 không có giao diện được làm trước khi có S10, S14, S18, S20; P3-14, P3-15 phải chờ P3-00b. Đây là ngoại lệ có chủ đích với spec §13. Lưu ý cho P3-05: tên key trong user-secrets (`Google:ClientId`, `Google:ClientSecret`) chưa khớp `appsettings.json` (`LunarCal:Google:OAuthClientId`); user-secrets chỉ được nạp khi `DOTNET_ENVIRONMENT=Development`.
 - P2-R5: thêm token `FontSizeBadge`, `FontSizeLunarHero`, `IconSize*`, `CornerRadiusStripe`, `CornerRadiusAiBar`, `OnWarningBrush` với giá trị giữ nguyên như đang hiển thị; bảng ở `.agents/rules/ui.md`.
 
 ## Câu hỏi mở
@@ -72,7 +74,8 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - **Mục spec:** §14
 - **Loại:** Thiếu đặc tả (thuộc danh sách được phép hỏi)
 - **Mô tả:** Chưa có câu trả lời cho: (1) biểu tượng, nhà phát hành (tên app đã chốt là LunarCal ngày 2026-11-01, ADR-0023); (2) OAuth Client ID và trạng thái consent screen; (3) chứng chỉ ký mã và kênh cập nhật; (4) mặc định có tự khởi động cùng Windows không; (5) nhà cung cấp, vùng và ngân sách cloud; (6) bên kiểm soát dữ liệu, liên hệ quyền riêng tư, độ tuổi tối thiểu; (7) xác nhận hai quyết định ở §15.3 (key Gemini chỉ ở máy người dùng; lịch âm mặc định lưu cục bộ); (8) bản tiếng Anh cho các chuỗi giao diện còn lại.
-- **Ảnh hưởng:** P3-00, P6b-00, P7-00, P8-00; các task resx từ P2-01.
+- **Cập nhật 2026-11-01 18:40 (Claude Code):** Câu (2) đã trả lời: chủ dự án đã tạo Client ID và lưu vào user-secrets; consent screen để ở Testing (ADR-0026).
+- **Ảnh hưởng:** P6b-00, P7-00, P8-00; các task resx từ P2-01.
 - **Đề xuất / tạm quyết:** Code hiện theo spec (key ở máy, lịch âm cục bộ). Không chặn Phase 2 trừ câu (8), với câu này tạm dùng bản dịch nháp.
 - **Trạng thái:** Mở
 - **Ghi bởi:** Claude Code, 2026-10-31
