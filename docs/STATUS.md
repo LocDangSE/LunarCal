@@ -3,23 +3,23 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 10:00 +07:00, Claude Code (Opus 5.5). Phiên này làm P0-01: chốt tên LunarCal, khởi tạo git, thêm cấu hình git/Docker, push lên `https://github.com/LocDangSE/LunarCal.git` (ADR-0023).
+**Cập nhật lần cuối:** 2026-11-01 10:45 +07:00, Claude Code (Opus 5.5). Phiên này làm P0-01: chốt tên LunarCal, khởi tạo git, thêm cấu hình git/Docker, push lên `https://github.com/LocDangSE/LunarCal.git` (ADR-0023).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 1 đã xong (local). Phase 0 xong local, nhưng còn phần CI trên GitHub (P0-01..P0-04). Phase 2 chưa bắt đầu.
+- **Phase hiện tại:** Phase 1 xong, đã xanh trên CI. Phase 0 còn P0-02..P0-04 (gitleaks, CodeQL, SourceLink). Phase 2 chưa bắt đầu.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** giữ P0-01 `[~]`. Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. CI lần đầu đỏ do test hiệu năng đo cả assertion (đã sửa, xem mục Build/test). Bước tiếp theo: xác nhận CI xanh cho commit sửa, rồi đánh dấu P0-01 `[x]`. File đang sửa dở: không có.
+  - **Claude Code:** không giữ task nào (P0-01 vừa xong). Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. P0-01 xong: CI run 41267053678 (commit 159781c) xanh cả `build-test` và `core-linux-container`. Không giữ task nào. File đang sửa dở: không có.
   - **Antigravity:** chưa có phiên nào được ghi lại.
 - **Task tiếp theo đề xuất:**
-  1. P0-01: xác nhận CI xanh trên GitHub Actions. Sau đó làm P0-02 (gitleaks), P0-03 (CodeQL), P0-04 (SourceLink).
+  1. P0-02 (gitleaks), P0-03 (CodeQL), P0-04 (SourceLink).
   2. Trong lúc chờ thiết kế S06–S09, S13 (P2-00): các task Phase 2 không phụ thuộc Figma là P2-01 (i18n), P2-04 (setting), P2-05 (model sự kiện, fake store).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
 | Phase | Trạng thái | Bằng chứng |
 | --- | --- | --- |
-| 0 | Xong local; đã push lên GitHub ngày 2026-11-01, **chờ CI xanh** (P0-01) | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, ADR-0001..0005 |
+| 0 | P0-00, P0-01 xong; CI xanh trên GitHub ngày 2026-11-01 (run 41267053678). Còn P0-02..P0-04 | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, ADR-0001..0005 |
 | 1 | Xong local: FR-LUNAR-1..3, coverage Lunar 100% | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
 | 2–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
