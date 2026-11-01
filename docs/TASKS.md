@@ -37,6 +37,18 @@ Tên test ghi trong "Xong khi" là tên đề xuất; được đổi tên, như
 - [x] **P2-12** · spec §9 (UI smoke) · Phụ thuộc: P2-07, P2-08 · File: `tests/LunarCal.App.UiTests/SmokeTests.cs` · Bỏ Skip; FlaUI mở app, chuyển view Tháng/Tuần/Ngày, kiểm tra có ngày âm. · Xong khi: `App_starts_and_shows_main_window` cùng test chuyển view pass local; quyết định có chạy trên CI hay không (ghi vào STATUS). · Xong: Antigravity, 2026-11-01 15:10 +07:00
 - [x] **P2-13** · spec §13 · Phụ thuộc: P2-01..P2-12 · Kết thúc Phase 2: cập nhật TRACEABILITY, CHANGELOG, commit hoặc PR phase. · Xong khi: CI xanh. · Xong: Antigravity, 2026-11-01 15:43 +07:00
 
+### Phase 2: sửa sau review (`docs/reviews/PHASE2.md`)
+
+- [x] **P2-R1** · FR-UI-7, FR-I18N-4 · Phụ thuộc: — · File: `src/LunarCal.Core/Calendar/CalendarTime.cs` (mới), `src/LunarCal.App/Services/DisplayPreferences.cs` (mới), các VM Month/Week/Day/DayColumn/Agenda/DayDetail · Bỏ múi giờ +7 hard-code; mọi truy vấn và phân ngày dùng múi giờ trong setting. · Xong khi: test `FR_UI_7_Events_bucketed_by_selected_timezone` cho Month/Week/Day/Agenda/DayDetail; grep `FromHours(7)` trong `src/LunarCal.App` rỗng. · Xong: Claude Code (Opus 5.5), 2026-11-01 16:59 +07:00
+- [~] **P2-R2** · FR-UI-7, FR-I18N-4 · Phụ thuộc: P2-R1 · File: `MainWindowViewModel`, `AppearanceSettingsViewModel`, `MainWindow.xaml`, VM hiển thị giờ · Nối setting Giao diện vào mọi view (week_start, 12h/24h, timezone, lunar); bỏ suy đầu tuần theo culture; gắn trang S13 vào UI. · Xong khi: test week_start giữ nguyên sau khi đổi ngôn ngữ; test 12h hiện `9:00 AM`; mở được S13 (thủ công, ghi STATUS). · Đang làm: Claude Code (Opus 5.5), 2026-11-01 16:59 +07:00
+- [ ] **P2-R3** · AGENTS.md §7 · Phụ thuộc: P2-R2 · File: `AppearanceSettingsViewModel`, `MonthViewModel` · Bỏ `async partial void`; nạp lại lưới tuần tự/huỷ được. · Xong khi: test lỗi store không crash; test gọi `SetWeekStart` 2 lần liên tiếp cho lưới đúng lần cuối.
+- [ ] **P2-R4** · FR-I18N-3, FR-I18N-4, FR-UI-2 · Phụ thuộc: P2-R2 · File: resx, VM, XAML · Chuyển chuỗi UI hard-code vào resx; ký hiệu nhuận theo ngôn ngữ. · Xong khi: grep chuỗi tiếng Việt trong `ViewModels/` và XAML rỗng; test header tháng en-US.
+- [ ] **P2-R5** · FR-UI-7, FR-UI-11 · Phụ thuộc: — · File: XAML Views/Controls, `Tokens.xaml` · Thay FontSize/CornerRadius/màu literal bằng token; gộp màu fallback calendar. · Xong khi: grep literal trong Views/Controls rỗng; test token.
+- [ ] **P2-R6** · NFR-PERF · Phụ thuộc: — · File: test đo render MonthView · Đo render MonthView thật (layout WPF) với ~200 sự kiện. · Xong khi: STATUS ghi min/median/max, cấu hình, < 100 ms.
+- [ ] **P2-R7** · FR-UI-2, FR-LUNAR-6, FR-I18N-5 · Phụ thuộc: — · File: tests · Siết test yếu (tháng thiếu, ngoài phạm vi, ẩn âm lịch ở DayDetail, gloss en ≠ vi, fallback vi-VN, 12h vi). · Xong khi: test mới pass.
+- [ ] **P2-R8** · spec §9 · Phụ thuộc: P2-R4 · File: `tests/LunarCal.App.UiTests/SmokeTests.cs` · Assert có ngày âm, bỏ `Thread.Sleep`, assert view cũ biến mất, chọn bản build đúng cấu hình. · Xong khi: pass local 5 lần, ghi STATUS.
+- [ ] **P2-R9** · spec §13 · Phụ thuộc: P2-R1..R8 · Cập nhật STATUS, TRACEABILITY, CHANGELOG. · Xong khi: build, test, format xanh.
+
 ## Phase 3: Google OAuth, SyncEngine, SQLCipher cache, CRUD (DoD: FR-AUTH, FR-SYNC, FR-UI-4 đạt; integration test xanh)
 
 - [!] 👤 **P3-00** · spec §14 câu 2, §15.4 · Phụ thuộc: — · OAuth Client ID cùng trạng thái consent screen (Testing hay In production); thiết kế S10 (trình soạn sự kiện), S14 (đăng nhập lần đầu, đăng nhập lại), S18 (lỗi đồng bộ, xung đột), S20 (OAuth client riêng). · Xong khi: có Client ID (đưa vào user-secrets hoặc secret của CI, không commit) và các frame Figma.

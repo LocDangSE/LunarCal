@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
-using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
 
@@ -17,7 +17,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
 {
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
-    private readonly ISettingsStore _settingsStore;
+    private readonly IDisplayPreferences _preferences;
 
     [ObservableProperty]
     private DateOnly _displayDate;
@@ -52,13 +52,15 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
     public WeekViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        ISettingsStore settingsStore)
+        IDisplayPreferences preferences)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
-        _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
-        _displayDate = DateOnly.FromDateTime(DateTime.Today);
+        _displayDate = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
+        _isLunarVisible = _preferences.LunarEnabled;
+        _weekStart = _preferences.WeekStart;
 
         InitializeHourLabels();
         _localizationService.PropertyChanged += OnLocalizationChanged;
@@ -77,13 +79,8 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
 
     private async Task InitializeSettingsAndLoadAsync()
     {
-        IsLunarVisible = await _settingsStore.GetBoolAsync(SettingKeys.LunarEnabled, defaultValue: true);
-        var weekStartStr = await _settingsStore.GetStringAsync(SettingKeys.WeekStart);
-        if (Enum.TryParse<DayOfWeek>(weekStartStr, ignoreCase: true, out var ws))
-        {
-            WeekStart = ws;
-        }
-
+        IsLunarVisible = _preferences.LunarEnabled;
+        WeekStart = _preferences.WeekStart;
         await PopulateWeekAsync(DisplayDate);
     }
 
@@ -138,7 +135,8 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
         WeekStartDate = targetDate.AddDays(-diff);
         WeekEndDate = WeekStartDate.AddDays(6);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var timeZone = _preferences.TimeZone;
+        var today = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, timeZone);
         var culture = _localizationService.CurrentCulture;
 
         // Build 7 column view models
@@ -160,9 +158,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
         }
 
         // Query events from store
-        var offset = TimeSpan.FromHours(7);
-        var startUtc = new DateTimeOffset(WeekStartDate.ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
-        var endUtc = new DateTimeOffset(WeekEndDate.AddDays(1).ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
+        var (startUtc, endUtc) = CalendarTime.GetUtcRange(WeekStartDate, WeekEndDate.AddDays(1), timeZone);
 
         IReadOnlyList<CalendarEvent> events;
         try
@@ -177,15 +173,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
         // Distribute events to columns
         foreach (var col in columns)
         {
-            var colEvents = events.Where(e =>
-            {
-                var evStart = e.StartUtc.ToOffset(offset).Date;
-                var evEnd = e.EndUtc.ToOffset(offset).Date;
-                var target = col.Date.ToDateTime(TimeOnly.MinValue);
-                return evStart <= target && evEnd >= target;
-            }).ToList();
-
-            col.PopulateEvents(colEvents, timezoneOffset: offset);
+            col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture);
         }
 
         DayColumns.Clear();

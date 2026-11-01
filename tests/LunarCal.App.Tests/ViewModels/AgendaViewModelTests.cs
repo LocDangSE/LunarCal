@@ -1,6 +1,7 @@
 using System.Globalization;
 using AwesomeAssertions;
 using LunarCal.App.Localization;
+using LunarCal.App.Tests.TestDoubles;
 using LunarCal.App.ViewModels;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
@@ -14,6 +15,7 @@ public sealed class AgendaViewModelTests
 {
     private readonly IEventStore _eventStore = Substitute.For<IEventStore>();
     private readonly ISettingsStore _settingsStore = new InMemorySettingsStore();
+    private readonly TestDisplayPreferences _preferences = new();
     private readonly LocalizationService _localizationService = new(SupportedCultures.Vietnamese);
 
     [Fact]
@@ -55,7 +57,7 @@ public sealed class AgendaViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(events);
 
-        var vm = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new AgendaViewModel(_eventStore, _localizationService, _preferences);
 
         // Act
         await vm.SetDisplayDateAsync(new DateOnly(2026, 11, 1));
@@ -110,7 +112,7 @@ public sealed class AgendaViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(events);
 
-        var vm = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new AgendaViewModel(_eventStore, _localizationService, _preferences);
         await vm.SetDisplayDateAsync(new DateOnly(2026, 11, 1));
 
         // Initial state: both calendars active
@@ -165,7 +167,7 @@ public sealed class AgendaViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(events);
 
-        var vm = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new AgendaViewModel(_eventStore, _localizationService, _preferences);
 
         // Act
         await vm.SetDisplayDateAsync(new DateOnly(2026, 11, 1));
@@ -206,7 +208,7 @@ public sealed class AgendaViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(events);
 
-        var vm = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new AgendaViewModel(_eventStore, _localizationService, _preferences);
         await vm.SetDisplayDateAsync(new DateOnly(2026, 11, 1));
 
         // Initial: lunar is visible
@@ -260,7 +262,7 @@ public sealed class AgendaViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(events);
 
-        var vm = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new AgendaViewModel(_eventStore, _localizationService, _preferences);
 
         // Act
         await vm.SetDisplayDateAsync(new DateOnly(2026, 11, 1));
@@ -285,7 +287,7 @@ public sealed class AgendaViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new List<CalendarEvent>());
 
-        var vm = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new AgendaViewModel(_eventStore, _localizationService, _preferences);
 
         // Act
         await vm.SetDisplayDateAsync(new DateOnly(2026, 11, 1));

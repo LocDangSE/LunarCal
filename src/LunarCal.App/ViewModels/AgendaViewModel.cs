@@ -4,10 +4,10 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
-using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
 
@@ -18,7 +18,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
 {
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
-    private readonly ISettingsStore _settingsStore;
+    private readonly IDisplayPreferences _preferences;
 
     [ObservableProperty]
     private DateOnly _displayDate;
@@ -53,13 +53,14 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
     public AgendaViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        ISettingsStore settingsStore)
+        IDisplayPreferences preferences)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
-        _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
-        _displayDate = DateOnly.FromDateTime(DateTime.Today);
+        _displayDate = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
+        _isLunarVisible = _preferences.LunarEnabled;
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
         _ = InitializeSettingsAndLoadAsync();
@@ -67,7 +68,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
 
     private async Task InitializeSettingsAndLoadAsync()
     {
-        IsLunarVisible = await _settingsStore.GetBoolAsync(SettingKeys.LunarEnabled, defaultValue: true);
+        IsLunarVisible = _preferences.LunarEnabled;
         await LoadDataAsync();
     }
 
@@ -126,9 +127,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         var monthStart = new DateOnly(DisplayDate.Year, DisplayDate.Month, 1);
         var monthEnd = new DateOnly(DisplayDate.Year, DisplayDate.Month, DateTime.DaysInMonth(DisplayDate.Year, DisplayDate.Month));
 
-        var offset = TimeSpan.FromHours(7);
-        var startUtc = new DateTimeOffset(monthStart.ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
-        var endUtc = new DateTimeOffset(monthEnd.AddDays(1).ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
+        var (startUtc, endUtc) = CalendarTime.GetUtcRange(monthStart, monthEnd.AddDays(1), _preferences.TimeZone);
 
         try
         {
@@ -195,9 +194,11 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
             .ToHashSet(StringComparer.Ordinal);
 
         var calendarLookup = _cachedCalendars.ToDictionary(c => c.Id, c => c, StringComparer.Ordinal);
-        var offset = TimeSpan.FromHours(7);
+        var timeZone = _preferences.TimeZone;
         var culture = _localizationService.CurrentCulture;
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, timeZone);
+        var monthStart = new DateOnly(DisplayDate.Year, DisplayDate.Month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
         var allDayLabel = _localizationService["calendar.all_day"];
 
         var filteredEvents = _cachedEvents
@@ -209,10 +210,13 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
 
         foreach (var ev in filteredEvents)
         {
-            var eventStartDate = DateOnly.FromDateTime(ev.StartUtc.ToOffset(offset).DateTime);
-            var eventEndDate = DateOnly.FromDateTime(ev.EndUtc.ToOffset(offset).DateTime);
+            var (eventStartDate, eventEndDate) = CalendarTime.GetCoveredDates(ev, timeZone);
+            if (eventStartDate < monthStart)
+            {
+                eventStartDate = monthStart;
+            }
 
-            for (var d = eventStartDate; d <= eventEndDate; d = d.AddDays(1))
+            for (var d = eventStartDate; d <= eventEndDate && d <= monthEnd; d = d.AddDays(1))
             {
                 if (!eventsByDate.TryGetValue(d, out var list))
                 {
@@ -272,7 +276,11 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
                 }
                 else
                 {
-                    timeDisplay = $"{ev.StartUtc.ToOffset(offset):HH:mm} – {ev.EndUtc.ToOffset(offset):HH:mm}";
+                    timeDisplay = TimeFormattingHelper.FormatTimeRange(
+                        CalendarTime.ToLocal(ev.StartUtc, timeZone),
+                        CalendarTime.ToLocal(ev.EndUtc, timeZone),
+                        _preferences.TimeFormat,
+                        culture);
                 }
 
                 groupVm.Events.Add(new AgendaEventItemViewModel(ev, color, calName, timeDisplay));

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LunarCal.App.Localization;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
 
@@ -121,9 +122,18 @@ public sealed partial class DayColumnViewModel : ObservableObject
     /// <summary>
     /// Computes the top pixel offset for the current time indicator if this day is today.
     /// </summary>
-    public void UpdateNowIndicator(DateTimeOffset? now = null)
+    public void UpdateNowIndicator(DateTimeOffset? now = null, TimeZoneInfo? timeZone = null)
     {
-        var current = now ?? DateTimeOffset.Now;
+        var current = now ?? DateTimeOffset.UtcNow;
+        if (timeZone is not null)
+        {
+            current = CalendarTime.ToLocal(current, timeZone);
+        }
+        else if (now is null)
+        {
+            current = current.ToLocalTime();
+        }
+
         var todayDate = DateOnly.FromDateTime(current.DateTime);
 
         if (Date == todayDate)
@@ -141,31 +151,43 @@ public sealed partial class DayColumnViewModel : ObservableObject
 
     /// <summary>
     /// Populates all-day and timed events for this day, calculating positions and clustering lanes.
+    /// Times are converted to <paramref name="timeZone"/> (the display time zone, FR-UI-7) and formatted with
+    /// <paramref name="timeFormat"/> in <paramref name="culture"/> (FR-I18N-4).
     /// </summary>
     public void PopulateEvents(
         IReadOnlyList<CalendarEvent> events,
-        IReadOnlyDictionary<string, string>? calendarColors = null,
-        TimeSpan? timezoneOffset = null)
+        TimeZoneInfo timeZone,
+        string? timeFormat = null,
+        CultureInfo? culture = null,
+        IReadOnlyDictionary<string, string>? calendarColors = null)
     {
+        ArgumentNullException.ThrowIfNull(events);
+        ArgumentNullException.ThrowIfNull(timeZone);
+
         AllDayEvents.Clear();
         TimedEvents.Clear();
 
-        var offset = timezoneOffset ?? TimeSpan.FromHours(7);
-        var dayStart = new DateTimeOffset(Date.ToDateTime(TimeOnly.MinValue), offset);
-        var dayEnd = dayStart.AddDays(1);
+        var dayStart = CalendarTime.ToLocal(CalendarTime.StartOfDayUtc(Date, timeZone), timeZone);
+        var dayEnd = CalendarTime.ToLocal(CalendarTime.StartOfDayUtc(Date.AddDays(1), timeZone), timeZone);
+        var dayMinutes = (dayEnd - dayStart).TotalMinutes;
 
         var timedList = new List<TimedEventViewModel>();
 
         foreach (var ev in events)
         {
+            if (!CalendarTime.Covers(ev, Date, timeZone))
+            {
+                continue;
+            }
+
             if (ev.AllDay)
             {
                 AllDayEvents.Add(ev);
                 continue;
             }
 
-            var evStart = ev.StartUtc.ToOffset(offset);
-            var evEnd = ev.EndUtc.ToOffset(offset);
+            var evStart = CalendarTime.ToLocal(ev.StartUtc, timeZone);
+            var evEnd = CalendarTime.ToLocal(ev.EndUtc, timeZone);
 
             // Clamp to this day boundary
             if (evStart < dayStart)
@@ -183,13 +205,17 @@ public sealed partial class DayColumnViewModel : ObservableObject
                 evEnd = evStart.AddMinutes(15);
             }
 
-            var startMinute = (evStart - dayStart).TotalMinutes;
+            var startMinute = Math.Min((evStart - dayStart).TotalMinutes, dayMinutes);
             var durationMinutes = (evEnd - evStart).TotalMinutes;
 
             var top = (startMinute / 60.0) * HourRowHeight;
             var height = Math.Max(MinEventHeight, (durationMinutes / 60.0) * HourRowHeight);
 
-            var timeText = $"{ev.StartUtc.ToOffset(offset):HH:mm} – {ev.EndUtc.ToOffset(offset):HH:mm}";
+            var timeText = TimeFormattingHelper.FormatTimeRange(
+                CalendarTime.ToLocal(ev.StartUtc, timeZone),
+                CalendarTime.ToLocal(ev.EndUtc, timeZone),
+                timeFormat,
+                culture);
             var color = (calendarColors != null && calendarColors.TryGetValue(ev.CalendarId, out var c))
                 ? c
                 : "#2F6BFF";

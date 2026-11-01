@@ -3,6 +3,7 @@ using System.Windows;
 using AwesomeAssertions;
 using LunarCal.App.Converters;
 using LunarCal.App.Localization;
+using LunarCal.App.Tests.TestDoubles;
 using LunarCal.App.ViewModels;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
@@ -18,6 +19,7 @@ public sealed class WeekAndDayViewModelTests
     private readonly IEventStore _eventStore;
     private readonly LocalizationService _localizationService;
     private readonly FakeSettingsStore _settingsStore;
+    private readonly TestDisplayPreferences _preferences = new();
 
     public WeekAndDayViewModelTests()
     {
@@ -71,7 +73,7 @@ public sealed class WeekAndDayViewModelTests
         };
 
         var col = new DayColumnViewModel(date, null, "Th 2", isToday: false, isLunarVisible: true);
-        col.PopulateEvents(new[] { ev1, ev2, ev3 }, timezoneOffset: offset);
+        col.PopulateEvents(new[] { ev1, ev2, ev3 }, TestDisplayPreferences.UtcPlus7);
 
         col.TimedEvents.Should().HaveCount(3);
 
@@ -135,7 +137,7 @@ public sealed class WeekAndDayViewModelTests
         };
 
         var col = new DayColumnViewModel(date, null, "Th 2", isToday: false, isLunarVisible: true);
-        col.PopulateEvents(new[] { ev1, ev2, ev3 }, timezoneOffset: offset);
+        col.PopulateEvents(new[] { ev1, ev2, ev3 }, TestDisplayPreferences.UtcPlus7);
 
         col.TimedEvents.Should().HaveCount(3);
 
@@ -181,7 +183,7 @@ public sealed class WeekAndDayViewModelTests
         };
 
         var col = new DayColumnViewModel(date, null, "Th 2", isToday: false, isLunarVisible: true);
-        col.PopulateEvents(new[] { allDayEv, timedEv }, timezoneOffset: offset);
+        col.PopulateEvents(new[] { allDayEv, timedEv }, TestDisplayPreferences.UtcPlus7);
 
         col.AllDayEvents.Should().HaveCount(1);
         col.AllDayEvents[0].Title.Should().Be("Company Retreat");
@@ -239,7 +241,7 @@ public sealed class WeekAndDayViewModelTests
     [Fact]
     public async Task FR_UI_1_WeekViewModel_builds_7_columns_and_supports_navigation()
     {
-        using var vm = new WeekViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new WeekViewModel(_eventStore, _localizationService, _preferences);
         var anchorDate = new DateOnly(2026, 10, 21); // Wednesday
         await vm.SetDisplayDateAsync(anchorDate);
 
@@ -269,7 +271,7 @@ public sealed class WeekAndDayViewModelTests
     [Fact]
     public async Task FR_UI_1_DayViewModel_builds_single_day_column_and_title()
     {
-        using var vm = new DayViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new DayViewModel(_eventStore, _localizationService, _preferences);
         var targetDate = new DateOnly(2026, 10, 19); // Monday
         await vm.SetDisplayDateAsync(targetDate);
 

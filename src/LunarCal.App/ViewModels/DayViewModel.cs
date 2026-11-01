@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
-using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
 
@@ -17,7 +17,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
 {
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
-    private readonly ISettingsStore _settingsStore;
+    private readonly IDisplayPreferences _preferences;
 
     [ObservableProperty]
     private DateOnly _displayDate;
@@ -46,14 +46,15 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     public DayViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        ISettingsStore settingsStore)
+        IDisplayPreferences preferences)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
-        _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
-        _displayDate = DateOnly.FromDateTime(DateTime.Today);
-        DetailPanel = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        _displayDate = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
+        _isLunarVisible = _preferences.LunarEnabled;
+        DetailPanel = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
 
         InitializeHourLabels();
         _localizationService.PropertyChanged += OnLocalizationChanged;
@@ -72,7 +73,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
 
     private async Task InitializeSettingsAndLoadAsync()
     {
-        IsLunarVisible = await _settingsStore.GetBoolAsync(SettingKeys.LunarEnabled, defaultValue: true);
+        IsLunarVisible = _preferences.LunarEnabled;
         await PopulateDayAsync(DisplayDate);
     }
 
@@ -112,7 +113,8 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     {
         var sw = Stopwatch.StartNew();
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var timeZone = _preferences.TimeZone;
+        var today = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, timeZone);
         var culture = _localizationService.CurrentCulture;
 
         LunarDate? lunar = null;
@@ -127,9 +129,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
         var col = new DayColumnViewModel(targetDate, lunar, dayName, isToday, IsLunarVisible);
 
         // Query events from store
-        var offset = TimeSpan.FromHours(7);
-        var startUtc = new DateTimeOffset(targetDate.ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
-        var endUtc = new DateTimeOffset(targetDate.AddDays(1).ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
+        var (startUtc, endUtc) = CalendarTime.GetUtcRange(targetDate, targetDate.AddDays(1), timeZone);
 
         IReadOnlyList<CalendarEvent> events;
         try
@@ -141,7 +141,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
             events = Array.Empty<CalendarEvent>();
         }
 
-        col.PopulateEvents(events, timezoneOffset: offset);
+        col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture);
         DayColumn = col;
 
         // Day title

@@ -4,10 +4,10 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
-using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
 
@@ -20,7 +20,7 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 {
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
-    private readonly ISettingsStore _settingsStore;
+    private readonly IDisplayPreferences _preferences;
 
     [ObservableProperty]
     private DateOnly _date;
@@ -102,13 +102,14 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     public DayDetailViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        ISettingsStore settingsStore)
+        IDisplayPreferences preferences)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
-        _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
-        _date = DateOnly.FromDateTime(DateTime.Today);
+        _date = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
+        _isLunarVisible = _preferences.LunarEnabled;
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
         _ = InitializeSettingsAndLoadAsync();
@@ -116,7 +117,7 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 
     private async Task InitializeSettingsAndLoadAsync()
     {
-        IsLunarVisible = await _settingsStore.GetBoolAsync(SettingKeys.LunarEnabled, defaultValue: true);
+        IsLunarVisible = _preferences.LunarEnabled;
         await LoadDateAsync(Date);
     }
 
@@ -148,7 +149,7 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 
     private async Task LoadDateAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        IsToday = date == DateOnly.FromDateTime(DateTime.Today);
+        IsToday = date == CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
 
         var culture = _localizationService.CurrentCulture;
         var dayOfWeekName = culture.DateTimeFormat.GetDayName(date.DayOfWeek);
@@ -226,9 +227,9 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 
     private async Task LoadEventsAsync(DateOnly date, CancellationToken cancellationToken)
     {
-        var offset = TimeSpan.FromHours(7);
-        var startUtc = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
-        var endUtc = new DateTimeOffset(date.AddDays(1).ToDateTime(TimeOnly.MinValue), offset).ToUniversalTime();
+        var timeZone = _preferences.TimeZone;
+        var culture = _localizationService.CurrentCulture;
+        var (startUtc, endUtc) = CalendarTime.GetUtcRange(date, date.AddDays(1), timeZone);
 
         IReadOnlyList<CalendarInfo> calendars;
         IReadOnlyList<CalendarEvent> dayEvents;
@@ -250,6 +251,7 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
         Events.Clear();
 
         var sorted = dayEvents
+            .Where(e => CalendarTime.Covers(e, date, timeZone))
             .OrderBy(e => e.AllDay ? 0 : 1)
             .ThenBy(e => e.StartUtc)
             .ToList();
@@ -262,7 +264,11 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 
             string timeDisplay = ev.AllDay
                 ? allDayLabel
-                : $"{ev.StartUtc.ToOffset(offset):HH:mm} – {ev.EndUtc.ToOffset(offset):HH:mm}";
+                : TimeFormattingHelper.FormatTimeRange(
+                    CalendarTime.ToLocal(ev.StartUtc, timeZone),
+                    CalendarTime.ToLocal(ev.EndUtc, timeZone),
+                    _preferences.TimeFormat,
+                    culture);
 
             Events.Add(new AgendaEventItemViewModel(ev, color, calName, timeDisplay));
         }

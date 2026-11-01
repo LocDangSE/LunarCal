@@ -19,6 +19,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly ILocalizationService _localizationService;
     private readonly IThemeService _themeService;
     private readonly ISettingsStore _settingsStore;
+    private readonly IDisplayPreferences _preferences;
 
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
@@ -81,30 +82,32 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IEventStore eventStore,
         ILocalizationService localizationService,
         IThemeService themeService,
-        ISettingsStore settingsStore)
+        ISettingsStore settingsStore,
+        IDisplayPreferences preferences)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
         MiniCalendar = new MiniCalendarViewModel();
         MiniCalendar.DateSelected += OnMiniCalendarDateSelected;
 
-        MonthView = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        MonthView = new MonthViewModel(_eventStore, _localizationService, _preferences);
         MonthView.DaySelected += OnMonthViewDaySelected;
         MonthView.SetLunarVisibility(IsLunarVisible);
         _ = MonthView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
-        WeekView = new WeekViewModel(_eventStore, _localizationService, _settingsStore);
+        WeekView = new WeekViewModel(_eventStore, _localizationService, _preferences);
         WeekView.SetLunarVisibility(IsLunarVisible);
         _ = WeekView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
-        DayView = new DayViewModel(_eventStore, _localizationService, _settingsStore);
+        DayView = new DayViewModel(_eventStore, _localizationService, _preferences);
         DayView.SetLunarVisibility(IsLunarVisible);
         _ = DayView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
-        AgendaView = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        AgendaView = new AgendaViewModel(_eventStore, _localizationService, _preferences);
         AgendaView.SetLunarVisibility(IsLunarVisible);
         _ = AgendaView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 

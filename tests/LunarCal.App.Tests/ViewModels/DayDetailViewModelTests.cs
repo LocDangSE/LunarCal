@@ -1,6 +1,7 @@
 using System.Globalization;
 using AwesomeAssertions;
 using LunarCal.App.Localization;
+using LunarCal.App.Tests.TestDoubles;
 using LunarCal.App.ViewModels;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
@@ -14,6 +15,7 @@ public sealed class DayDetailViewModelTests
 {
     private readonly IEventStore _eventStore = Substitute.For<IEventStore>();
     private readonly ISettingsStore _settingsStore = new InMemorySettingsStore();
+    private readonly TestDisplayPreferences _preferences = new();
     private readonly LocalizationService _localizationService = new(SupportedCultures.Vietnamese);
 
     [Fact]
@@ -28,7 +30,7 @@ public sealed class DayDetailViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new List<CalendarEvent>());
 
-        var vm = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
 
         // Act
         await vm.SetDateAsync(new DateOnly(2026, 10, 16), ct);
@@ -63,7 +65,7 @@ public sealed class DayDetailViewModelTests
             .Returns(new List<CalendarEvent>());
 
         _localizationService.SetCulture(SupportedCultures.English);
-        var vm = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
 
         // Act: 2026-10-16 in English UI mode
         await vm.SetDateAsync(new DateOnly(2026, 10, 16), ct);
@@ -94,7 +96,7 @@ public sealed class DayDetailViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new List<CalendarEvent>());
 
-        var vm = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
 
         // Act 1: 2026-11-09 is 2026-10-01 Lunar (Mùng 1 tháng 10)
         await vm.SetDateAsync(new DateOnly(2026, 11, 9), ct);
@@ -123,7 +125,7 @@ public sealed class DayDetailViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new List<CalendarEvent>());
 
-        var vm = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
         await vm.SetDateAsync(new DateOnly(2026, 10, 16), ct);
         vm.IsLunarVisible.Should().BeTrue();
 
@@ -177,7 +179,7 @@ public sealed class DayDetailViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(events);
 
-        var vm = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
 
         // Act
         await vm.SetDateAsync(targetDate, ct);
@@ -203,7 +205,7 @@ public sealed class DayDetailViewModelTests
         var ct = TestContext.Current.CancellationToken;
 
         // Arrange
-        var vm = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
+        var vm = new DayDetailViewModel(_eventStore, _localizationService, _preferences);
         var testDate = new DateOnly(2026, 10, 16);
         await vm.SetDateAsync(testDate, ct);
 

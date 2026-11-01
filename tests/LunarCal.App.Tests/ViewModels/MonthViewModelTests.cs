@@ -1,6 +1,7 @@
 using System.Globalization;
 using AwesomeAssertions;
 using LunarCal.App.Localization;
+using LunarCal.App.Tests.TestDoubles;
 using LunarCal.App.ViewModels;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
@@ -16,6 +17,7 @@ public sealed class MonthViewModelTests
     private readonly IEventStore _eventStore;
     private readonly LocalizationService _localizationService;
     private readonly FakeSettingsStore _settingsStore;
+    private readonly TestDisplayPreferences _preferences = new();
 
     public MonthViewModelTests()
     {
@@ -32,7 +34,7 @@ public sealed class MonthViewModelTests
     [Fact]
     public async Task FR_UI_1_Month_grid_has_42_cells_and_7_weekday_headers()
     {
-        using var vm = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
         await vm.PopulateMonthAsync(new DateOnly(2026, 11, 1));
 
         vm.Days.Should().HaveCount(42);
@@ -51,7 +53,7 @@ public sealed class MonthViewModelTests
     [Fact]
     public async Task FR_UI_2_First_lunar_day_shows_day_slash_month()
     {
-        using var vm = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
 
         // 1. Regular first lunar day (Tết Quý Mão 2023: 2023-01-22 is Lunar 2023-01-01)
         await vm.PopulateMonthAsync(new DateOnly(2023, 1, 1));
@@ -86,7 +88,7 @@ public sealed class MonthViewModelTests
     [Fact]
     public async Task FR_LUNAR_6_Lunar_text_hidden_when_disabled()
     {
-        using var vm = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
         await vm.PopulateMonthAsync(new DateOnly(2026, 11, 1));
 
         // When visible by default
@@ -114,7 +116,7 @@ public sealed class MonthViewModelTests
     [Fact]
     public async Task NFR_PERF_Month_grid_generation_takes_less_than_100_ms()
     {
-        using var vm = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
 
         // Benchmark 12 different months
         for (int m = 1; m <= 12; m++)
@@ -130,7 +132,7 @@ public sealed class MonthViewModelTests
     [Fact]
     public async Task Navigation_and_selection_work_correctly()
     {
-        using var vm = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
         await vm.SetDisplayDateAsync(new DateOnly(2026, 6, 1));
         vm.DisplayDate.Should().Be(new DateOnly(2026, 6, 1));
 
@@ -158,8 +160,7 @@ public sealed class MonthViewModelTests
     public async Task Events_chips_and_more_counter_are_populated_correctly()
     {
         var targetDate = new DateOnly(2026, 11, 15);
-        var localOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 11, 15, 8, 0, 0));
-        var baseTime = new DateTimeOffset(2026, 11, 15, 8, 0, 0, localOffset);
+        var baseTime = new DateTimeOffset(2026, 11, 15, 8, 0, 0, TimeSpan.FromHours(7));
 
         var events = new List<CalendarEvent>
         {
@@ -173,7 +174,7 @@ public sealed class MonthViewModelTests
         _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<CalendarEvent>>(events));
 
-        using var vm = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
         await vm.PopulateMonthAsync(targetDate);
 
         var targetCell = vm.Days.First(d => d.SolarDate == targetDate);
@@ -192,8 +193,8 @@ public sealed class MonthViewModelTests
         var targetDate = new DateOnly(2026, 11, 1);
 
         // 1. Grid starting on Monday (vi-VN default)
-        _settingsStore.SetString(SettingKeys.WeekStart, "Monday");
-        using var vmMonday = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        _preferences.WeekStart = DayOfWeek.Monday;
+        using var vmMonday = new MonthViewModel(_eventStore, _localizationService, _preferences);
         await vmMonday.InitializeSettingsAsync();
         await vmMonday.PopulateMonthAsync(targetDate);
 
@@ -206,8 +207,8 @@ public sealed class MonthViewModelTests
         vmMonday.Days[6].SolarDate.Should().Be(new DateOnly(2026, 11, 1));
 
         // 2. Grid starting on Sunday (en-US default / user setting)
-        _settingsStore.SetString(SettingKeys.WeekStart, "Sunday");
-        using var vmSunday = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        _preferences.WeekStart = DayOfWeek.Sunday;
+        using var vmSunday = new MonthViewModel(_eventStore, _localizationService, _preferences);
         await vmSunday.InitializeSettingsAsync();
         await vmSunday.PopulateMonthAsync(targetDate);
 

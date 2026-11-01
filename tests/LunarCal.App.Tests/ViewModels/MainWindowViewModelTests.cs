@@ -2,6 +2,7 @@ using System.Globalization;
 using AwesomeAssertions;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
+using LunarCal.App.Tests.TestDoubles;
 using LunarCal.App.ViewModels;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
@@ -16,6 +17,7 @@ public sealed class MainWindowViewModelTests
     private readonly LocalizationService _localizationService;
     private readonly IThemeService _themeService;
     private readonly ISettingsStore _settingsStore;
+    private readonly TestDisplayPreferences _preferences = new();
 
     public MainWindowViewModelTests()
     {
@@ -175,6 +177,6 @@ public sealed class MainWindowViewModelTests
 
     private MainWindowViewModel CreateViewModel()
     {
-        return new MainWindowViewModel(_eventStore, _localizationService, _themeService, _settingsStore);
+        return new MainWindowViewModel(_eventStore, _localizationService, _themeService, _settingsStore, _preferences);
     }
 }

@@ -18,20 +18,20 @@ public sealed class SmokeTests
     {
         var baseDir = AppContext.BaseDirectory;
 
-        // Search in src/LunarCal.App output directory matching configuration (Debug / Release)
-        var configs = new[] { "Debug", "Release" };
-        foreach (var config in configs)
+        // Use the app build with the same configuration as this test assembly, so a stale build of the other
+        // configuration is never launched (and coverage reports do not mix Debug and Release sequence points).
+        var config = baseDir.Contains($"{Path.DirectorySeparatorChar}Release{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
+            ? "Release"
+            : "Debug";
+        var appDir = Path.GetFullPath(Path.Combine(baseDir, $"../../../../../src/LunarCal.App/bin/{config}/net10.0-windows10.0.19041.0"));
+        var exePath = Path.Combine(appDir, "LunarCal.exe");
+        var dllPath = Path.Combine(appDir, "LunarCal.dll");
+        if (File.Exists(exePath) && File.Exists(dllPath))
         {
-            var appDir = Path.GetFullPath(Path.Combine(baseDir, $"../../../../../src/LunarCal.App/bin/{config}/net10.0-windows10.0.19041.0"));
-            var exePath = Path.Combine(appDir, "LunarCal.exe");
-            var dllPath = Path.Combine(appDir, "LunarCal.dll");
-            if (File.Exists(exePath) && File.Exists(dllPath))
-            {
-                return exePath;
-            }
+            return exePath;
         }
 
-        throw new FileNotFoundException($"LunarCal.exe and LunarCal.dll not found in src/LunarCal.App/bin/ starting from {baseDir}");
+        throw new FileNotFoundException($"LunarCal.exe and LunarCal.dll ({config}) not found in {appDir}");
     }
 
     private static Application LaunchApp(string exePath)

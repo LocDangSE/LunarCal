@@ -1,24 +1,25 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Core.Lunar;
-using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// View model controlling the 6×7 month grid calendar view (FR-UI-1, FR-UI-2, FR-LUNAR-6, NFR-PERF).
+/// View model controlling the 6×7 month grid calendar view (FR-UI-1, FR-UI-2, FR-UI-7, FR-LUNAR-6, NFR-PERF).
 /// </summary>
 public sealed partial class MonthViewModel : ObservableObject, IDisposable
 {
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
-    private readonly ISettingsStore _settingsStore;
+    private readonly IDisplayPreferences _preferences;
 
     [ObservableProperty]
     private DateOnly _displayDate;
@@ -53,14 +54,16 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     public MonthViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        ISettingsStore settingsStore)
+        IDisplayPreferences preferences)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
-        _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = TodayInDisplayZone();
         _displayDate = new DateOnly(today.Year, today.Month, 1);
+        _isLunarVisible = _preferences.LunarEnabled;
+        _weekStart = _preferences.WeekStart;
 
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
@@ -68,16 +71,12 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Loads settings and initializes week start and lunar visibility (FR-UI-7, FR-LUNAR-6).
+    /// Applies week start and lunar visibility from the display preferences and rebuilds the grid (FR-UI-7, FR-LUNAR-6).
     /// </summary>
     public async Task InitializeSettingsAsync()
     {
-        IsLunarVisible = await _settingsStore.GetBoolAsync(SettingKeys.LunarEnabled, defaultValue: true);
-        var weekStartStr = await _settingsStore.GetStringAsync(SettingKeys.WeekStart);
-        if (Enum.TryParse<DayOfWeek>(weekStartStr, ignoreCase: true, out var ws))
-        {
-            WeekStart = ws;
-        }
+        IsLunarVisible = _preferences.LunarEnabled;
+        WeekStart = _preferences.WeekStart;
 
         RebuildWeekdayHeaders();
         await PopulateMonthAsync(DisplayDate);
@@ -131,7 +130,7 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public async Task GoToToday()
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = TodayInDisplayZone();
         DisplayDate = new DateOnly(today.Year, today.Month, 1);
         await PopulateMonthAsync(DisplayDate);
 
@@ -160,6 +159,7 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Populates the 6×7 calendar grid with 42 day cells and loads events from store (NFR-PERF).
+    /// Events are bucketed into days in the display time zone from <see cref="IDisplayPreferences"/> (FR-UI-7).
     /// </summary>
     public async Task PopulateMonthAsync(DateOnly date)
     {
@@ -175,20 +175,17 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
         var startGridDate = firstDayOfMonth.AddDays(-diff);
         var endGridDate = startGridDate.AddDays(42);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var timeZone = _preferences.TimeZone;
+        var today = TodayInDisplayZone();
         var cells = new List<MonthDayViewModel>(42);
 
         for (int i = 0; i < 42; i++)
         {
             var cellDate = startGridDate.AddDays(i);
             LunarDate? lunar = null;
-            try
+            if (cellDate >= LunarCalendar.MinSolarDate && cellDate <= LunarCalendar.MaxSolarDate)
             {
                 lunar = LunarCalendar.ToLunar(cellDate);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                // Date outside supported 1900-2100 range
             }
 
             var cell = new MonthDayViewModel(
@@ -206,15 +203,31 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
             cells.Add(cell);
         }
 
-        // Query events from store for the entire 6-week window
-        var startUtc = new DateTimeOffset(startGridDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endUtc = new DateTimeOffset(endGridDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        // Query events for the whole 6-week window, bounded by local midnights in the display time zone.
+        var (startUtc, endUtc) = CalendarTime.GetUtcRange(startGridDate, endGridDate, timeZone);
         var events = await _eventStore.GetEventsAsync(startUtc, endUtc);
 
-        // Group events by local date
-        var eventsByDate = events
-            .GroupBy(e => DateOnly.FromDateTime(e.StartUtc.LocalDateTime))
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<CalendarEvent>)g.ToList());
+        // Bucket events by every local date they cover (multi-day events appear on each day).
+        var eventsByDate = new Dictionary<DateOnly, List<CalendarEvent>>();
+        foreach (var ev in events.OrderBy(e => e.AllDay ? 0 : 1).ThenBy(e => e.StartUtc))
+        {
+            var (first, last) = CalendarTime.GetCoveredDates(ev, timeZone);
+            if (first < startGridDate)
+            {
+                first = startGridDate;
+            }
+
+            for (var d = first; d <= last && d < endGridDate; d = d.AddDays(1))
+            {
+                if (!eventsByDate.TryGetValue(d, out var list))
+                {
+                    list = new List<CalendarEvent>();
+                    eventsByDate[d] = list;
+                }
+
+                list.Add(ev);
+            }
+        }
 
         var moreEventsFormat = _localizationService.GetString("month.more_events", _localizationService.CurrentCulture);
 
@@ -235,6 +248,8 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
             Days.Add(cell);
         }
     }
+
+    private DateOnly TodayInDisplayZone() => CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
 
     private void RebuildWeekdayHeaders(CultureInfo? culture = null)
     {
@@ -263,7 +278,7 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void OnLocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnLocalizationChanged(object? sender, PropertyChangedEventArgs e)
     {
         RebuildWeekdayHeaders();
         _ = PopulateMonthAsync(DisplayDate);
