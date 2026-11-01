@@ -6,6 +6,7 @@
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
              xmlns:conv="clr-namespace:LunarCal.App.Converters"
              xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             xmlns:views="clr-namespace:LunarCal.App.Views"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:DayViewModel}"
              AutomationProperties.AutomationId="DayView">
@@ -308,99 +309,9 @@
 
     <!-- RIGHT-SIDE DETAIL PANEL (Figma S07 & S09, Width 360 px) -->
     <Border Grid.Column="1"
-            Width="{DynamicResource DayDetailPanelWidth}"
             BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1,0,0,0"
-            Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
-            Padding="16"
-            AutomationProperties.AutomationId="DayDetailPanelPlaceholder">
-      <StackPanel>
-        <TextBlock Text="{Binding DayTitle}"
-                   FontSize="{DynamicResource FontSizeSection}"
-                   FontWeight="{DynamicResource FontWeightSemiBold}"
-                   Foreground="{DynamicResource TextPrimaryBrush}"
-                   Margin="0,0,0,12" />
-
-        <Border Background="{DynamicResource LunarSubtleBrush}"
-                BorderBrush="{DynamicResource LunarTextPrimaryBrush}"
-                BorderThickness="1"
-                CornerRadius="{DynamicResource CornerRadiusMedium}"
-                Padding="12"
-                Margin="0,0,0,16">
-          <Border.Style>
-            <Style TargetType="Border">
-              <Setter Property="Visibility" Value="Visible" />
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsLunarVisible}" Value="False">
-                  <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Border.Style>
-          <StackPanel>
-            <TextBlock Text="{loc:Loc lunar.label}"
-                       FontSize="{DynamicResource FontSizeCaption}"
-                       FontWeight="{DynamicResource FontWeightSemiBold}"
-                       Foreground="{DynamicResource LunarStrongBrush}"
-                       Margin="0,0,0,4" />
-            <TextBlock Text="{Binding DayColumn.LunarDayText, StringFormat='Ngày âm: {0}'}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       Foreground="{DynamicResource LunarTextPrimaryBrush}" />
-          </StackPanel>
-        </Border>
-
-        <TextBlock Text="{loc:Loc sidebar.my_calendars}"
-                   FontSize="{DynamicResource FontSizeSubtitle}"
-                   FontWeight="{DynamicResource FontWeightMedium}"
-                   Foreground="{DynamicResource TextSecondaryBrush}"
-                   Margin="0,0,0,8" />
-
-        <ItemsControl ItemsSource="{Binding DayColumn.AllDayEvents}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-                      BorderBrush="{DynamicResource BorderBrush}"
-                      BorderThickness="1"
-                      CornerRadius="{DynamicResource CornerRadiusSmall}"
-                      Padding="8,6"
-                      Margin="0,0,0,6">
-                <TextBlock Text="{Binding Title}"
-                           FontSize="{DynamicResource FontSizeBody}"
-                           Foreground="{DynamicResource TextPrimaryBrush}" />
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <ItemsControl ItemsSource="{Binding DayColumn.TimedEvents}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type vm:TimedEventViewModel}">
-              <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-                      BorderBrush="{DynamicResource BorderBrush}"
-                      BorderThickness="1"
-                      CornerRadius="{DynamicResource CornerRadiusSmall}"
-                      Padding="8,6"
-                      Margin="0,0,0,6">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                  </Grid.ColumnDefinitions>
-                  <TextBlock Grid.Column="0"
-                             Text="{Binding Title}"
-                             FontSize="{DynamicResource FontSizeBody}"
-                             FontWeight="{DynamicResource FontWeightMedium}"
-                             Foreground="{DynamicResource TextPrimaryBrush}" />
-                  <TextBlock Grid.Column="1"
-                             Text="{Binding TimeRangeText}"
-                             FontSize="{DynamicResource FontSizeCaption}"
-                             Foreground="{DynamicResource TextSecondaryBrush}" />
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
+            BorderThickness="1,0,0,0">
+      <views:DayDetailPanel DataContext="{Binding DetailPanel}" />
     </Border>
   </Grid>
 </UserControl>

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
 using LunarCal.App.Localization;
+using LunarCal.Core.Lunar;
 
 namespace LunarCal.App.Tests;
 
@@ -316,6 +317,48 @@ public class LocalizationTests
         service.SetCulture("en-US");
         service.Format("Toast_Header_Reminder", "Project Sync").Should().Be("Project Sync · Reminder");
         service.Format("Toast_Time_Remaining", 15).Should().Be("in 15 min");
+    }
+
+    [Fact]
+    public void FR_I18N_5_Resx_has_glosses_for_all_ThienCan_DiaChi_and_SolarTerm()
+    {
+        var service = new LocalizationService();
+
+        // 1. Verify all 10 Heavenly Stems (ThienCan) have entries in both languages
+        foreach (var can in Enum.GetValues<ThienCan>())
+        {
+            var key = $"can.{can.ToString().ToLowerInvariant()}";
+            var viVal = service.GetString(key, SupportedCultures.Vietnamese);
+            var enVal = service.GetString(key, SupportedCultures.English);
+
+            viVal.Should().NotBeNullOrWhiteSpace($"Can '{can}' must have Vietnamese name");
+            enVal.Should().NotBeNullOrWhiteSpace($"Can '{can}' must have English gloss");
+            enVal.Should().ContainAny(["Wood", "Fire", "Earth", "Metal", "Water"], $"English gloss for '{can}' should contain element");
+        }
+
+        // 2. Verify all 12 Earthly Branches (DiaChi) have entries in both languages
+        foreach (var chi in Enum.GetValues<DiaChi>())
+        {
+            var key = $"chi.{chi.ToString().ToLowerInvariant()}";
+            var viVal = service.GetString(key, SupportedCultures.Vietnamese);
+            var enVal = service.GetString(key, SupportedCultures.English);
+
+            viVal.Should().NotBeNullOrWhiteSpace($"Chi '{chi}' must have Vietnamese name");
+            enVal.Should().NotBeNullOrWhiteSpace($"Chi '{chi}' must have English gloss");
+        }
+
+        // 3. Verify all 24 Solar Terms (SolarTerm) have entries in both languages
+        foreach (var term in Enum.GetValues<SolarTerm>())
+        {
+            var key = LunarFormattingHelper.GetSolarTermKey(term);
+            key.Should().NotBeEmpty();
+
+            var viVal = service.GetString(key, SupportedCultures.Vietnamese);
+            var enVal = service.GetString(key, SupportedCultures.English);
+
+            viVal.Should().NotBeNullOrWhiteSpace($"SolarTerm '{term}' must have Vietnamese name");
+            enVal.Should().NotBeNullOrWhiteSpace($"SolarTerm '{term}' must have English gloss");
+        }
     }
 
     private static Dictionary<string, string> LoadResxEntries(string resxFilePath)

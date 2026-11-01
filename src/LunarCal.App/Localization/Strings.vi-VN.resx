@@ -403,4 +403,49 @@
   <data name="agenda.filter_by" xml:space="preserve">
     <value>Lọc theo lịch</value>
   </data>
+  <data name="day_detail.title" xml:space="preserve">
+    <value>Chi tiết ngày</value>
+  </data>
+  <data name="day_detail.lunar_title" xml:space="preserve">
+    <value>Thông tin âm lịch</value>
+  </data>
+  <data name="day_detail.lunar_day" xml:space="preserve">
+    <value>Ngày âm</value>
+  </data>
+  <data name="day_detail.lunar_month" xml:space="preserve">
+    <value>Tháng âm</value>
+  </data>
+  <data name="day_detail.lunar_year" xml:space="preserve">
+    <value>Năm âm</value>
+  </data>
+  <data name="day_detail.can_chi_day" xml:space="preserve">
+    <value>Can Chi ngày</value>
+  </data>
+  <data name="day_detail.can_chi_month" xml:space="preserve">
+    <value>Can Chi tháng</value>
+  </data>
+  <data name="day_detail.can_chi_year" xml:space="preserve">
+    <value>Can Chi năm</value>
+  </data>
+  <data name="day_detail.solar_term" xml:space="preserve">
+    <value>Tiết khí</value>
+  </data>
+  <data name="day_detail.solar_term_start" xml:space="preserve">
+    <value>Bắt đầu hôm nay</value>
+  </data>
+  <data name="day_detail.events_title" xml:space="preserve">
+    <value>Sự kiện trong ngày</value>
+  </data>
+  <data name="day_detail.no_events" xml:space="preserve">
+    <value>Không có sự kiện nào trong ngày này</value>
+  </data>
+  <data name="day_detail.add_event" xml:space="preserve">
+    <value>+ Thêm sự kiện</value>
+  </data>
+  <data name="day_detail.add_lunar_rule" xml:space="preserve">
+    <value>+ Lặp theo âm lịch</value>
+  </data>
+  <data name="day_detail.lunar_disabled" xml:space="preserve">
+    <value>Lịch âm đang tắt trong Cài đặt</value>
+  </data>
 </root>

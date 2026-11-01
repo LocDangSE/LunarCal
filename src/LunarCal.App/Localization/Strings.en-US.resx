@@ -403,4 +403,49 @@
   <data name="agenda.filter_by" xml:space="preserve">
     <value>Filter by calendar</value>
   </data>
+  <data name="day_detail.title" xml:space="preserve">
+    <value>Day Details</value>
+  </data>
+  <data name="day_detail.lunar_title" xml:space="preserve">
+    <value>Lunar Information</value>
+  </data>
+  <data name="day_detail.lunar_day" xml:space="preserve">
+    <value>Lunar day</value>
+  </data>
+  <data name="day_detail.lunar_month" xml:space="preserve">
+    <value>Lunar month</value>
+  </data>
+  <data name="day_detail.lunar_year" xml:space="preserve">
+    <value>Lunar year</value>
+  </data>
+  <data name="day_detail.can_chi_day" xml:space="preserve">
+    <value>Day stem-branch</value>
+  </data>
+  <data name="day_detail.can_chi_month" xml:space="preserve">
+    <value>Month stem-branch</value>
+  </data>
+  <data name="day_detail.can_chi_year" xml:space="preserve">
+    <value>Year stem-branch</value>
+  </data>
+  <data name="day_detail.solar_term" xml:space="preserve">
+    <value>Solar term</value>
+  </data>
+  <data name="day_detail.solar_term_start" xml:space="preserve">
+    <value>Starts today</value>
+  </data>
+  <data name="day_detail.events_title" xml:space="preserve">
+    <value>Events of the day</value>
+  </data>
+  <data name="day_detail.no_events" xml:space="preserve">
+    <value>No events scheduled for this day</value>
+  </data>
+  <data name="day_detail.add_event" xml:space="preserve">
+    <value>+ Add event</value>
+  </data>
+  <data name="day_detail.add_lunar_rule" xml:space="preserve">
+    <value>+ Add lunar rule</value>
+  </data>
+  <data name="day_detail.lunar_disabled" xml:space="preserve">
+    <value>Lunar calendar is disabled in Settings</value>
+  </data>
 </root>

@@ -37,6 +37,9 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     /// <summary>The 24 hour labels (00:00 .. 23:00) displayed in the left hour column.</summary>
     public ObservableCollection<string> HourLabels { get; } = new();
 
+    /// <summary>Detail panel child view model (Figma S07 &amp; S09, FR-UI-3).</summary>
+    public DayDetailViewModel DetailPanel { get; }
+
     /// <summary>
     /// Initializes a new instance of <see cref="DayViewModel"/>.
     /// </summary>
@@ -50,6 +53,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
 
         _displayDate = DateOnly.FromDateTime(DateTime.Today);
+        DetailPanel = new DayDetailViewModel(_eventStore, _localizationService, _settingsStore);
 
         InitializeHourLabels();
         _localizationService.PropertyChanged += OnLocalizationChanged;
@@ -79,6 +83,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     {
         IsLunarVisible = visible;
         DayColumn?.SetLunarVisibility(visible);
+        DetailPanel.SetLunarVisibility(visible);
     }
 
     /// <summary>
@@ -86,6 +91,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     /// </summary>
     public void SetCulture(CultureInfo culture)
     {
+        DetailPanel.SetCulture(_localizationService.CurrentCulture);
         _ = PopulateDayAsync(DisplayDate);
     }
 
@@ -143,17 +149,21 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
             ? $"{dayName}, {targetDate.Day} Tháng {targetDate.Month}, {targetDate.Year}"
             : targetDate.ToString("dddd, MMMM d, yyyy", culture);
 
+        await DetailPanel.SetDateAsync(targetDate, cancellationToken);
+
         sw.Stop();
         RenderDuration = sw.Elapsed;
     }
 
     private void OnLocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        DetailPanel.SetCulture(_localizationService.CurrentCulture);
         _ = PopulateDayAsync(DisplayDate);
     }
 
     public void Dispose()
     {
         _localizationService.PropertyChanged -= OnLocalizationChanged;
+        DetailPanel.Dispose();
     }
 }
