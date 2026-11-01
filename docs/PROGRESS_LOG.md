@@ -18,3 +18,5 @@
 | 2026-11-01 10:20 +07:00 | Antigravity | P2-01 | DONE | Hạ tầng resx vi-VN/en-US, LocalizationService, ADR-0024, 15 test pass trong LunarCal.App.Tests. Tiếp theo: P2-02 hoặc P0-02 |
 | 2026-11-01 10:43 +07:00 | Antigravity | P0-02 | START | Bắt đầu P0-02: cấu hình gitleaks vào CI và pre-commit hook (SEC-KEY-5, SEC-SC-3) |
 | 2026-11-01 10:46 +07:00 | Antigravity | P0-02 | DONE | Cấu hình gitleaks trong ci.yml, .gitleaks.toml, .pre-commit-config.yaml, .githooks/pre-commit; kiểm tra chặn commit secret thành công. Tiếp theo: P0-03 |
+| 2026-11-01 10:47 +07:00 | Antigravity | P0-03 | START | Bắt đầu P0-03: thêm CodeQL cho C# (.github/workflows/codeql.yml, ghim SHA, permissions tối thiểu) (SEC-SC-3) |
+| 2026-11-01 10:48 +07:00 | Antigravity | P0-03 | DONE | Thêm CodeQL workflow cho C# (.github/workflows/codeql.yml, ghim SHA, build manual locked-mode). Tiếp theo: P0-04 |
