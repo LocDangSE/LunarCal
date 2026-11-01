@@ -1,0 +1,6 @@
+# ADR-0009: HKO conversion table as the independent lunar reference
+
+- **Status:** Accepted (2026-10-31)
+- **Context:** FR-LUNAR-3 requires at least 200 reference points from a verified table, with the source recorded. Hồ Ngọc Đức's published tables were unreachable (HTTP 404) on 2026-10-31. The Hong Kong Observatory publishes an official day-by-day table for 1901–2100, but for UTC+8.
+- **Decision:** Use the full HKO table as fixtures: 2,474 month starts and 4,800 solar terms, parsed by `tests/LunarCal.Core.Tests/Fixtures/parse_hko.py`. A difference passes only if the UTC+7/UTC+8 offset explains it. The test checks this by computing the new moon or term instant and requiring it to fall in 16:00–17:00 UT. The exception is the leap-month cases, which are listed explicitly and cross-checked with Wikipedia where possible. The exact counts are asserted. Sources and explanations are in `tests/LunarCal.Core.Tests/Fixtures/README.md`.
+- **Consequences:** Far more than 200 reference points, from an official source independent of the algorithm. Four leap-month years (1917, 1922, 1938, 1987) rest on the engine plus the time-zone explanation. If Hồ Ngọc Đức's tables become reachable again, add them as a second source.

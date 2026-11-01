@@ -1,0 +1,16 @@
+<Window x:Class="LunarCal.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
+        Title="LunarCal"
+        AutomationProperties.AutomationId="MainWindow"
+        Width="1280" Height="800"
+        MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+  <!-- Shell layout (top bar, sidebar, calendar views, AI command bar) arrives in Phase 2 (Figma 01). -->
+  <Grid />
+</Window>

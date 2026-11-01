@@ -1,0 +1,10 @@
+<Application x:Class="LunarCal.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources>
+    <ResourceDictionary>
+      <!-- Theme and localization dictionaries are merged here in Phase 2. -->
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

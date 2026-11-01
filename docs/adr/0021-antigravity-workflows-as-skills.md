@@ -1,0 +1,7 @@
+# ADR-0021: Workflow của Antigravity được gọi qua skill
+
+- **Status:** Accepted (2026-10-31).
+- **Bối cảnh:** Tài liệu chính thức của Antigravity (https://www.antigravity.google/docs/ide/workflows/ và https://www.antigravity.google/docs/migration/workflows-to-skills, đọc ngày 2026-10-31) ghi rằng sau 19/10/2026, thư mục `.agents/workflows/` không còn được index, và slash command chuyển sang skill (`.agents/skills/<name>/SKILL.md`, frontmatter `name` và `description`). Rule trong `.agents/rules/*.md` bắt buộc có frontmatter `trigger` (`always_on`, `model_decision`, `glob`, `manual`); thiếu thì rule bị bỏ qua mà không báo lỗi (https://www.antigravity.google/docs/rules).
+- **Quyết định:** Nội dung quy trình nằm ở `.agents/workflows/<name>.md`, là nguồn duy nhất. Mỗi quy trình có thêm một skill mỏng `.agents/skills/<name>/SKILL.md`, chỉ trỏ tới file workflow, để `/resume`, `/finish-task` và `/spec-gap` vẫn gọi được. Rule dùng `trigger: always_on` cho `security.md` và `model_decision` hoặc `glob` cho các rule còn lại, để không vượt ngân sách 20.000 token của rule always-on.
+- **Bổ sung (2026-11-01):** Claude Code chỉ nạp skill từ `.claude/skills/`, nên mỗi lệnh muốn gọi được trong Claude Code cần thêm một wrapper mỏng ở `.claude/skills/<name>/SKILL.md`, cũng chỉ trỏ tới file workflow. Đã có cho `/resume`, `/project-progress`, `/finish-task`, `/spec-gap` (ADR-0022).
+- **Hệ quả:** Không chạy `/migrate-workflows`, vì lệnh đó sẽ đổi tên file workflow thành `.bak`. Nếu Antigravity đổi định dạng lần nữa, chỉ cần cập nhật các skill wrapper.

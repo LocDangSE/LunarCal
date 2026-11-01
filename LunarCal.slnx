@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LunarCal.App/LunarCal.App.csproj" />
+    <Project Path="src/LunarCal.Core/LunarCal.Core.csproj" />
+    <Project Path="src/LunarCal.Infrastructure/LunarCal.Infrastructure.csproj" />
+    <Project Path="src/LunarCal.Tools/LunarCal.Tools.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LunarCal.App.UiTests/LunarCal.App.UiTests.csproj" />
+    <Project Path="tests/LunarCal.Core.Tests/LunarCal.Core.Tests.csproj" />
+    <Project Path="tests/LunarCal.Infrastructure.Tests/LunarCal.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

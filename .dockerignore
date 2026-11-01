@@ -1,0 +1,12 @@
+# Allow-list: only what the Dockerfile needs enters the build context.
+# Keeps secrets, local settings and build output out of images (SEC-KEY-5).
+*
+!global.json
+!Directory.Build.props
+!Directory.Packages.props
+!.editorconfig
+!src/LunarCal.Core/
+!tests/LunarCal.Core.Tests/
+**/bin/
+**/obj/
+**/TestResults/

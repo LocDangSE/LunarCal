@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Pure domain. MUST NOT reference anything beyond the BCL (enforced by LunarCal.Core.Tests/ArchitectureTests). -->
+  <PropertyGroup>
+    <TargetFramework>$(LunarCalCoreTfm)</TargetFramework>
+    <RootNamespace>LunarCal.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LunarCal.Core.Tests" />
+  </ItemGroup>
+
+</Project>

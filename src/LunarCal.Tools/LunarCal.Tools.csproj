@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Optional CLI: datalake compact / query / export (spec §3). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(LunarCalWindowsTfm)</TargetFramework>
+    <RootNamespace>LunarCal.Tools</RootNamespace>
+    <AssemblyName>lunarcal-tools</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LunarCal.Infrastructure\LunarCal.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
