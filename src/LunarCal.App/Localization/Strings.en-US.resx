@@ -394,4 +394,13 @@
   <data name="calendar.no_events" xml:space="preserve">
     <value>No events</value>
   </data>
+  <data name="agenda.all_calendars" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="agenda.empty" xml:space="preserve">
+    <value>No events in this time period</value>
+  </data>
+  <data name="agenda.filter_by" xml:space="preserve">
+    <value>Filter by calendar</value>
+  </data>
 </root>

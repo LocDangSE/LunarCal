@@ -394,4 +394,13 @@
   <data name="calendar.no_events" xml:space="preserve">
     <value>Không có sự kiện</value>
   </data>
+  <data name="agenda.all_calendars" xml:space="preserve">
+    <value>Tất cả</value>
+  </data>
+  <data name="agenda.empty" xml:space="preserve">
+    <value>Không có sự kiện nào trong khoảng thời gian này</value>
+  </data>
+  <data name="agenda.filter_by" xml:space="preserve">
+    <value>Lọc theo lịch</value>
+  </data>
 </root>

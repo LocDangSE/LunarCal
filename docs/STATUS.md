@@ -3,20 +3,20 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 13:45 +07:00, Antigravity. Hoàn thành P2-08 (View Tuần `WeekView.xaml`, Ngày `DayView.xaml`, `WeekViewModel`, `DayViewModel`, `DayColumnViewModel`, `TimedEventViewModel`, converters `LaneMarginConverter`, `LaneWidthConverter`, `LanePositionConverter`: lưới giờ 24h 48 px/h, cột giờ 56 px, hàng cả ngày, vạch giờ hiện tại `NowLineBrush`, ngày âm tiêu đề cột, thuật toán chia làn thông minh khi trùng giờ, tích hợp MainWindow). 158 test (157 pass, 1 skip).
+**Cập nhật lần cuối:** 2026-11-01 14:00 +07:00, Antigravity. Hoàn thành P2-09 (Lịch biểu `AgendaView.xaml`, `AgendaViewModel`, `AgendaDayGroupViewModel`, `AgendaEventItemViewModel`, `CalendarFilterChipViewModel`: phân nhóm sự kiện theo ngày, mở rộng sự kiện nhiều ngày, hiển thị ngày âm header mùng 1 `1/tháng` nổi bật và ký hiệu nhuận, ẩn khi tắt công tắc âm lịch, thanh lọc calendar chips cuộn ngang hỗ trợ bật/tắt toàn bộ, thẻ empty state; tích hợp vào `MainWindow`). 164 test (163 pass, 1 skip).
 
 **Trước đó:** 2026-11-01 12:40 +07:00, Claude Code (Opus 5.5). Hỗ trợ P2-00 (task 👤): đo token từ Figma 01–05 vào `.agents/rules/ui.md`, vẽ nháp S06–S09 và S13 trong Figma. Không sửa code.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-00, P2-01, P2-02, P2-03, P2-04, P2-05, P2-06, P2-06b, P2-07, P2-08 đã xong; tiếp theo: P2-09).
+- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-00, P2-01, P2-02, P2-03, P2-04, P2-05, P2-06, P2-06b, P2-07, P2-08, P2-09 đã xong; tiếp theo: P2-10).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Phiên 2026-11-01 12:40: hỗ trợ chủ dự án làm P2-00 (task 👤, vẫn `[!]`). (1) Đo token từ node Figma 01–05 và ghi bảng mới vào `.agents/rules/ui.md` mục "Design token". (2) Vẽ nháp trong file Figma `4vwWjHGoSu9naj5ou86QYs`, hàng y=2300: S06 Tuần `23:2`, S07 Ngày `23:493`, S08 Lịch biểu `23:984`, S09 Chi tiết ngày `23:1475` và bảng trạng thái `26:127`, S13 Cài đặt > Giao diện `23:1966`; component `Day detail panel` `25:2`, component set `Day cell` `26:126`. Logo trong các frame mới đổi thành "LunarCal" (frame 01–05 vẫn ghi "GCalendar"). Bước tiếp theo: chủ dự án duyệt hoặc sửa các frame. Khi đã duyệt thì đánh dấu P2-00 `[x]`, đóng Q-002 và tạo task sửa `Tokens.xaml`/`Themes/Light.xaml` cho khớp Figma (xem Q-005). File đang sửa dở: không có. Chưa commit.
-  - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-08 (View Tuần S06 và Ngày S07: lưới giờ 24h, cột giờ 56 px, hàng cả ngày, vạch giờ hiện tại, ngày âm ở tiêu đề cột, thuật toán chia làn sự kiện trùng giờ, unit tests). Tiếp theo: P2-09 (Lịch biểu AgendaView: danh sách nhóm theo ngày, có ngày âm, lọc theo calendar).
+  - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-09 (2026-11-01 14:00 +07:00): xây dựng AgendaView và bộ unit tests `AgendaViewModelTests` (164/164 test pass, 100% Lunar, 99.67% Core coverage gate). File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
-  1. Phase 2 Agenda view: P2-09 (Lịch biểu: danh sách nhóm theo ngày, có ngày âm, lọc theo calendar).
-  2. Phase 2 Day detail panel: P2-10 (Panel chi tiết ngày: can chi ngày/tháng/năm, tiết khí, ký hiệu nhuận, danh sách sự kiện).
-  3. Phase 2 Cài đặt giao diện: P2-11 (Đầu tuần cấu hình được, 12h/24h, định dạng theo culture, chọn múi giờ khác múi hệ thống).
+  1. Phase 2 Day detail panel: P2-10 (Panel chi tiết ngày: can chi ngày/tháng/năm, tiết khí, ký hiệu nhuận, danh sách sự kiện).
+  2. Phase 2 Cài đặt giao diện: P2-11 (Đầu tuần cấu hình được, 12h/24h, định dạng theo culture, chọn múi giờ khác múi hệ thống).
+  3. Phase 2 UI smoke: P2-12 (Bỏ skip FlaUI UI smoke test, test chuyển view Tháng/Tuần/Ngày/Lịch biểu).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -24,7 +24,7 @@
 | --- | --- | --- |
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2 | Đang thực hiện: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms), P2-08 (WeekView, DayView, timed event grid, now line, lane clustering) xong | `src/LunarCal.App/Views/WeekView.xaml`, `DayView.xaml`, `MonthView.xaml`, `MainWindow.xaml`, `src/LunarCal.App/ViewModels/WeekViewModel.cs`, `DayViewModel.cs`, `tests/` |
+| 2 | Đang thực hiện: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms), P2-08 (WeekView, DayView, timed event grid, now line, lane clustering), P2-09 (AgendaView, date grouping, calendar filters) xong | `src/LunarCal.App/Views/AgendaView.xaml`, `WeekView.xaml`, `DayView.xaml`, `MonthView.xaml`, `MainWindow.xaml`, `src/LunarCal.App/ViewModels/AgendaViewModel.cs`, `tests/` |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -36,9 +36,9 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 158 test: 157 pass, 0 fail, 1 skip |
+| `dotnet test --solution LunarCal.slnx` | 164 test: 163 pass, 0 fail, 1 skip |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.67% (ngưỡng 95% và 85%) |
-| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar và chuyển đổi mượt mà giữa Tháng, Tuần, Ngày |
+| `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được với UI shell TopBar, Sidebar, MiniCalendar và chuyển đổi mượt mà giữa Tháng, Tuần, Ngày, Lịch biểu |
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
 
 - Test skip: `LunarCal.App.UiTests.SmokeTests.App_starts_and_shows_main_window`, lý do "UI shell is implemented in Phase 2". Bỏ skip ở P2-12.

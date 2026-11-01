@@ -84,34 +84,19 @@
             </views:DayView.Style>
           </views:DayView>
 
-          <!-- Placeholder for Agenda view mode until P2-09 -->
-          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel.Style>
-              <Style TargetType="StackPanel">
+          <!-- Agenda (Schedule) View (Figma S08, FR-UI-1) -->
+          <views:AgendaView DataContext="{Binding AgendaView}">
+            <views:AgendaView.Style>
+              <Style TargetType="views:AgendaView">
                 <Setter Property="Visibility" Value="Collapsed" />
                 <Style.Triggers>
-                  <DataTrigger Binding="{Binding ActiveViewMode}" Value="Agenda">
+                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Agenda">
                     <Setter Property="Visibility" Value="Visible" />
                   </DataTrigger>
                 </Style.Triggers>
               </Style>
-            </StackPanel.Style>
-            <TextBlock Text="{Binding HeaderTitle}"
-                       FontSize="{DynamicResource FontSizeDisplay}"
-                       FontWeight="{DynamicResource FontWeightBold}"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,8" />
-            <TextBlock Text="{Binding LunarHeaderSubtitle}"
-                       FontSize="{DynamicResource FontSizeSubtitle}"
-                       Foreground="{DynamicResource LunarTextPrimaryBrush}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,16" />
-            <TextBlock Text="{Binding ActiveViewMode, StringFormat='Chế độ xem: {0}'}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
+            </views:AgendaView.Style>
+          </views:AgendaView>
         </Grid>
       </Border>
 

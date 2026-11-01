@@ -68,6 +68,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Child view model for the single day view (Figma S07, FR-UI-1).</summary>
     public DayViewModel DayView { get; }
 
+    /// <summary>Child view model for the agenda schedule view (Figma S08, FR-UI-1).</summary>
+    public AgendaViewModel AgendaView { get; }
+
     /// <summary>List of calendars displayed in the sidebar (FR-UI-10).</summary>
     public ObservableCollection<CalendarItemViewModel> Calendars { get; } = new();
 
@@ -101,6 +104,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         DayView.SetLunarVisibility(IsLunarVisible);
         _ = DayView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
+        AgendaView = new AgendaViewModel(_eventStore, _localizationService, _settingsStore);
+        AgendaView.SetLunarVisibility(IsLunarVisible);
+        _ = AgendaView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
+
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
         UpdateLanguageState();
@@ -115,6 +122,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MonthView.SetLunarVisibility(value);
         WeekView.SetLunarVisibility(value);
         DayView.SetLunarVisibility(value);
+        AgendaView.SetLunarVisibility(value);
         UpdateTitles();
     }
 
@@ -130,6 +138,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = MonthView.SetDisplayDateAsync(dateOnly);
         _ = WeekView.SetDisplayDateAsync(dateOnly);
         _ = DayView.SetDisplayDateAsync(dateOnly);
+        _ = AgendaView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -151,6 +160,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = MonthView.SetDisplayDateAsync(dateOnly);
         _ = WeekView.SetDisplayDateAsync(dateOnly);
         _ = DayView.SetDisplayDateAsync(dateOnly);
+        _ = AgendaView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -172,6 +182,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = MonthView.SetDisplayDateAsync(dateOnly);
         _ = WeekView.SetDisplayDateAsync(dateOnly);
         _ = DayView.SetDisplayDateAsync(dateOnly);
+        _ = AgendaView.SetDisplayDateAsync(dateOnly);
         UpdateTitles();
     }
 
@@ -280,6 +291,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MonthView.SetWeekStart(weekStart);
         WeekView.SetCultureAndWeekStart(culture, weekStart);
         DayView.SetCulture(culture);
+        AgendaView.SetCulture(culture);
 
         NetworkStatusText = IsOnline
             ? _localizationService["network.online"]
@@ -375,6 +387,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = MonthView.SetDisplayDateAsync(date);
         _ = WeekView.SetDisplayDateAsync(date);
         _ = DayView.SetDisplayDateAsync(date);
+        _ = AgendaView.SetDisplayDateAsync(date);
         UpdateTitles();
     }
 
@@ -384,6 +397,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MiniCalendar.SetSelectedDate(date);
         _ = WeekView.SetDisplayDateAsync(date);
         _ = DayView.SetDisplayDateAsync(date);
+        _ = AgendaView.SetDisplayDateAsync(date);
         UpdateTitles();
     }
 
@@ -402,5 +416,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MonthView.Dispose();
         WeekView.Dispose();
         DayView.Dispose();
+        AgendaView.Dispose();
     }
 }

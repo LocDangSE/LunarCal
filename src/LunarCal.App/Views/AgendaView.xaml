@@ -1,0 +1,314 @@
+<UserControl x:Class="LunarCal.App.Views.AgendaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AgendaViewModel}"
+             AutomationProperties.AutomationId="AgendaView">
+
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <conv:ColorToBrushConverter x:Key="ColorToBrush" />
+
+    <!-- Style for Filter Chip Buttons -->
+    <Style x:Key="FilterChipStyle" TargetType="Button">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusFull}"
+                    Padding="10,5">
+              <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <Grid Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid.RowDefinitions>
+      <!-- Row 0: Calendar Filter Bar (Figma S08) -->
+      <RowDefinition Height="Auto" />
+      <!-- Row 1: Grouped Agenda Event List -->
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- CALENDAR FILTER CHIP BAR -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource SurfaceBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="16,10"
+            AutomationProperties.AutomationId="CalendarFilterBar">
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="{loc:Loc agenda.filter_by}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     VerticalAlignment="Center"
+                     Margin="0,0,12,0" />
+
+          <!-- "Tất cả" (All Calendars) Chip -->
+          <Button Style="{StaticResource FilterChipStyle}"
+                  Command="{Binding ToggleAllCalendarsCommand}"
+                  AutomationProperties.AutomationId="FilterChipAll">
+            <Button.Triggers>
+              <!-- Highlight background when all selected -->
+            </Button.Triggers>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc agenda.all_calendars}"
+                         FontSize="{DynamicResource FontSizeCaption}"
+                         FontWeight="{DynamicResource FontWeightSemiBold}">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsAllCalendarsSelected}" Value="True">
+                        <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </StackPanel>
+          </Button>
+
+          <!-- Individual Calendar Chips -->
+          <ItemsControl ItemsSource="{Binding CalendarFilters}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type vm:CalendarFilterChipViewModel}">
+                <Button Style="{StaticResource FilterChipStyle}"
+                        Command="{Binding ToggleCommand}"
+                        AutomationProperties.AutomationId="CalendarFilterChip">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Color bullet dot -->
+                    <Ellipse Width="8" Height="8"
+                             Fill="{Binding Color, Converter={StaticResource ColorToBrush}}"
+                             Margin="0,0,6,0"
+                             VerticalAlignment="Center" />
+                    <!-- Calendar name -->
+                    <TextBlock Text="{Binding Summary}"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               FontWeight="{DynamicResource FontWeightMedium}">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                              <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                              <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </StackPanel>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <!-- AGENDA LIST CONTAINER -->
+    <ScrollViewer Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Padding="24,16"
+                  AutomationProperties.AutomationId="AgendaScrollViewer">
+      <Grid>
+        <!-- Empty State Message -->
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0,60">
+          <StackPanel.Style>
+            <Style TargetType="StackPanel">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HasEvents}" Value="False">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </StackPanel.Style>
+          <TextBlock Text="📅"
+                     FontSize="36"
+                     HorizontalAlignment="Center"
+                     Margin="0,0,0,12" />
+          <TextBlock Text="{loc:Loc agenda.empty}"
+                     FontSize="{DynamicResource FontSizeSubtitle}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     HorizontalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Day Groups List (Figma S08) -->
+        <ItemsControl ItemsSource="{Binding DayGroups}">
+          <ItemsControl.Style>
+            <Style TargetType="ItemsControl">
+              <Setter Property="Visibility" Value="Visible" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HasEvents}" Value="False">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </ItemsControl.Style>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type vm:AgendaDayGroupViewModel}">
+              <Border Margin="0,0,0,24"
+                      AutomationProperties.AutomationId="AgendaDayGroup">
+                <StackPanel>
+                  <!-- DAY GROUP HEADER -->
+                  <Border BorderBrush="{DynamicResource BorderBrush}"
+                          BorderThickness="0,0,0,1"
+                          Padding="0,0,0,8"
+                          Margin="0,0,0,10">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <!-- Left: Solar Date & Today Badge -->
+                        <ColumnDefinition Width="*" />
+                        <!-- Right: Lunar Date -->
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+
+                      <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Today highlight circle if today -->
+                        <Border Width="8" Height="8"
+                                CornerRadius="4"
+                                Background="{DynamicResource TodayHighlightBrush}"
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding IsToday, Converter={StaticResource BoolToVis}}" />
+
+                        <TextBlock Text="{Binding DateDisplay}"
+                                   FontSize="{DynamicResource FontSizeSubtitle}"
+                                   FontWeight="{DynamicResource FontWeightBold}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                      </StackPanel>
+
+                      <!-- Lunar Date Text (FR-UI-1, FR-LUNAR-6) -->
+                      <TextBlock Grid.Column="1"
+                                 Text="{Binding LunarDayText}"
+                                 FontSize="{DynamicResource FontSizeBodyStrong}"
+                                 FontWeight="{DynamicResource FontWeightSemiBold}"
+                                 Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                                 VerticalAlignment="Center"
+                                 AutomationProperties.AutomationId="LunarDateText">
+                        <TextBlock.Style>
+                          <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding LunarDayText}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                              </DataTrigger>
+                              <DataTrigger Binding="{Binding IsLunarVisible}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                              </DataTrigger>
+                              <DataTrigger Binding="{Binding IsFirstLunarDay}" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource LunarStrongBrush}" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </TextBlock.Style>
+                      </TextBlock>
+                    </Grid>
+                  </Border>
+
+                  <!-- EVENTS IN DAY GROUP -->
+                  <ItemsControl ItemsSource="{Binding Events}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate DataType="{x:Type vm:AgendaEventItemViewModel}">
+                        <Border Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{DynamicResource CornerRadiusSmall}"
+                                Padding="14,10"
+                                Margin="0,0,0,8"
+                                AutomationProperties.AutomationId="AgendaEventItem">
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                              <!-- Left Calendar Color Stripe -->
+                              <ColumnDefinition Width="4" />
+                              <!-- Time range -->
+                              <ColumnDefinition Width="130" />
+                              <!-- Event details (Title + Location) -->
+                              <ColumnDefinition Width="*" />
+                              <!-- Calendar Name Badge -->
+                              <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Color stripe -->
+                            <Border Grid.Column="0"
+                                    Background="{Binding CalendarColor, Converter={StaticResource ColorToBrush}}"
+                                    CornerRadius="2"
+                                    Margin="0,0,10,0" />
+
+                            <!-- Time range display -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding TimeDisplay}"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       FontWeight="{DynamicResource FontWeightSemiBold}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,10,0" />
+
+                            <!-- Title and Location -->
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                              <TextBlock Text="{Binding Title}"
+                                         FontSize="{DynamicResource FontSizeBodyStrong}"
+                                         FontWeight="{DynamicResource FontWeightMedium}"
+                                         Foreground="{DynamicResource TextPrimaryBrush}"
+                                         TextTrimming="CharacterEllipsis" />
+                              <TextBlock Text="{Binding Location, StringFormat='📍 {0}'}"
+                                         FontSize="{DynamicResource FontSizeMini}"
+                                         Foreground="{DynamicResource TextTertiaryBrush}"
+                                         Margin="0,2,0,0"
+                                         Visibility="{Binding HasLocation, Converter={StaticResource BoolToVis}}"
+                                         TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+
+                            <!-- Calendar badge -->
+                            <Border Grid.Column="3"
+                                    Background="{DynamicResource ControlTrackBrush}"
+                                    CornerRadius="{DynamicResource CornerRadiusSmall}"
+                                    Padding="8,3"
+                                    VerticalAlignment="Center"
+                                    Margin="8,0,0,0">
+                              <TextBlock Text="{Binding CalendarName}"
+                                         FontSize="{DynamicResource FontSizeMini}"
+                                         Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Border>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
