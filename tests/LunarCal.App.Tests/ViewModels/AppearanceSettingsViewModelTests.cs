@@ -14,6 +14,7 @@ public sealed class AppearanceSettingsViewModelTests
     private readonly FakeSettingsStore _settingsStore;
     private readonly IThemeService _themeService;
     private readonly LocalizationService _localizationService;
+    private readonly DisplayPreferences _preferences;
 
     public AppearanceSettingsViewModelTests()
     {
@@ -26,13 +27,13 @@ public sealed class AppearanceSettingsViewModelTests
 
         _themeService = Substitute.For<IThemeService>();
         _localizationService = new LocalizationService(SupportedCultures.Vietnamese);
+        _preferences = new DisplayPreferences(_settingsStore, _localizationService);
     }
 
     [Fact]
     public async Task FR_UI_7_AppearanceSettings_initializes_with_values_from_store()
     {
-        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService);
-        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        var vm = await CreateViewModelAsync();
 
         vm.SelectedTheme.Should().Be("Light");
         vm.IsThemeLight.Should().BeTrue();
@@ -54,8 +55,7 @@ public sealed class AppearanceSettingsViewModelTests
     [Fact]
     public async Task FR_UI_7_AppearanceSettings_theme_change_triggers_service_and_persists()
     {
-        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService);
-        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        var vm = await CreateViewModelAsync();
 
         vm.SelectedTheme = "Dark";
 
@@ -75,8 +75,7 @@ public sealed class AppearanceSettingsViewModelTests
     [Fact]
     public async Task FR_UI_7_AppearanceSettings_week_start_change_fires_event_and_persists()
     {
-        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService);
-        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        var vm = await CreateViewModelAsync();
 
         DayOfWeek? receivedWeekStart = null;
         vm.WeekStartChanged += (_, ws) => receivedWeekStart = ws;
@@ -99,8 +98,7 @@ public sealed class AppearanceSettingsViewModelTests
     [Fact]
     public async Task FR_I18N_4_AppearanceSettings_time_format_change_fires_event_and_persists()
     {
-        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService);
-        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        var vm = await CreateViewModelAsync();
 
         string? receivedFormat = null;
         vm.TimeFormatChanged += (_, fmt) => receivedFormat = fmt;
@@ -123,8 +121,7 @@ public sealed class AppearanceSettingsViewModelTests
     [Fact]
     public async Task FR_UI_7_AppearanceSettings_timezone_change_fires_event_and_persists()
     {
-        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService);
-        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        var vm = await CreateViewModelAsync();
 
         string? receivedTz = null;
         vm.TimezoneChanged += (_, tz) => receivedTz = tz;
@@ -139,8 +136,7 @@ public sealed class AppearanceSettingsViewModelTests
     [Fact]
     public async Task FR_LUNAR_6_AppearanceSettings_lunar_toggle_fires_event_and_persists()
     {
-        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService);
-        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        var vm = await CreateViewModelAsync();
 
         bool? receivedLunar = null;
         vm.LunarEnabledChanged += (_, enabled) => receivedLunar = enabled;
@@ -150,6 +146,54 @@ public sealed class AppearanceSettingsViewModelTests
         receivedLunar.Should().BeFalse();
         var savedLunar = await _settingsStore.GetLunarEnabledAsync(cancellationToken: TestContext.Current.CancellationToken);
         savedLunar.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FR_UI_7_AppearanceSettings_changes_apply_to_display_preferences()
+    {
+        var vm = await CreateViewModelAsync();
+
+        vm.SelectedWeekStart = DayOfWeek.Sunday;
+        vm.SelectedTimeFormat = TimeFormattingHelper.Format12Hours;
+        vm.SelectedTimezone = "UTC";
+        vm.IsLunarEnabled = false;
+        await vm.PendingSave;
+
+        _preferences.WeekStart.Should().Be(DayOfWeek.Sunday);
+        _preferences.TimeFormat.Should().Be("12h");
+        _preferences.TimeZone.Id.Should().Be("UTC");
+        _preferences.LunarEnabled.Should().BeFalse();
+        vm.SaveErrorText.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FR_UI_7_AppearanceSettings_save_failure_is_reported_without_crashing()
+    {
+        var failingStore = new FakeSettingsStore { FailWrites = true };
+        var preferences = new DisplayPreferences(failingStore, _localizationService);
+        await preferences.LoadAsync(TestContext.Current.CancellationToken);
+        var vm = new AppearanceSettingsViewModel(failingStore, _themeService, _localizationService, preferences);
+        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+
+        vm.SelectedWeekStart = DayOfWeek.Sunday;
+        await vm.PendingSave; // must not throw
+
+        vm.SaveErrorText.Should().Be("Không lưu được cài đặt. Vui lòng thử lại.");
+        preferences.WeekStart.Should().Be(DayOfWeek.Monday, "a failed save must not change the applied preference");
+
+        failingStore.FailWrites = false;
+        vm.SelectedWeekStart = DayOfWeek.Saturday;
+        await vm.PendingSave;
+        vm.SaveErrorText.Should().BeEmpty();
+        preferences.WeekStart.Should().Be(DayOfWeek.Saturday);
+    }
+
+    private async Task<AppearanceSettingsViewModel> CreateViewModelAsync()
+    {
+        await _preferences.LoadAsync(TestContext.Current.CancellationToken);
+        var vm = new AppearanceSettingsViewModel(_settingsStore, _themeService, _localizationService, _preferences);
+        await vm.InitializeAsync(TestContext.Current.CancellationToken);
+        return vm;
     }
 
     private sealed class FakeSettingsStore : ISettingsStore
@@ -173,8 +217,15 @@ public sealed class AppearanceSettingsViewModelTests
         public ValueTask<string?> GetStringAsync(string key, CancellationToken cancellationToken = default) =>
             ValueTask.FromResult(_dict.TryGetValue(key, out var val) ? val : null);
 
+        public bool FailWrites { get; set; }
+
         public ValueTask SetStringAsync(string key, string? value, CancellationToken cancellationToken = default)
         {
+            if (FailWrites)
+            {
+                return ValueTask.FromException(new InvalidOperationException("write failed"));
+            }
+
             SetString(key, value);
             return ValueTask.CompletedTask;
         }

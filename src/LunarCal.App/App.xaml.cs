@@ -3,6 +3,8 @@ using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views;
+using LunarCal.Core.Abstractions;
+using LunarCal.Core.Settings;
 using LunarCal.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,9 +53,10 @@ public partial class App : Application
             // so the first render already uses the user's settings (FR-UI-7).
             await _host.Services.GetRequiredService<IDisplayPreferences>().LoadAsync().ConfigureAwait(true);
 
-            // Initialize active theme
+            // Apply the saved theme (FR-UI-7); defaults to "System".
+            var settingsStore = _host.Services.GetRequiredService<ISettingsStore>();
             var themeService = _host.Services.GetRequiredService<IThemeService>();
-            themeService.ApplyTheme("System");
+            themeService.ApplyTheme(await settingsStore.GetThemeAsync().ConfigureAwait(true));
 
             // Hosted services are started in a later phase (sync engine, AI queue); nothing to start yet.
             var window = _host.Services.GetRequiredService<MainWindow>();

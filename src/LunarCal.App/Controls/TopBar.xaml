@@ -256,6 +256,15 @@
         </StackPanel>
       </Border>
 
+      <!-- Settings (Figma S13) -->
+      <Button Content="⚙"
+              Command="{Binding OpenSettingsCommand}"
+              Style="{StaticResource NavIconButtonStyle}"
+              ToolTip="{loc:Loc Key=topbar.settings}"
+              AutomationProperties.Name="{loc:Loc Key=topbar.settings}"
+              AutomationProperties.AutomationId="BtnSettings"
+              Margin="0,0,12,0" />
+
       <!-- Network Status Chip -->
       <Border Background="{DynamicResource HoverBackgroundBrush}"
               CornerRadius="{DynamicResource CornerRadiusFull}"

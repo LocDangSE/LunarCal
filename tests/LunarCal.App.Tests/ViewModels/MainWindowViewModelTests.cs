@@ -175,6 +175,97 @@ public sealed class MainWindowViewModelTests
         vm.MiniCalendar.SelectedDate.Should().Be(targetDate);
     }
 
+    [Fact]
+    public void FR_UI_7_Week_start_setting_survives_language_switch()
+    {
+        _preferences.WeekStart = DayOfWeek.Sunday;
+        using var vm = CreateViewModel();
+
+        vm.SwitchLanguageCommand.Execute("vi-VN");
+        vm.SwitchLanguageCommand.Execute("en-US");
+        vm.SwitchLanguageCommand.Execute("vi-VN");
+
+        // Vietnamese would default to Monday, but the user's Sunday setting must win (FR-UI-7, FR-I18N-4).
+        vm.MonthView.WeekStart.Should().Be(DayOfWeek.Sunday);
+        vm.WeekView.WeekStart.Should().Be(DayOfWeek.Sunday);
+        vm.MiniCalendar.DayHeaders[0].Should().Be("CN");
+    }
+
+    [Fact]
+    public void FR_UI_7_Changing_week_start_preference_updates_every_view_immediately()
+    {
+        _preferences.WeekStart = DayOfWeek.Monday;
+        using var vm = CreateViewModel();
+        vm.SelectedDate = new DateTime(2026, 11, 18); // Wednesday
+        vm.ChangeViewCommand.Execute(CalendarViewMode.Week);
+
+        _preferences.WeekStart = DayOfWeek.Sunday;
+
+        vm.MonthView.WeekStart.Should().Be(DayOfWeek.Sunday);
+        vm.MonthView.WeekdayHeaders[0].Should().Be("CN");
+        vm.WeekView.WeekStart.Should().Be(DayOfWeek.Sunday);
+        vm.MiniCalendar.DayHeaders[0].Should().Be("CN");
+        vm.HeaderTitle.Should().StartWith("15 – 21");
+    }
+
+    [Fact]
+    public void FR_LUNAR_6_Lunar_preference_change_hides_lunar_text_in_all_views()
+    {
+        using var vm = CreateViewModel();
+        vm.IsLunarVisible.Should().BeTrue();
+
+        _preferences.LunarEnabled = false;
+
+        vm.IsLunarVisible.Should().BeFalse();
+        vm.LunarHeaderSubtitle.Should().BeEmpty();
+        vm.MonthView.IsLunarVisible.Should().BeFalse();
+        vm.WeekView.IsLunarVisible.Should().BeFalse();
+        vm.DayView.IsLunarVisible.Should().BeFalse();
+        vm.AgendaView.IsLunarVisible.Should().BeFalse();
+    }
+
+    [Fact]
+    public void FR_I18N_4_Time_format_preference_change_reformats_event_times()
+    {
+        var day = new DateOnly(2026, 11, 18);
+        _eventStore.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CalendarEvent>>(new[]
+            {
+                new CalendarEvent
+                {
+                    Id = "e1",
+                    CalendarId = "cal-1",
+                    Title = "Meeting",
+                    StartUtc = new DateTimeOffset(2026, 11, 18, 9, 0, 0, TimeSpan.FromHours(7)),
+                    EndUtc = new DateTimeOffset(2026, 11, 18, 10, 30, 0, TimeSpan.FromHours(7)),
+                },
+            }));
+        _localizationService.SetCulture(SupportedCultures.English);
+        using var vm = CreateViewModel();
+        vm.SelectedDate = day.ToDateTime(TimeOnly.MinValue);
+        _preferences.TimeFormat = TimeFormattingHelper.Format24Hours;
+        _ = vm.DayView.SetDisplayDateAsync(day);
+        _ = vm.AgendaView.SetDisplayDateAsync(day);
+        vm.DayView.DayColumn!.TimedEvents.Single().TimeRangeText.Should().Be("09:00 – 10:30");
+
+        _preferences.TimeFormat = TimeFormattingHelper.Format12Hours;
+
+        vm.DayView.DayColumn!.TimedEvents.Single().TimeRangeText.Should().Be("9:00 AM – 10:30 AM");
+        vm.AgendaView.DayGroups.Single().Events.Single().TimeDisplay.Should().Be("9:00 AM – 10:30 AM");
+    }
+
+    [Fact]
+    public void FR_UI_7_OpenSettings_raises_settings_requested()
+    {
+        using var vm = CreateViewModel();
+        var raised = 0;
+        vm.SettingsRequested += (_, _) => raised++;
+
+        vm.OpenSettingsCommand.Execute(null);
+
+        raised.Should().Be(1);
+    }
+
     private MainWindowViewModel CreateViewModel()
     {
         return new MainWindowViewModel(_eventStore, _localizationService, _themeService, _settingsStore, _preferences);

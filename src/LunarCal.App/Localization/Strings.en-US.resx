@@ -513,4 +513,10 @@
   <data name="settings.appearance.lunar_desc" xml:space="preserve">
     <value>Display lunar days, leap months, Can Chi, and solar terms</value>
   </data>
+  <data name="settings.save_error" xml:space="preserve">
+    <value>Could not save the setting. Please try again.</value>
+  </data>
+  <data name="topbar.settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
 </root>

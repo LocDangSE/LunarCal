@@ -18,6 +18,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     private readonly ISettingsStore _settingsStore;
     private readonly IThemeService _themeService;
     private readonly ILocalizationService _localizationService;
+    private readonly IDisplayPreferences _preferences;
     private bool _isInitializing;
 
     /// <summary>Raised when the configured first day of week changes.</summary>
@@ -50,26 +51,40 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _systemTimezoneText = string.Empty;
 
+    /// <summary>Localized error shown when the last change could not be saved; empty when the last save succeeded.</summary>
+    [ObservableProperty]
+    private string _saveErrorText = string.Empty;
+
     /// <summary>Available system timezones for selection.</summary>
     public IReadOnlyList<TimeZoneInfo> AvailableTimezones { get; }
 
     /// <summary>
+    /// Completes when the most recent change has been applied and persisted. Exceptions are never surfaced here;
+    /// they are reported through <see cref="SaveErrorText"/>.
+    /// </summary>
+    public Task PendingSave { get; private set; } = Task.CompletedTask;
+
+    /// <summary>
     /// Initializes a new instance of <see cref="AppearanceSettingsViewModel"/>.
+    /// Week start, time format, time zone and lunar toggle are applied through <see cref="IDisplayPreferences"/>,
+    /// so every open view updates immediately (FR-UI-7, FR-I18N-4, FR-LUNAR-6).
     /// </summary>
     public AppearanceSettingsViewModel(
         ISettingsStore settingsStore,
         IThemeService themeService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IDisplayPreferences preferences)
     {
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
+        _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
 
         try
         {
             AvailableTimezones = TimeZoneInfo.GetSystemTimeZones().ToList();
         }
-        catch
+        catch (TimeZoneNotFoundException)
         {
             AvailableTimezones = new List<TimeZoneInfo> { TimeZoneInfo.Local, TimeZoneInfo.Utc };
         }
@@ -79,7 +94,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Loads settings asynchronously from the store.
+    /// Loads the current values (theme from the settings store, the rest from <see cref="IDisplayPreferences"/>).
     /// </summary>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -87,16 +102,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         try
         {
             SelectedTheme = await _settingsStore.GetThemeAsync(cancellationToken: cancellationToken);
-            SelectedWeekStart = await _settingsStore.GetWeekStartAsync(
-                AppSettingDefaults.ResolveDefaultWeekStart(_localizationService.CurrentCulture.Name),
-                cancellationToken);
-            SelectedTimeFormat = await _settingsStore.GetTimeFormatAsync(
-                AppSettingDefaults.ResolveDefaultTimeFormat(_localizationService.CurrentCulture.Name),
-                cancellationToken);
-            SelectedTimezone = await _settingsStore.GetTimezoneAsync(
-                AppSettingDefaults.ResolveDefaultTimezone(),
-                cancellationToken);
-            IsLunarEnabled = await _settingsStore.GetLunarEnabledAsync(cancellationToken: cancellationToken);
+            SelectedWeekStart = _preferences.WeekStart;
+            SelectedTimeFormat = _preferences.TimeFormat;
+            SelectedTimezone = _preferences.TimeZone.Id;
+            IsLunarEnabled = _preferences.LunarEnabled;
 
             UpdateSystemTimezoneText();
         }
@@ -104,6 +113,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         {
             _isInitializing = false;
         }
+
+        OnPropertyChanged(string.Empty);
     }
 
     private void UpdateSystemTimezoneText()
@@ -114,67 +125,85 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
             $"{localZone.DisplayName} ({localZone.Id})");
     }
 
-    async partial void OnSelectedThemeChanged(string value)
+    partial void OnSelectedThemeChanged(string value)
     {
+        OnPropertyChanged(nameof(IsThemeSystem));
+        OnPropertyChanged(nameof(IsThemeLight));
+        OnPropertyChanged(nameof(IsThemeDark));
+        OnPropertyChanged(nameof(IsThemeHighContrast));
         if (_isInitializing)
         {
             return;
         }
 
         _themeService.ApplyTheme(value);
-        await _settingsStore.SetThemeAsync(value);
-        OnPropertyChanged(nameof(IsThemeSystem));
-        OnPropertyChanged(nameof(IsThemeLight));
-        OnPropertyChanged(nameof(IsThemeDark));
-        OnPropertyChanged(nameof(IsThemeHighContrast));
+        Save(ct => _settingsStore.SetThemeAsync(value, ct).AsTask());
     }
 
-    async partial void OnSelectedWeekStartChanged(DayOfWeek value)
+    partial void OnSelectedWeekStartChanged(DayOfWeek value)
     {
-        if (_isInitializing)
-        {
-            return;
-        }
-
-        await _settingsStore.SetWeekStartAsync(value);
-        WeekStartChanged?.Invoke(this, value);
         OnPropertyChanged(nameof(IsMondayStart));
         OnPropertyChanged(nameof(IsSundayStart));
-    }
-
-    async partial void OnSelectedTimeFormatChanged(string value)
-    {
         if (_isInitializing)
         {
             return;
         }
 
-        await _settingsStore.SetTimeFormatAsync(value);
-        TimeFormatChanged?.Invoke(this, value);
+        Save(ct => _preferences.SetWeekStartAsync(value, ct), () => WeekStartChanged?.Invoke(this, value));
+    }
+
+    partial void OnSelectedTimeFormatChanged(string value)
+    {
         OnPropertyChanged(nameof(Is24Hours));
         OnPropertyChanged(nameof(Is12Hours));
+        if (_isInitializing)
+        {
+            return;
+        }
+
+        Save(ct => _preferences.SetTimeFormatAsync(value, ct), () => TimeFormatChanged?.Invoke(this, value));
     }
 
-    async partial void OnSelectedTimezoneChanged(string value)
+    partial void OnSelectedTimezoneChanged(string value)
+    {
+        if (_isInitializing || string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        Save(ct => _preferences.SetTimeZoneAsync(value, ct), () => TimezoneChanged?.Invoke(this, value));
+    }
+
+    partial void OnIsLunarEnabledChanged(bool value)
     {
         if (_isInitializing)
         {
             return;
         }
 
-        await _settingsStore.SetTimezoneAsync(value);
-        TimezoneChanged?.Invoke(this, value);
+        Save(ct => _preferences.SetLunarEnabledAsync(value, ct), () => LunarEnabledChanged?.Invoke(this, value));
     }
 
-    async partial void OnIsLunarEnabledChanged(bool value)
+    // Chains saves so they are applied in order, and observes every exception (no async void, AGENTS.md §7).
+    private void Save(Func<CancellationToken, Task> operation, Action? onSaved = null)
     {
-        if (_isInitializing)
-        {
-            return;
-        }
+        var previous = PendingSave;
+        PendingSave = RunAsync();
 
-        await _settingsStore.SetLunarEnabledAsync(value);
-        LunarEnabledChanged?.Invoke(this, value);
+        async Task RunAsync()
+        {
+            await previous.ConfigureAwait(true);
+            try
+            {
+                await operation(CancellationToken.None).ConfigureAwait(true);
+                SaveErrorText = string.Empty;
+                onSaved?.Invoke();
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                SaveErrorText = _localizationService["settings.save_error"];
+            }
+        }
     }
 
     // Helper properties for direct binding to radio buttons

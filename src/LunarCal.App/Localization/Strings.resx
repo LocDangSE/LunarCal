@@ -513,4 +513,10 @@
   <data name="settings.appearance.lunar_desc" xml:space="preserve">
     <value>Hiển thị ngày âm, tháng nhuận, can chi và tiết khí</value>
   </data>
+  <data name="settings.save_error" xml:space="preserve">
+    <value>Không lưu được cài đặt. Vui lòng thử lại.</value>
+  </data>
+  <data name="topbar.settings" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
 </root>

@@ -90,6 +90,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
+        _isLunarVisible = _preferences.LunarEnabled;
 
         MiniCalendar = new MiniCalendarViewModel();
         MiniCalendar.DateSelected += OnMiniCalendarDateSelected;
@@ -112,6 +113,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = AgendaView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
         _localizationService.PropertyChanged += OnLocalizationChanged;
+        _preferences.PropertyChanged += OnPreferencesChanged;
 
         UpdateLanguageState();
         UpdateTitles();
@@ -254,6 +256,18 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _ = SelectedDate;
     }
 
+    /// <summary>Raised when the user asks to open Settings (Figma S13). The view opens the settings window.</summary>
+    public event EventHandler? SettingsRequested;
+
+    /// <summary>
+    /// Opens the Settings screen (Cài đặt &gt; Giao diện, Figma S13, FR-UI-7).
+    /// </summary>
+    [RelayCommand]
+    public void OpenSettings()
+    {
+        SettingsRequested?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>
     /// Loads calendar collections from the event store into the sidebar list.
     /// </summary>
@@ -289,7 +303,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IsVietnameseActive = culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
         IsEnglishActive = !IsVietnameseActive;
 
-        var weekStart = IsVietnameseActive ? DayOfWeek.Monday : DayOfWeek.Sunday;
+        // Week start comes from the user's setting (FR-UI-7), not from the UI language.
+        var weekStart = _preferences.WeekStart;
         MiniCalendar.SetCultureAndWeekStart(culture, weekStart);
         MonthView.SetWeekStart(weekStart);
         WeekView.SetCultureAndWeekStart(culture, weekStart);
@@ -317,7 +332,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     : SelectedDate.ToString("dddd, MMMM d, yyyy", culture);
                 break;
             case CalendarViewMode.Week:
-                int diff = (7 + (dateOnly.DayOfWeek - (IsVietnameseActive ? DayOfWeek.Monday : DayOfWeek.Sunday))) % 7;
+                int diff = (7 + (dateOnly.DayOfWeek - _preferences.WeekStart)) % 7;
                 var weekStart = dateOnly.AddDays(-diff);
                 var weekEnd = weekStart.AddDays(6);
                 if (culture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
@@ -410,9 +425,34 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         UpdateTitles();
     }
 
+    private void OnPreferencesChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var date = DateOnly.FromDateTime(SelectedDate);
+        switch (e.PropertyName)
+        {
+            case nameof(IDisplayPreferences.WeekStart):
+                MiniCalendar.SetCultureAndWeekStart(_localizationService.CurrentCulture, _preferences.WeekStart);
+                MonthView.SetWeekStart(_preferences.WeekStart);
+                WeekView.SetWeekStart(_preferences.WeekStart);
+                UpdateTitles();
+                break;
+            case nameof(IDisplayPreferences.LunarEnabled):
+                IsLunarVisible = _preferences.LunarEnabled;
+                break;
+            case nameof(IDisplayPreferences.TimeZone):
+            case nameof(IDisplayPreferences.TimeFormat):
+                _ = MonthView.SetDisplayDateAsync(date);
+                _ = WeekView.SetDisplayDateAsync(date);
+                _ = DayView.SetDisplayDateAsync(date);
+                _ = AgendaView.SetDisplayDateAsync(date);
+                break;
+        }
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
+        _preferences.PropertyChanged -= OnPreferencesChanged;
         MiniCalendar.DateSelected -= OnMiniCalendarDateSelected;
         MonthView.DaySelected -= OnMonthViewDaySelected;
         _localizationService.PropertyChanged -= OnLocalizationChanged;

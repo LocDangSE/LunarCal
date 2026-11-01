@@ -4,11 +4,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:AppearanceSettingsViewModel}"
              Background="{DynamicResource WindowBackgroundBrush}"
              AutomationProperties.AutomationId="AppearanceSettingsPage"
              AutomationProperties.Name="Appearance Settings">
+
+  <UserControl.Resources>
+    <!-- Localization source for the indexer bindings below; refreshes on culture change (FR-I18N-1). -->
+    <x:Static x:Key="Loc" Member="loc:LocalizationService.Instance" />
+  </UserControl.Resources>
 
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32,24,32,32" MaxWidth="720" HorizontalAlignment="Left">

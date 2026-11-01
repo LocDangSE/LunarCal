@@ -161,4 +161,44 @@ public sealed class SmokeTests
             }
         }
     }
+
+    [Fact]
+    public void Settings_button_opens_appearance_page()
+    {
+        var exePath = FindAppPath();
+        using var automation = new UIA3Automation();
+        using var app = LaunchApp(exePath);
+
+        try
+        {
+            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
+                ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
+            var settingsButton = window.FindFirstDescendant(cf => cf.ByAutomationId("BtnSettings"))?.AsButton();
+            settingsButton.Should().NotBeNull("the top bar must expose a Settings button (Figma S13)");
+            settingsButton!.Invoke();
+
+            var settingsWindow = FlaUI.Core.Tools.Retry.WhileNull(
+                () => window.ModalWindows.FirstOrDefault(),
+                TimeSpan.FromSeconds(5)).Result;
+            settingsWindow.Should().NotBeNull("Settings must open as a window owned by the shell");
+
+            var page = FlaUI.Core.Tools.Retry.WhileNull(
+                () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("AppearanceSettingsPage")),
+                TimeSpan.FromSeconds(5)).Result;
+            page.Should().NotBeNull("the Appearance page (S13) must be hosted in the Settings window");
+
+            settingsWindow!.Close();
+        }
+        finally
+        {
+            try
+            {
+                app.Close();
+            }
+            catch
+            {
+                app.Kill();
+            }
+        }
+    }
 }
