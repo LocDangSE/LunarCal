@@ -1,3 +1,5 @@
+using LunarCal.Core.Abstractions;
+using LunarCal.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +13,9 @@ public static class DependencyInjection
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
+
+        // Phase 2: In-memory settings store; Phase 3 transitions to SQLCipher SQLite
+        services.AddSingleton<ISettingsStore, InMemorySettingsStore>();
 
         return services;
     }

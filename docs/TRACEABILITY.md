@@ -21,3 +21,5 @@ Maps requirement IDs from the spec to the tests that cover them. Fill in as each
 | SEC-KEY-5 Secret scanning (gitleaks on CI and pre-commit hook) | CI job `gitleaks`, `.gitleaks.toml`, `.pre-commit-config.yaml`, `.githooks/pre-commit` | Covered |
 | SEC-SC-3 CI static analysis and scanning | CI job `gitleaks` (P0-02), CodeQL workflow `.github/workflows/codeql.yml` v4.39.1 (P0-03) | Covered |
 | SEC-SC-4 SourceLink for reproducible builds | `Directory.Build.props`, `Directory.Packages.props` (`Microsoft.SourceLink.GitHub`), custom debug info in PDB verified (P0-04) | Covered |
+| FR-UI-7 Settings persistence, defaults (lunar_enabled, week_start, theme, timezone) | `LunarCal.Core.Tests.Settings.SettingsDefaultsTests.FR_UI_7_*`, `LunarCal.Infrastructure.Tests.Storage.InMemorySettingsStoreTests.*` | Covered (P2-04) |
+| FR-LUNAR-6 Lunar toggle default enabled | `LunarCal.Core.Tests.Settings.SettingsDefaultsTests.FR_LUNAR_6_Default_lunar_enabled_is_true` | Covered (P2-04) |

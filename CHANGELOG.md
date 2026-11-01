@@ -16,6 +16,7 @@
 - CodeQL static analysis workflow for C# on Windows (`.github/workflows/codeql.yml`, action pinned by commit SHA, minimal permissions) (SEC-SC-3).
 - SourceLink for reproducible builds and source-level debugging (`Microsoft.SourceLink.GitHub` 10.0.403, `PublishRepositoryUrl`, `EmbedUntrackedSources`, `Deterministic`, `ContinuousIntegrationBuild`) (SEC-SC-4).
 - Pseudo-localization support for UI layout overflow testing: `PseudoLocalizer` expanding strings by ~40% with diacritic glyphs and `[ ... ]` delimiters while preserving `{0}` formatting tokens; configurable via `appsettings.json` (`EnablePseudoLocale`) and `ILocalizationService` runtime toggle (FR-I18N-3).
+- Settings storage abstraction and in-memory implementation: `ISettingsStore`, `SettingKeys`, `AppSettingDefaults`, and `InMemorySettingsStore` with culture-aware defaults (`lunar_enabled` true, `week_start` Monday for vi-VN and Sunday for en-US, `theme` System, `timezone`) (FR-UI-7, FR-LUNAR-6).
 
 ### Changed
 - `.editorconfig`: constants are PascalCase (the `_camelCase` rule applies to other private fields).
