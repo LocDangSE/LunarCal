@@ -14,8 +14,9 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        // Phase 2: In-memory settings store; Phase 3 transitions to SQLCipher SQLite
+        // Phase 2: In-memory settings and event stores; Phase 3 transitions to SQLCipher SQLite
         services.AddSingleton<ISettingsStore, InMemorySettingsStore>();
+        services.AddSingleton<IEventStore, InMemoryEventStore>();
 
         return services;
     }

@@ -3,17 +3,17 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 11:28 +07:00, Antigravity. Hoàn thành P2-04 (ISettingsStore, InMemorySettingsStore, AppSettingDefaults, unit test mặc định theo culture cho vi-VN và en-US). 114 test pass/skip (113 pass, 1 skip).
+**Cập nhật lần cuối:** 2026-11-01 11:38 +07:00, Antigravity. Hoàn thành P2-05 (CalendarInfo, CalendarEvent, IEventStore, InMemoryEventStore có dữ liệu mẫu, đăng ký DI, 10 unit test pass). Tổng 124 test (123 pass, 1 skip).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01, P2-02, P2-04 đã xong; P2-05 tiếp theo).
+- **Phase hiện tại:** Phase 0 hoàn thành 100%. Phase 1 xong, đã xanh trên CI. Phase 2 đang thực hiện (P2-01, P2-02, P2-04, P2-05 đã xong).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào (P0-01 vừa xong). Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. P0-01 xong: CI run 41267053678 (commit 159781c) xanh cả `build-test` và `core-linux-container`. Không giữ task nào. File đang sửa dở: không có.
-  - **Antigravity:** không giữ task nào (P2-04 vừa xong). Đã: `ISettingsStore` (Core/Abstractions), `SettingKeys`, `AppSettingDefaults`, `SettingsStoreExtensions` (Core/Settings), `InMemorySettingsStore` (Infrastructure/Storage), đăng ký DI trong `LunarCal.Infrastructure`, 10 unit test pass kiểm tra mặc định `lunar_enabled=true`, `week_start` T2 cho `vi-VN` và CN cho `en-US`, `theme="System"`, `timezone` (FR-UI-7, FR-LUNAR-6). File đang sửa dở: không có.
+  - **Antigravity:** không giữ task nào (P2-05 vừa xong). Đã: `CalendarInfo`, `CalendarEvent` (Core/Calendar), `IEventStore` (Core/Abstractions), `InMemoryEventStore` với dữ liệu mẫu (Infrastructure/Storage), đăng ký DI, 10 unit test pass kiểm tra truy vấn khoảng ngày, lọc calendar, cascade delete, spec fields (FR-UI-1, FR-AUTH-5, FR-SYNC-6). File đang sửa dở: không có.
 - **Task tiếp theo đề xuất:**
-  1. Phase 2 (không phụ thuộc Figma): P2-05 (model sự kiện `CalendarEvent`, `CalendarInfo`, `IEventStore`, fake event store cho UI).
-  2. Phase 2 UI token & themes: P2-00 (chờ Figma từ chủ dự án), P2-03 (theme sáng/tối/hệ thống).
+  1. Phase 2 UI token & themes: P2-00 (chờ Figma từ chủ dự án), P2-03 (theme sáng/tối/hệ thống, ADR-0011).
+  2. Phase 2 UI shell: P2-06 (MainWindow shell theo Figma 01, TopBar, Sidebar, MiniCalendar).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -21,7 +21,7 @@
 | --- | --- | --- |
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
-| 2 | Đang thực hiện: P2-01 (hạ tầng resx, i18n service, ADR-0024), P2-02 (pseudo-localization), P2-04 (ISettingsStore & InMemorySettingsStore) xong | `src/LunarCal.Core/Abstractions/ISettingsStore.cs`, `src/LunarCal.Core/Settings/`, `src/LunarCal.Infrastructure/Storage/`, `src/LunarCal.App/Localization/`, `tests/` |
+| 2 | Đang thực hiện: P2-01 (resx, i18n service), P2-02 (pseudo-locale), P2-04 (settings store), P2-05 (event & calendar model, IEventStore, InMemoryEventStore) xong | `src/LunarCal.Core/Calendar/`, `src/LunarCal.Core/Abstractions/`, `src/LunarCal.Infrastructure/Storage/`, `src/LunarCal.App/Localization/`, `tests/` |
 | 3–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -33,8 +33,8 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | `dotnet restore LunarCal.slnx --locked-mode` | Pass |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 114 test: 113 pass, 0 fail, 1 skip |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.66% (ngưỡng 95% và 85%) |
+| `dotnet test --solution LunarCal.slnx` | 124 test: 123 pass, 0 fail, 1 skip |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.67% (ngưỡng 95% và 85%) |
 | `dotnet run --project src/LunarCal.App` | Cửa sổ "LunarCal" mở được (shell còn trống; kiểm tra ngày 2026-10-31) |
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 (run trên CI commit 159781c) |
 
