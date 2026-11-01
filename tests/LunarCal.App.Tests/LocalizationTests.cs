@@ -115,6 +115,127 @@ public class LocalizationTests
     }
 
     [Fact]
+    public void FR_I18N_3_Pseudo_locale_transforms_every_key()
+    {
+        var viPath = Path.Combine(_appProjectPath, "Localization", "Strings.vi-VN.resx");
+        var entries = LoadResxEntries(viPath);
+        entries.Should().NotBeEmpty();
+
+        var normalService = new LocalizationService(SupportedCultures.Vietnamese, enablePseudoLocale: false);
+        var pseudoService = new LocalizationService(SupportedCultures.Vietnamese, enablePseudoLocale: true);
+        pseudoService.IsPseudoLocaleEnabled.Should().BeTrue();
+
+        var expansionRatios = new List<double>();
+        var totalOriginalChars = 0;
+        var totalPseudoChars = 0;
+
+        foreach (var key in entries.Keys)
+        {
+            var original = normalService.GetString(key, SupportedCultures.Vietnamese);
+            var pseudo = pseudoService.GetString(key, SupportedCultures.Vietnamese);
+
+            pseudo.Should().NotBeNullOrWhiteSpace($"key '{key}' must have a non-empty pseudo-localized string");
+            pseudo.Should().StartWith("[", $"key '{key}' pseudo string must start with delimiter '['");
+            pseudo.Should().EndWith("]", $"key '{key}' pseudo string must end with delimiter ']'");
+
+            pseudo.Length.Should().BeGreaterThan(original.Length, $"pseudo string for '{key}' must be lengthened");
+
+            totalOriginalChars += original.Length;
+            totalPseudoChars += pseudo.Length;
+
+            var expansionRatio = (pseudo.Length - original.Length) / (double)original.Length;
+            expansionRatios.Add(expansionRatio);
+
+            // For non-trivial strings (length >= 6), individual expansion ratio must be between 30% and 55% (~40%)
+            if (original.Length >= 6)
+            {
+                expansionRatio.Should().BeInRange(0.30, 0.55,
+                    $"expansion ratio for key '{key}' ('{original}' -> '{pseudo}') must be around 40%");
+            }
+        }
+
+        // Total weighted text expansion across all keys must be approximately 40% (between 38% and 44%)
+        var totalWeightedRatio = (totalPseudoChars - totalOriginalChars) / (double)totalOriginalChars;
+        totalWeightedRatio.Should().BeInRange(0.38, 0.44, "total weighted expansion across all keys must be ~40%");
+
+        // Average expansion ratio for strings of length >= 6 must be around 40%
+        var averageRatioForStandardStrings = expansionRatios.Where((_, i) => entries.ElementAt(i).Value.Length >= 6).Average();
+        averageRatioForStandardStrings.Should().BeInRange(0.38, 0.44, "average expansion ratio for standard strings must be ~40%");
+    }
+
+    [Fact]
+    public void FR_I18N_3_Pseudo_locale_preserves_format_placeholders_and_formats_cleanly()
+    {
+        var service = new LocalizationService(SupportedCultures.Vietnamese, enablePseudoLocale: true);
+
+        // Toast_Header_Reminder has "{0} · Nhắc nhở"
+        var formatted = service.Format("Toast_Header_Reminder", "Họp nhóm");
+        formatted.Should().StartWith("[");
+        formatted.Should().EndWith("]");
+        formatted.Should().Contain("Họp nhóm");
+        formatted.Should().NotContain("{0}");
+
+        // Multiple format tests
+        var formattedNumber = service.Format("Toast_Time_Remaining", 25);
+        formattedNumber.Should().Contain("25");
+        formattedNumber.Should().NotContain("{0}");
+    }
+
+    [Fact]
+    public void FR_I18N_3_Pseudo_locale_can_be_enabled_and_disabled_via_flag_and_culture()
+    {
+        var service = new LocalizationService(SupportedCultures.Vietnamese, enablePseudoLocale: false);
+        var originalTitle = service["settings.language.title"];
+        originalTitle.Should().Be("Ngôn ngữ giao diện");
+
+        // Enable via property
+        var propertyChangedFired = false;
+        service.PropertyChanged += (_, _) => propertyChangedFired = true;
+
+        service.IsPseudoLocaleEnabled = true;
+        propertyChangedFired.Should().BeTrue();
+        service["settings.language.title"].Should().StartWith("[").And.NotBe(originalTitle);
+
+        // Disable via property
+        propertyChangedFired = false;
+        service.IsPseudoLocaleEnabled = false;
+        propertyChangedFired.Should().BeTrue();
+        service["settings.language.title"].Should().Be(originalTitle);
+
+        // Configure via LocalizationOptions
+        service.Configure(new LocalizationOptions { EnablePseudoLocale = true });
+        service.IsPseudoLocaleEnabled.Should().BeTrue();
+        service["settings.language.title"].Should().StartWith("[");
+
+        service.Configure(new LocalizationOptions { EnablePseudoLocale = false });
+        service.IsPseudoLocaleEnabled.Should().BeFalse();
+        service["settings.language.title"].Should().Be(originalTitle);
+
+        // Switch to "qps-ploc" culture
+        service.SetCulture("qps-ploc");
+        service.IsPseudoLocaleEnabled.Should().BeTrue();
+        service["settings.language.title"].Should().StartWith("[");
+    }
+
+    [Fact]
+    public void FR_I18N_3_Pseudo_locale_handles_edge_cases()
+    {
+        PseudoLocalizer.Transform(null).Should().Be(string.Empty);
+        PseudoLocalizer.Transform(string.Empty).Should().Be(string.Empty);
+
+        var shortStr = "AI";
+        var pseudoShort = PseudoLocalizer.Transform(shortStr);
+        pseudoShort.Should().StartWith("[").And.EndWith("]");
+        pseudoShort.Length.Should().BeGreaterThan(shortStr.Length);
+
+        // Placeholders only
+        var placeholderOnly = "{0}";
+        var pseudoPlaceholder = PseudoLocalizer.Transform(placeholderOnly);
+        pseudoPlaceholder.Should().StartWith("[").And.EndWith("]");
+        pseudoPlaceholder.Should().Contain("{0}");
+    }
+
+    [Fact]
     public void FR_I18N_7_Required_spec_table_strings_match_exact_values()
     {
         var service = new LocalizationService();

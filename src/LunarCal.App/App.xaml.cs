@@ -3,6 +3,7 @@ using LunarCal.App.Localization;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views;
 using LunarCal.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -25,7 +26,11 @@ public partial class App : Application
         });
 
         builder.Services.AddLunarCalInfrastructure(builder.Configuration);
+
+        var enablePseudo = builder.Configuration.GetValue<bool>("LunarCal:Localization:EnablePseudoLocale");
+        LocalizationService.Instance.IsPseudoLocaleEnabled = enablePseudo;
         builder.Services.AddSingleton<ILocalizationService>(LocalizationService.Instance);
+
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
 

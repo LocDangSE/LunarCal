@@ -22,3 +22,5 @@
 | 2026-11-01 10:48 +07:00 | Antigravity | P0-03 | DONE | Thêm CodeQL workflow cho C# (.github/workflows/codeql.yml, ghim SHA, build manual locked-mode). Tiếp theo: P0-04 |
 | 2026-11-01 10:49 +07:00 | Antigravity | P0-04 | START | Bắt đầu P0-04: cấu hình SourceLink trong Directory.Build.props (PublishRepositoryUrl, EmbedUntrackedSources) (SEC-SC-4) |
 | 2026-11-01 10:55 +07:00 | Antigravity | P0-04 | DONE | Cấu hình SourceLink trong Directory.Build.props & Directory.Packages.props (Microsoft.SourceLink.GitHub 10.0.403), lock files đã cập nhật, kiểm tra metadata repository trong PDB thành công (SEC-SC-4). Hoàn thành toàn bộ Phase 0. Tiếp theo: P2-02 |
+| 2026-11-01 11:00 +07:00 | Antigravity | P2-02 | START | Bắt đầu P2-02: hiện thực pseudo-localization (kéo dài ~40%, có dấu, bảo toàn placeholder), cờ cấu hình và test FR_I18N_3_Pseudo_locale_transforms_every_key (FR-I18N-3) |
+| 2026-11-01 11:08 +07:00 | Antigravity | P2-02 | DONE | Hiện thực PseudoLocalizer (kéo dài ~40%, có dấu, bảo toàn placeholder format), cờ cấu hình EnablePseudoLocale trong appsettings.json và ILocalizationService, 19 test pass trong LunarCal.App.Tests (FR-I18N-3). Tiếp theo: P2-04 |

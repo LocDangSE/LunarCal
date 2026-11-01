@@ -18,22 +18,45 @@ public sealed class LocalizationService : ILocalizationService
     public static LocalizationService Instance => _instance ??= new LocalizationService();
 
     private CultureInfo _currentCulture;
+    private bool _isPseudoLocaleEnabled;
 
     public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler<CultureInfo>? CultureChanged;
 
     public LocalizationService()
-        : this(SupportedCultures.ResolveDefaultCulture())
+        : this(SupportedCultures.ResolveDefaultCulture(), enablePseudoLocale: false)
     {
     }
 
-    public LocalizationService(CultureInfo initialCulture)
+    public LocalizationService(CultureInfo initialCulture, bool enablePseudoLocale = false)
     {
         _currentCulture = SupportedCultures.Normalize(initialCulture?.Name);
+        _isPseudoLocaleEnabled = enablePseudoLocale;
         ApplyThreadCultures(_currentCulture);
     }
 
     public CultureInfo CurrentCulture => _currentCulture;
+
+    public bool IsPseudoLocaleEnabled
+    {
+        get => _isPseudoLocaleEnabled;
+        set
+        {
+            if (_isPseudoLocaleEnabled == value)
+            {
+                return;
+            }
+
+            _isPseudoLocaleEnabled = value;
+            NotifyChanges();
+        }
+    }
+
+    public void Configure(LocalizationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        IsPseudoLocaleEnabled = options.EnablePseudoLocale;
+    }
 
     public string this[string key] => GetString(key, _currentCulture);
 
@@ -47,6 +70,15 @@ public sealed class LocalizationService : ILocalizationService
         ArgumentNullException.ThrowIfNull(culture);
         var normalized = SupportedCultures.Normalize(culture.Name);
 
+        if (normalized.Name.Equals(SupportedCultures.PseudoLocaleCode, StringComparison.OrdinalIgnoreCase))
+        {
+            _currentCulture = normalized;
+            _isPseudoLocaleEnabled = true;
+            ApplyThreadCultures(_currentCulture);
+            NotifyChanges();
+            return;
+        }
+
         if (Equals(_currentCulture, normalized))
         {
             return;
@@ -54,9 +86,7 @@ public sealed class LocalizationService : ILocalizationService
 
         _currentCulture = normalized;
         ApplyThreadCultures(_currentCulture);
-
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        CultureChanged?.Invoke(this, _currentCulture);
+        NotifyChanges();
     }
 
     public string GetString(string key)
@@ -68,14 +98,33 @@ public sealed class LocalizationService : ILocalizationService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(culture);
-        var value = _resourceManager.GetString(key, culture);
-        return value ?? $"!{key}!";
+
+        var isPseudo = _isPseudoLocaleEnabled || culture.Name.Equals(SupportedCultures.PseudoLocaleCode, StringComparison.OrdinalIgnoreCase);
+
+        // When querying resource manager for pseudo-locale, look up against current or neutral language
+        var lookupCulture = culture.Name.Equals(SupportedCultures.PseudoLocaleCode, StringComparison.OrdinalIgnoreCase)
+            ? SupportedCultures.Vietnamese
+            : culture;
+
+        var value = _resourceManager.GetString(key, lookupCulture);
+        if (value is null)
+        {
+            return $"!{key}!";
+        }
+
+        return isPseudo ? PseudoLocalizer.Transform(value) : value;
     }
 
     public string Format(string key, params object[] args)
     {
         var pattern = GetString(key, _currentCulture);
         return string.Format(_currentCulture, pattern, args);
+    }
+
+    private void NotifyChanges()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+        CultureChanged?.Invoke(this, _currentCulture);
     }
 
     private static void ApplyThreadCultures(CultureInfo culture)

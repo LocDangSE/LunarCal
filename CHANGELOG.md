@@ -15,6 +15,7 @@
 - Gitleaks secret scanning in GitHub Actions CI (`.github/workflows/ci.yml`) and pre-commit configuration (`.pre-commit-config.yaml`, `.githooks/pre-commit`, `.gitleaks.toml`) (SEC-KEY-5, SEC-SC-3).
 - CodeQL static analysis workflow for C# on Windows (`.github/workflows/codeql.yml`, action pinned by commit SHA, minimal permissions) (SEC-SC-3).
 - SourceLink for reproducible builds and source-level debugging (`Microsoft.SourceLink.GitHub` 10.0.403, `PublishRepositoryUrl`, `EmbedUntrackedSources`, `Deterministic`, `ContinuousIntegrationBuild`) (SEC-SC-4).
+- Pseudo-localization support for UI layout overflow testing: `PseudoLocalizer` expanding strings by ~40% with diacritic glyphs and `[ ... ]` delimiters while preserving `{0}` formatting tokens; configurable via `appsettings.json` (`EnablePseudoLocale`) and `ILocalizationService` runtime toggle (FR-I18N-3).
 
 ### Changed
 - `.editorconfig`: constants are PascalCase (the `_camelCase` rule applies to other private fields).
