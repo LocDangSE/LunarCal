@@ -181,7 +181,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         foreach (var cal in _cachedCalendars)
         {
             bool isSelected = !currentSelection.TryGetValue(cal.Id, out bool sel) || sel;
-            var chip = new CalendarFilterChipViewModel(cal.Id, cal.Summary, cal.Color ?? "#2F6BFF", isSelected);
+            var chip = new CalendarFilterChipViewModel(cal.Id, cal.Summary, cal.Color ?? CalendarColors.DefaultHex, isSelected);
             chip.SelectionChanged += OnFilterChipSelectionChanged;
             CalendarFilters.Add(chip);
         }
@@ -268,7 +268,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
             foreach (var ev in sortedEvents)
             {
                 var calInfo = calendarLookup.TryGetValue(ev.CalendarId, out var cal) ? cal : null;
-                var color = calInfo?.Color ?? "#2F6BFF";
+                var color = calInfo?.Color ?? CalendarColors.DefaultHex;
                 var calName = calInfo?.Summary ?? string.Empty;
 
                 string timeDisplay;

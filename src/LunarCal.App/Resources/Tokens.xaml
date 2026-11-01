@@ -15,6 +15,15 @@
   <sys:Double x:Key="FontSizeBody">12</sys:Double>
   <sys:Double x:Key="FontSizeCaption">11</sys:Double>
   <sys:Double x:Key="FontSizeMini">9.5</sys:Double>
+  <sys:Double x:Key="FontSizeBadge">10</sys:Double>
+  <sys:Double x:Key="FontSizeLunarHero">40</sys:Double>
+
+  <!-- Icon glyph sizes for emoji/symbol glyphs (P2-R5; values unchanged from the Phase 2 views) -->
+  <sys:Double x:Key="IconSizeSmall">14</sys:Double>
+  <sys:Double x:Key="IconSizeMedium">16</sys:Double>
+  <sys:Double x:Key="IconSizeLarge">20</sys:Double>
+  <sys:Double x:Key="IconSizeXLarge">24</sys:Double>
+  <sys:Double x:Key="IconSizeEmptyState">36</sys:Double>
 
   <!-- Typography: Weights -->
   <FontWeight x:Key="FontWeightRegular">Normal</FontWeight>
@@ -52,6 +61,8 @@
   <CornerRadius x:Key="CornerRadiusAiCard">14</CornerRadius>
   <CornerRadius x:Key="CornerRadiusDayNumber">13</CornerRadius>
   <CornerRadius x:Key="CornerRadiusFull">999</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusStripe">2</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusAiBar">24</CornerRadius>
 
   <!-- Layout Metrics (Figma 01-05 & .agents/rules/ui.md) -->
   <sys:Double x:Key="TopBarHeight">64</sys:Double>

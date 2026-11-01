@@ -187,6 +187,17 @@ public sealed class SmokeTests
                 TimeSpan.FromSeconds(5)).Result;
             page.Should().NotBeNull("the Appearance page (S13) must be hosted in the Settings window");
 
+            // FR-UI-7, FR-UI-8: switching theme at runtime must not crash or close the app.
+            foreach (var id in new[] { "ThemeRadioDark", "ThemeRadioHighContrast", "ThemeRadioLight", "ThemeRadioSystem" })
+            {
+                var radio = settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId(id))?.AsRadioButton();
+                radio.Should().NotBeNull($"theme option {id} must exist");
+                SelectRadioButton(radio);
+                FlaUI.Core.Tools.Retry.WhileFalse(() => radio!.IsChecked == true, TimeSpan.FromSeconds(2));
+                radio!.IsChecked.Should().BeTrue($"{id} must become the selected theme");
+                app.HasExited.Should().BeFalse($"the app must survive switching to {id}");
+            }
+
             settingsWindow!.Close();
         }
         finally

@@ -251,7 +251,7 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
         foreach (var ev in sorted)
         {
             var calInfo = calendarLookup.TryGetValue(ev.CalendarId, out var cal) ? cal : null;
-            var color = calInfo?.Color ?? "#2F6BFF";
+            var color = calInfo?.Color ?? CalendarColors.DefaultHex;
             var calName = calInfo?.Summary ?? string.Empty;
 
             string timeDisplay = ev.AllDay

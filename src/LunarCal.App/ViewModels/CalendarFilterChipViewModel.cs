@@ -31,7 +31,7 @@ public sealed partial class CalendarFilterChipViewModel : ObservableObject
     {
         Id = id;
         Summary = summary;
-        Color = string.IsNullOrWhiteSpace(color) ? "#2F6BFF" : color;
+        Color = string.IsNullOrWhiteSpace(color) ? CalendarColors.DefaultHex : color;
         IsSelected = isSelected;
     }
 

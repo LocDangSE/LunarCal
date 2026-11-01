@@ -14,7 +14,7 @@ public sealed partial class CalendarItemViewModel : ObservableObject
     private string _summary = string.Empty;
 
     [ObservableProperty]
-    private string _color = "#4285F4";
+    private string _color = CalendarColors.DefaultHex;
 
     [ObservableProperty]
     private bool _isSelected = true;

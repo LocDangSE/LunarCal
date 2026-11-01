@@ -123,6 +123,22 @@ Bóng: card nổi `#101828` @ 4%, offset (4,0), blur 16; drawer `#0F1729` @ 18%,
 
 Tên key ở cột 1 là đề xuất để khớp Figma; key nào chưa có trong code thì thêm khi sửa `Tokens.xaml`.
 
+### Token bổ sung khi bỏ giá trị hard-code (P2-R5, Claude Code, 2026-11-01)
+
+Giữ nguyên giá trị đang hiển thị ở Phase 2, chỉ đặt tên. Khi Figma có số đo khác thì sửa giá trị ở `Tokens.xaml`, không sửa view.
+
+| Key | Giá trị | Dùng cho |
+| --- | --- | --- |
+| `FontSizeBadge` | 10 | Badge số lệnh AI đang chờ (sidebar) |
+| `FontSizeLunarHero` | 40 | Số ngày âm lớn ở panel chi tiết ngày (S09) |
+| `IconSizeSmall` / `Medium` / `Large` / `XLarge` | 14 / 16 / 20 / 24 | Glyph biểu tượng (✕, ✨, 🌙, +, 📅) |
+| `IconSizeEmptyState` | 36 | Biểu tượng trạng thái rỗng (Lịch biểu) |
+| `CornerRadiusStripe` | 2 | Vạch màu calendar ở danh sách sự kiện |
+| `CornerRadiusAiBar` | 24 | Thanh lệnh AI |
+| `OnWarningBrush` | Sáng/Tối `#101828`, HC `WindowColor` | Chữ trên nền `WarningBrush` |
+
+Hình tròn (chấm màu, ô mini-calendar, avatar, nút gửi) dùng `CornerRadiusFull`. Màu mặc định cho calendar không có màu: hằng `CalendarColors.DefaultHex` (= `AccentPrimaryBrush` sáng). Test `ThemeDictionaryTests.FR_UI_11_Views_and_controls_use_tokens_instead_of_literal_sizes_and_colors` chặn literal mới trong `Views/` và `Controls/`.
+
 ## Quy ước component (WPF + MVVM)
 
 - MVVM bằng `CommunityToolkit.Mvvm`: `[ObservableProperty]`, `[RelayCommand]`; view model là `partial` và kế thừa `ObservableObject`. Không đặt logic trong code-behind, ngoài `InitializeComponent` và gán `DataContext`.

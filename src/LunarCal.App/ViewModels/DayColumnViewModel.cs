@@ -223,7 +223,7 @@ public sealed partial class DayColumnViewModel : ObservableObject
                 culture);
             var color = (calendarColors != null && calendarColors.TryGetValue(ev.CalendarId, out var c))
                 ? c
-                : "#2F6BFF";
+                : CalendarColors.DefaultHex;
 
             timedList.Add(new TimedEventViewModel(ev, evStart, evEnd, top, height, color, timeText));
         }

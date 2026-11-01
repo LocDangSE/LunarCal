@@ -61,7 +61,7 @@
                 VerticalAlignment="Center"
                 AutomationProperties.AutomationId="BtnCloseDayDetail">
           <TextBlock Text="✕"
-                     FontSize="14"
+                     FontSize="{DynamicResource IconSizeSmall}"
                      Foreground="{DynamicResource TextSecondaryBrush}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center" />
@@ -107,7 +107,7 @@
                 <!-- Big Lunar Day Number -->
                 <TextBlock Grid.Column="0"
                            Text="{Binding LunarDayNumberText}"
-                           FontSize="40"
+                           FontSize="{DynamicResource FontSizeLunarHero}"
                            FontWeight="{DynamicResource FontWeightBold}"
                            Foreground="{DynamicResource LunarStrongBrush}"
                            VerticalAlignment="Center"
@@ -262,7 +262,7 @@
                 </Style>
               </StackPanel.Style>
               <TextBlock Text="🌙"
-                         FontSize="20"
+                         FontSize="{DynamicResource IconSizeLarge}"
                          HorizontalAlignment="Center"
                          Margin="0,0,0,6" />
               <TextBlock Text="{loc:Loc day_detail.lunar_disabled}"
@@ -319,7 +319,7 @@
           </Border.Style>
           <StackPanel HorizontalAlignment="Center">
             <TextBlock Text="📅"
-                       FontSize="24"
+                       FontSize="{DynamicResource IconSizeXLarge}"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,8" />
             <TextBlock Text="{loc:Loc day_detail.no_events}"
@@ -351,7 +351,7 @@
                   <!-- Calendar Color Stripe -->
                   <Border Grid.Column="0"
                           Background="{Binding CalendarColor, Converter={StaticResource ColorToBrush}}"
-                          CornerRadius="2"
+                          CornerRadius="{DynamicResource CornerRadiusStripe}"
                           Margin="0,0,10,0" />
 
                   <StackPanel Grid.Column="1">

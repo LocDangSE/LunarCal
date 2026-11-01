@@ -45,7 +45,7 @@ public sealed partial class AgendaEventItemViewModel : ObservableObject
         string timeDisplay)
     {
         Event = calendarEvent ?? throw new ArgumentNullException(nameof(calendarEvent));
-        CalendarColor = string.IsNullOrWhiteSpace(calendarColor) ? "#2F6BFF" : calendarColor;
+        CalendarColor = string.IsNullOrWhiteSpace(calendarColor) ? CalendarColors.DefaultHex : calendarColor;
         CalendarName = calendarName;
         TimeDisplay = timeDisplay;
     }

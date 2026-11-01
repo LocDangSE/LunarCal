@@ -57,7 +57,7 @@ public sealed partial class TimedEventViewModel : ObservableObject
         End = end;
         Top = top;
         Height = height;
-        Color = string.IsNullOrWhiteSpace(color) ? "#2F6BFF" : color;
+        Color = string.IsNullOrWhiteSpace(color) ? CalendarColors.DefaultHex : color;
         TimeRangeText = timeRangeText;
     }
 }

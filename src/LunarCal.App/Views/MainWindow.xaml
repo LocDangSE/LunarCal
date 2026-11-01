@@ -107,7 +107,7 @@
               Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
               BorderBrush="{DynamicResource BorderBrush}"
               BorderThickness="1"
-              CornerRadius="24"
+              CornerRadius="{DynamicResource CornerRadiusAiBar}"
               Padding="16,0"
               AutomationProperties.AutomationId="AiCommandBar">
         <Grid VerticalAlignment="Center">
@@ -120,7 +120,7 @@
           <!-- AI Sparkle Icon -->
           <TextBlock Grid.Column="0"
                      Text="✨"
-                     FontSize="16"
+                     FontSize="{DynamicResource IconSizeMedium}"
                      Margin="0,0,10,0"
                      VerticalAlignment="Center" />
 
@@ -134,13 +134,13 @@
           <!-- Send Action Button -->
           <Border Grid.Column="2"
                   Width="28" Height="28"
-                  CornerRadius="14"
+                  CornerRadius="{DynamicResource CornerRadiusFull}"
                   Background="{DynamicResource AccentPrimaryBrush}"
                   Cursor="Hand"
                   AutomationProperties.AutomationId="BtnAiSubmit">
             <TextBlock Text="↑"
                        Foreground="{DynamicResource AccentTextBrush}"
-                       FontWeight="Bold"
+                       FontWeight="{DynamicResource FontWeightBold}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" />
           </Border>

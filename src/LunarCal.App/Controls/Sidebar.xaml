@@ -32,10 +32,10 @@
           <ControlTemplate TargetType="Button">
             <Border x:Name="btnBorder"
                     Background="{TemplateBinding Background}"
-                    CornerRadius="22"
+                    CornerRadius="{DynamicResource CornerRadiusFull}"
                     Padding="16,0">
               <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="+" FontSize="20" FontWeight="Bold" Margin="0,0,8,2" VerticalAlignment="Center" />
+                <TextBlock Text="+" FontSize="{DynamicResource IconSizeLarge}" FontWeight="{DynamicResource FontWeightBold}" Margin="0,0,8,2" VerticalAlignment="Center" />
                 <ContentPresenter VerticalAlignment="Center" />
               </StackPanel>
             </Border>
@@ -61,7 +61,7 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
               <!-- Color Indicator Bullet -->
               <Border Width="14" Height="14"
-                      CornerRadius="7"
+                      CornerRadius="{DynamicResource CornerRadiusFull}"
                       Background="{Binding Color, Converter={StaticResource ColorToBrush}}"
                       Margin="0,0,8,0"
                       VerticalAlignment="Center">
@@ -158,7 +158,7 @@
                   Background="Transparent"
                   BorderThickness="0"
                   Foreground="{DynamicResource AccentPrimaryBrush}"
-                  FontWeight="Bold"
+                  FontWeight="{DynamicResource FontWeightBold}"
                   Cursor="Hand"
                   ToolTip="{loc:Loc Key=sidebar.sync_now}"
                   AutomationProperties.AutomationId="BtnSyncNow" />
@@ -173,9 +173,9 @@
                 HorizontalAlignment="Left"
                 Visibility="Collapsed">
           <TextBlock Text="{Binding PendingAiCommandsText}"
-                     FontSize="10"
-                     FontWeight="SemiBold"
-                     Foreground="#000000" />
+                     FontSize="{DynamicResource FontSizeBadge}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource OnWarningBrush}" />
         </Border>
       </StackPanel>
     </Border>

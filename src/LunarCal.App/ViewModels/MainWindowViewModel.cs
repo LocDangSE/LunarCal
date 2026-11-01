@@ -293,7 +293,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 {
                     Id = cal.Id,
                     Summary = cal.Summary,
-                    Color = cal.Color ?? "#4285F4",
+                    Color = cal.Color ?? CalendarColors.DefaultHex,
                     IsSelected = cal.IsSelected,
                     IsPrimary = cal.IsPrimary,
                     AccountId = cal.AccountId,

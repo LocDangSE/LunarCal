@@ -151,7 +151,7 @@
             </Style>
           </StackPanel.Style>
           <TextBlock Text="📅"
-                     FontSize="36"
+                     FontSize="{DynamicResource IconSizeEmptyState}"
                      HorizontalAlignment="Center"
                      Margin="0,0,0,12" />
           <TextBlock Text="{loc:Loc agenda.empty}"
@@ -193,7 +193,7 @@
                       <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Today highlight circle if today -->
                         <Border Width="8" Height="8"
-                                CornerRadius="4"
+                                CornerRadius="{DynamicResource CornerRadiusFull}"
                                 Background="{DynamicResource TodayHighlightBrush}"
                                 Margin="0,0,8,0"
                                 VerticalAlignment="Center"
@@ -260,7 +260,7 @@
                             <!-- Color stripe -->
                             <Border Grid.Column="0"
                                     Background="{Binding CalendarColor, Converter={StaticResource ColorToBrush}}"
-                                    CornerRadius="2"
+                                    CornerRadius="{DynamicResource CornerRadiusStripe}"
                                     Margin="0,0,10,0" />
 
                             <!-- Time range display -->

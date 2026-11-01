@@ -56,6 +56,7 @@
   <SolidColorBrush x:Key="WarningBrush" Color="{x:Static SystemColors.WindowTextColor}" />
   <SolidColorBrush x:Key="WarningTextBrush" Color="{x:Static SystemColors.WindowTextColor}" />
   <SolidColorBrush x:Key="WarningSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="OnWarningBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="NowLineBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="ScrimBrush" Color="{x:Static SystemColors.WindowColor}" />
 

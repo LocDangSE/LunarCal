@@ -294,11 +294,11 @@
 
       <!-- User Avatar Placeholder -->
       <Border Width="32" Height="32"
-              CornerRadius="16"
+              CornerRadius="{DynamicResource CornerRadiusFull}"
               Background="{DynamicResource AccentPrimaryBrush}"
               AutomationProperties.AutomationId="UserAvatar">
         <TextBlock Text="L"
-                   FontSize="14"
+                   FontSize="{DynamicResource FontSizeSubtitle}"
                    FontWeight="{DynamicResource FontWeightBold}"
                    Foreground="{DynamicResource AccentTextBrush}"
                    HorizontalAlignment="Center"

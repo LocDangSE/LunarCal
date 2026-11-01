@@ -56,6 +56,7 @@
   <SolidColorBrush x:Key="WarningBrush" Color="#F79009" />
   <SolidColorBrush x:Key="WarningTextBrush" Color="#B54708" />
   <SolidColorBrush x:Key="WarningSubtleBrush" Color="#FFFAEB" />
+  <SolidColorBrush x:Key="OnWarningBrush" Color="#101828" />
   <SolidColorBrush x:Key="NowLineBrush" Color="#F04438" />
   <SolidColorBrush x:Key="ScrimBrush" Color="#73101828" />
 

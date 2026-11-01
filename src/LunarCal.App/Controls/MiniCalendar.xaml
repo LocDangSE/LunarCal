@@ -22,7 +22,7 @@
         <Setter.Value>
           <ControlTemplate TargetType="Button">
             <Border x:Name="cellBorder"
-                    CornerRadius="14"
+                    CornerRadius="{DynamicResource CornerRadiusFull}"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}">

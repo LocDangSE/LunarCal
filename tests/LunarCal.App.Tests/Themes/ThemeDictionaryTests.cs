@@ -10,6 +10,7 @@ namespace LunarCal.App.Tests.Themes;
 public sealed class ThemeDictionaryTests
 {
     private static readonly string _appDirectory = FindAppDirectory();
+    private static readonly string[] _viewDirectories = ["Views", "Controls"];
 
     [Fact]
     public void FR_UI_7_Theme_dictionaries_have_identical_resource_keys()
@@ -111,6 +112,33 @@ public sealed class ThemeDictionaryTests
         tokensDict.Contains("TopBarHeight").Should().BeTrue();
         tokensDict.Contains("SidebarWidth").Should().BeTrue();
         tokensDict.Contains("AiCommandBarHeight").Should().BeTrue();
+
+        // Tokens added in P2-R5 so views no longer hard-code sizes.
+        foreach (var key in new[]
+        {
+            "FontSizeBadge", "FontSizeLunarHero", "IconSizeSmall", "IconSizeMedium", "IconSizeLarge",
+            "IconSizeXLarge", "IconSizeEmptyState", "CornerRadiusStripe", "CornerRadiusAiBar",
+        })
+        {
+            tokensDict.Contains(key).Should().BeTrue($"token '{key}' must exist");
+        }
+    }
+
+    [Fact]
+    public void FR_UI_11_Views_and_controls_use_tokens_instead_of_literal_sizes_and_colors()
+    {
+        // .agents/rules/ui.md: views reference tokens via DynamicResource; no hard-coded colour, font size,
+        // font weight or corner radius.
+        var literal = new System.Text.RegularExpressions.Regex(
+            @"(FontSize|CornerRadius)=""[0-9]|FontWeight=""[A-Za-z]|=""#[0-9A-Fa-f]{3,8}""");
+        var offenders = _viewDirectories
+            .SelectMany(dir => Directory.EnumerateFiles(Path.Combine(_appDirectory, dir), "*.xaml", SearchOption.AllDirectories))
+            .SelectMany(file => File.ReadAllLines(file).Select((line, i) => (file, line, number: i + 1)))
+            .Where(x => literal.IsMatch(x.line))
+            .Select(x => $"{Path.GetFileName(x.file)}:{x.number}: {x.line.Trim()}")
+            .ToList();
+
+        offenders.Should().BeEmpty();
     }
 
     [Fact]
