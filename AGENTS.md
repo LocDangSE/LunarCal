@@ -16,7 +16,7 @@ Hướng dẫn chung cho mọi agent (Gemini/Antigravity, Claude Code, ...). Đ�
 2. `docs/STATUS.md`: trạng thái hiện tại, task đang dở (theo từng agent), câu hỏi mở. Sau đó đọc 20 dòng cuối `docs/PROGRESS_LOG.md` để biết agent khác vừa làm gì.
 3. `docs/TASKS.md`: backlog, chọn task tiếp theo.
 4. `docs/SPEC.md`: đặc tả, nguồn sự thật duy nhất. Chỉ đọc các mục liên quan tới task (ví dụ §4.4 cho lịch âm, §6 cho DB).
-5. Rule theo chủ đề trong `.agents/rules/` (architecture, security, progress-sync, i18n, testing, data-lake, ui) và ADR trong `docs/adr/` (mục lục ở `docs/DECISIONS.md`).
+5. Rule theo chủ đề trong `.agents/rules/` (architecture, security, progress-sync, review, i18n, testing, data-lake, ui) và ADR trong `docs/adr/` (mục lục ở `docs/DECISIONS.md`).
 
 ## 3. Tech stack (phiên bản chính xác)
 
@@ -67,7 +67,7 @@ Quy tắc phụ thuộc: `App → Infrastructure → Core`. Core chỉ tham chi�
 | `tests/LunarCal.Infrastructure.Tests/` | Test Infrastructure (fake HttpMessageHandler, ...) |
 | `tests/LunarCal.App.UiTests/` | Smoke test UI bằng FlaUI, chạy `LunarCal.exe` ở process riêng |
 | `eng/Test-Coverage.ps1` | Cổng coverage cho CI |
-| `docs/` | `SPEC.md`, `STATUS.md`, `TASKS.md`, `PROGRESS_LOG.md`, `TRACEABILITY.md`, `GLOSSARY.md`, `THREAT_MODEL.md`, `DATA_LAKE.md`, `adr/` |
+| `docs/` | `SPEC.md`, `STATUS.md`, `TASKS.md`, `PROGRESS_LOG.md`, `TRACEABILITY.md`, `GLOSSARY.md`, `THREAT_MODEL.md`, `DATA_LAKE.md`, `adr/`, `reviews/` (kết quả review từng task) |
 | `.agents/rules/`, `.agents/workflows/`, `.agents/skills/` | Rule, quy trình và skill (gọi bằng slash command) cho agent |
 | `.claude/skills/` | Wrapper slash command cho Claude Code, trỏ tới cùng file trong `.agents/workflows/` (ADR-0022) |
 
@@ -75,8 +75,9 @@ Quy tắc phụ thuộc: `App → Infrastructure → Core`. Core chỉ tham chi�
 
 - **Spec là nguồn sự thật** (`docs/SPEC.md`). Gặp mâu thuẫn hoặc thiếu đặc tả: ghi vào `docs/STATUS.md` mục "Câu hỏi mở" theo mẫu ở `.agents/workflows/spec-gap.md`, chọn phương án an toàn nhất nếu buộc phải đi tiếp, và ghi ADR nếu đó là quyết định kỹ thuật. Không tự bịa yêu cầu, không tự sửa spec.
 - Chỉ hỏi chủ dự án những mục ở spec §14. Các điểm mơ hồ khác: ghi ADR và chọn phương án an toàn nhất.
-- **Mỗi lần chỉ làm 1 task** trong `docs/TASKS.md`. Đánh dấu `[~] · Đang làm: <agent>, <thời gian>` khi bắt đầu, `[x] · Xong: <agent>, <thời gian>` khi xong.
-- **Đồng bộ tiến độ giữa Claude Code và Antigravity** theo `.agents/rules/progress-sync.md` (ADR-0022). Mỗi lần nhận, dừng hoặc xong task phải ghi nối tiếp một dòng vào `docs/PROGRESS_LOG.md`. Không đụng vào task `[~]` do agent khác giữ. Đọc lại các file tài liệu dùng chung ngay trước khi sửa.
+- **Phân vai (ADR-0025):** Antigravity là người thực thi: nhận task, viết code và test trên branch `task/<ID>`, rồi chuyển task sang `[r]` (chờ review); không tự đặt `[x]`. Claude Code là reviewer và người sửa bug: review diff của task, sửa bug trên chính branch đó, rồi mới đặt `[x]` và merge; không nhận task tính năng (chỉ task 👤 hoặc task chủ dự án giao trực tiếp). Chi tiết, trạng thái task (`[ ] [~] [r] [f] [x] [!]`) và cách trả task: `.agents/rules/progress-sync.md`. Cách review: `.agents/rules/review.md`.
+- **Mỗi lần chỉ làm 1 task** trong `docs/TASKS.md`. Mỗi lúc chỉ một agent được sửa một branch; người giữ branch có tên ở cuối dòng task.
+- **Đồng bộ tiến độ giữa Claude Code và Antigravity** theo `.agents/rules/progress-sync.md` (ADR-0022, ADR-0025). Mỗi lần nhận, bàn giao, dừng hoặc xong task phải ghi nối tiếp một dòng vào `docs/PROGRESS_LOG.md`. Không đụng vào task `[~]`/`[f]` do agent khác giữ. Đọc lại các file tài liệu dùng chung ngay trước khi sửa.
 - Làm theo thứ tự phase ở spec §13. Không bắt đầu phase mà màn hình của phase đó chưa có thiết kế (spec §13 "Điều chỉnh lộ trình", §15.4).
 - **Commit message bằng tiếng Anh, có mã yêu cầu**, ví dụ `feat(lunar): add LunarRule materialization (FR-LUNAR-4)`. Mỗi phase kết thúc bằng một commit/PR riêng, và phải pass build, test, format.
 - **Sau mỗi task, hoặc khi phiên sắp kết thúc (hết usage, hết thời gian, bị ngắt), PHẢI cập nhật `docs/STATUS.md`**: ghi đè thành ảnh chụp mới, không ghi nối tiếp, nhưng giữ nguyên mục của agent khác trong "Đang làm theo agent". Nếu task đang dở, ghi rõ đã làm tới đâu, file nào đang sửa dở và bước tiếp theo cụ thể.
@@ -104,5 +105,6 @@ Quy tắc phụ thuộc: `App → Infrastructure → Core`. Core chỉ tham chi�
 
 ## 8. Khi kết thúc task
 
-Làm theo `.agents/workflows/finish-task.md` (`/finish-task`): build, test, format → đánh dấu task trong `docs/TASKS.md` → cập nhật `docs/TRACEABILITY.md`, `CHANGELOG.md` nếu cần → ghi nối tiếp `docs/PROGRESS_LOG.md` → ghi đè `docs/STATUS.md` (giữ mục của agent khác) → commit có trailer `Agent:`.
+Làm theo `.agents/workflows/finish-task.md` (`/finish-task`): build, test, format → cập nhật `docs/TRACEABILITY.md`, `CHANGELOG.md` nếu cần → đổi trạng thái task trong `docs/TASKS.md` → ghi nối tiếp `docs/PROGRESS_LOG.md` → ghi đè `docs/STATUS.md` (giữ mục của agent khác) → commit lên `task/<ID>` có trailer `Agent:`.
+Antigravity dừng ở `[r]` (log `READY`). Chỉ Claude Code đặt `[x]` và merge vào `main` sau khi review (`.agents/rules/progress-sync.md` mục "Bàn giao và kết thúc"; mục này thắng nếu workflow mâu thuẫn).
 Bắt đầu phiên mới: `/resume` (chỉ báo cáo) hoặc `/project-progress [task-id]` (báo cáo rồi làm tiếp). Cả hai lệnh dùng được trong Claude Code và Antigravity.

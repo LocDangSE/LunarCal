@@ -1,8 +1,8 @@
 # TASKS: backlog theo phase (spec §13)
 
-Mỗi task khoảng 1–3 giờ. Mỗi lần chỉ làm 1 task (`AGENTS.md` §6).
-Trạng thái: `[ ]` chưa làm · `[~]` đang làm · `[x]` xong · `[!]` bị chặn (lý do ghi trong `docs/STATUS.md`).
-Người giữ task (`.agents/rules/progress-sync.md`): thêm vào cuối dòng `· Đang làm: <agent>, <YYYY-MM-DD HH:mm +07:00>` khi nhận task, và `· Xong: <agent>, <thời gian>` khi xong. Agent là `Claude Code` hoặc `Antigravity`. Lịch sử đầy đủ ở `docs/PROGRESS_LOG.md`.
+Mỗi task khoảng 1–3 giờ. Mỗi lần chỉ làm 1 task (`AGENTS.md` §6). Antigravity thực thi, Claude Code review và sửa bug (ADR-0025, `.agents/rules/progress-sync.md`). Mỗi task làm trên branch `task/<ID>`.
+Trạng thái: `[ ]` chưa làm · `[~]` Antigravity đang làm · `[r]` chờ review · `[f]` Claude Code đang review/sửa · `[x]` xong (chỉ Claude Code được đặt) · `[!]` bị chặn (lý do ghi trong `docs/STATUS.md`).
+Đuôi dòng task (thời gian dạng `YYYY-MM-DD HH:mm +07:00`): `· Làm: Antigravity, <thời gian>` · `· Review: Claude Code, <thời gian>, <số bug đã sửa>` · `· Trả lại: <lý do ngắn>` nếu có. Người có tên ở đuôi là người đang giữ branch. Dòng cũ dùng `· Đang làm:`/`· Xong:` giữ nguyên. Lịch sử đầy đủ ở `docs/PROGRESS_LOG.md`.
 Task chỉ được bắt đầu khi mọi task trong "Phụ thuộc" đã `[x]`. Task có ký hiệu 👤 cần chủ dự án làm hoặc trả lời (spec §14, thiết kế Figma).
 Tiêu chí chung cho mọi task: `dotnet build LunarCal.slnx` không warning, `dotnet test --solution LunarCal.slnx` pass, `dotnet format LunarCal.slnx --verify-no-changes` pass, `docs/TRACEABILITY.md` và `docs/STATUS.md` được cập nhật.
 Tên test ghi trong "Xong khi" là tên đề xuất; được đổi tên, nhưng phải giữ mã yêu cầu trong tên test.
