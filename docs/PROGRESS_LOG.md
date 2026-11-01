@@ -11,3 +11,5 @@
 | 2026-10-31 | Claude Code (Opus 5.5) | — | NOTE | Hồ sơ bàn giao: AGENTS.md, .agents/, STATUS, TASKS, ADR-0020, ADR-0021. |
 | 2026-11-01 09:28 +07:00 | Claude Code (Opus 5.5) | — | NOTE | Thêm `/project-progress` và giao thức đồng bộ tiến độ (ADR-0022, `.agents/rules/progress-sync.md`, file log này). Thêm wrapper `.claude/skills/` cho mọi lệnh. Tiếp theo: P0-01 👤. |
 | 2026-11-01 09:40 +07:00 | Claude Code (Opus 5.5) | P0-01 | START | Chủ dự án chốt tên LunarCal, remote https://github.com/LocDangSE/LunarCal.git. Thêm cấu hình git/Docker, git init, push. |
+| 2026-11-01 10:05 +07:00 | Claude Code (Opus 5.5) | P0-01 | PAUSE | commit f418386 đã push lên `origin/main`. Repo private nên agent không đọc được kết quả Actions. Tiếp theo: chủ dự án xác nhận workflow `CI` xanh, sau đó đánh dấu P0-01 `[x]`. |
+| 2026-11-01 10:30 +07:00 | Claude Code (Opus 5.5) | P0-01 | NOTE | CI f418386 đỏ ở job `core-linux-container`: test FR-LUNAR-2 đo cả assertion AwesomeAssertions (7–9 ms). Đã chuyển assertion ra ngoài stopwatch, giữ ngưỡng 5 ms. |

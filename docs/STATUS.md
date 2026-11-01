@@ -9,7 +9,7 @@
 
 - **Phase hiện tại:** Phase 1 đã xong (local). Phase 0 xong local, nhưng còn phần CI trên GitHub (P0-01..P0-04). Phase 2 chưa bắt đầu.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** giữ P0-01 `[~]`. Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. Bước tiếp theo: chờ workflow `CI` trên GitHub chạy xanh, rồi đánh dấu P0-01 `[x]`. File đang sửa dở: không có.
+  - **Claude Code:** giữ P0-01 `[~]`. Đã: `git init -b main`, `.gitattributes`, `.dockerignore`, `Dockerfile`, `.github/CODEOWNERS`, `.github/pull_request_template.md`, job CI `core-linux-container`, Dependabot cho Docker, ADR-0023, commit đầu tiên, push. CI lần đầu đỏ do test hiệu năng đo cả assertion (đã sửa, xem mục Build/test). Bước tiếp theo: xác nhận CI xanh cho commit sửa, rồi đánh dấu P0-01 `[x]`. File đang sửa dở: không có.
   - **Antigravity:** chưa có phiên nào được ghi lại.
 - **Task tiếp theo đề xuất:**
   1. P0-01: xác nhận CI xanh trên GitHub Actions. Sau đó làm P0-02 (gitleaks), P0-03 (CodeQL), P0-04 (SourceLink).
@@ -38,7 +38,7 @@ Còn thiếu so với spec §10 (CI): gitleaks và CodeQL (P0-02, P0-03); Source
 | `docker build --target test .` (Linux, SDK 10.0.403-noble) | Pass: Core.Tests 69/69 |
 
 - Test skip: `LunarCal.App.UiTests.SmokeTests.App_starts_and_shows_main_window`, lý do "UI shell is implemented in Phase 2". Bỏ skip ở P2-12.
-- Lần chạy đầu ngày 2026-11-01, `FR_LUNAR_2_A_cold_month_is_computed_in_under_5_ms` fail một lần khi máy đang khởi động Docker Desktop. Chạy lại thì pass (69/69 Core). Đây là ngưỡng thời gian thực 5 ms (FR-LUNAR-2), dễ chập chờn khi runner CI dùng chung bị tải nặng. Không nới ngưỡng. Nếu CI fail vì test này, ghi lại và hỏi chủ dự án về cách đo (nợ kỹ thuật).
+- CI đầu tiên (commit f418386) đỏ ở job `core-linux-container`: `FR_LUNAR_2_A_month_grid_is_computed_in_under_5_ms` đo 7–9 ms (tái hiện bằng `docker run --cpus=2`). Nguyên nhân: `.Should().HaveCount(42)` nằm trong vùng bấm giờ, nên test đo cả chi phí lần gọi đầu của AwesomeAssertions (reflection, tìm tên biến). Engine thật chỉ mất 0,02–0,3 ms mỗi tháng. Đã chuyển assertion ra sau `stopwatch.Stop()` ở cả hai test hiệu năng, giữ nguyên ngưỡng 5 ms. Sau khi sửa: 9/9 lần pass với `--cpus` 0.5, 1 và 2; Windows 71 test: 70 pass, 0 fail, 1 skip; coverage Lunar/Core 100%.
 
 ## Quyết định đã chốt mà spec chưa ghi
 

@@ -12,12 +12,15 @@ public class LunarPerformanceTests
         // Warm the per-year cache the way the app does on first display.
         _ = ComputeMonthGrid(2026, 10);
 
+        // Assertions stay outside the timed region: the first AwesomeAssertions call costs several ms
+        // (reflection, caller identification) and would be measured instead of the engine.
         var worst = TimeSpan.Zero;
         for (var month = 1; month <= 12; month++)
         {
             var stopwatch = Stopwatch.StartNew();
-            ComputeMonthGrid(2026, month).Should().HaveCount(42);
+            var grid = ComputeMonthGrid(2026, month);
             stopwatch.Stop();
+            grid.Should().HaveCount(42);
             worst = stopwatch.Elapsed > worst ? stopwatch.Elapsed : worst;
         }
 
@@ -31,9 +34,10 @@ public class LunarPerformanceTests
         // still pays the JIT; measure the second distinct cold year).
         _ = ComputeMonthGrid(1950, 6);
         var stopwatch = Stopwatch.StartNew();
-        ComputeMonthGrid(1951, 6).Should().HaveCount(42);
+        var grid = ComputeMonthGrid(1951, 6);
         stopwatch.Stop();
 
+        grid.Should().HaveCount(42);
         stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(5));
     }
 
