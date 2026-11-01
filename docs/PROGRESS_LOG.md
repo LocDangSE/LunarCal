@@ -67,3 +67,5 @@
 | 2026-11-01 17:32 +07:00 | Claude Code (Opus 5.5) | P2-R7 | START | Siết các test yếu |
 | 2026-11-01 17:35 +07:00 | Claude Code (Opus 5.5) | P2-R7 | DONE | Thêm test tháng thiếu và ô ngoài 1900–2100; DayDetail xoá mọi giá trị âm lịch khi tắt (sửa VM + test); test gloss so en ≠ vi; test 12h vi so chuỗi chính xác (SA/CH). Test null-culture: review cũ đề xuất assert vi-VN là sai (null nghĩa là hỏi OS); đổi thành so với InstalledUICulture và giữ case Invariant → vi-VN. 217/217 test. Tiếp theo: P2-R8 |
 | 2026-11-01 17:35 +07:00 | Claude Code (Opus 5.5) | P2-R8 | START | Siết UI smoke test |
+| 2026-11-01 17:41 +07:00 | Claude Code (Opus 5.5) | P2-R8 | DONE | SmokeTests: regex ngày âm cho subtitle, 42 ô tháng (có ít nhất một mùng 1), 7 header tuần, nhãn ngày; thay `Thread.Sleep` bằng `Retry`; assert view cũ biến mất; chạy app cùng cấu hình build (đã làm ở P2-R1). Pass 5/5 lần liên tiếp local (Release). Ghi chú: dòng DONE của P2-R7 ghi 217 test, số đúng là 218. Tiếp theo: P2-R9 |
+| 2026-11-01 17:41 +07:00 | Claude Code (Opus 5.5) | P2-R9 | START | Cập nhật STATUS, CHANGELOG, review |

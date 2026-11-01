@@ -1,8 +1,10 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using FlaUI.Core.Tools;
 using FlaUI.UIA3;
 using Xunit;
 
@@ -57,6 +59,46 @@ public sealed class SmokeTests
         }
     }
 
+    private static readonly TimeSpan _uiTimeout = TimeSpan.FromSeconds(5);
+
+    // Month subtitle "Tháng 9 (Đủ) · Năm Bính Ngọ" / "Lunar month 9 (30 days) · Bính Ngọ";
+    // day subtitle "Ngày 7 tháng 9 · ..." / "Lunar 7/9 · ...".
+    private static readonly Regex _lunarSubtitle = new(@"^(Tháng \d+|Ngày \d+ tháng \d+|Lunar (month )?\d+)", RegexOptions.CultureInvariant);
+
+    // Lunar day text in a cell or column header: "7", "1/9", "1/2n" or "1/2L".
+    private static readonly Regex _lunarDay = new(@"^\d{1,2}(/\d{1,2}[nL]?)?$", RegexOptions.CultureInvariant);
+
+    private static AutomationElement WaitFor(AutomationElement root, string automationId)
+    {
+        var element = Retry.WhileNull(() => root.FindFirstDescendant(cf => cf.ByAutomationId(automationId)), _uiTimeout).Result;
+        element.Should().NotBeNull($"'{automationId}' must appear within {_uiTimeout.TotalSeconds} s");
+        return element!;
+    }
+
+    private static void WaitGone(AutomationElement root, string automationId)
+    {
+        var gone = Retry.WhileFalse(() => root.FindFirstDescendant(cf => cf.ByAutomationId(automationId)) is null, _uiTimeout).Result;
+        gone.Should().BeTrue($"'{automationId}' must no longer be shown");
+    }
+
+    private static List<string> LunarTexts(AutomationElement root, string automationId) =>
+        root.FindAllDescendants(cf => cf.ByAutomationId(automationId))
+            .Select(e => e.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .ToList();
+
+    private static void CloseApp(Application app)
+    {
+        try
+        {
+            app.Close();
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            app.Kill();
+        }
+    }
+
     [Fact]
     public void App_starts_and_shows_main_window()
     {
@@ -66,33 +108,26 @@ public sealed class SmokeTests
 
         try
         {
-            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10));
-            window.Should().NotBeNull("Main window must appear within 10 seconds");
+            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
+                ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
             window.Title.Should().Contain("LunarCal");
+            WaitFor(window, "TopBar");
 
-            // Verify TopBar exists
-            var topBar = window.FindFirstDescendant(cf => cf.ByAutomationId("TopBar"));
-            topBar.Should().NotBeNull("TopBar must be present in the main shell");
+            // The lunar subtitle shows a real lunar month (FR-UI-9, FR-LUNAR-1), not just any text.
+            var subtitle = WaitFor(window, "LunarHeaderSubtitleText").Name;
+            _lunarSubtitle.IsMatch(subtitle).Should().BeTrue($"subtitle '{subtitle}' must describe a lunar month");
 
-            // Verify Lunar header subtitle is displayed with lunar text
-            var lunarSubtitle = window.FindFirstDescendant(cf => cf.ByAutomationId("LunarHeaderSubtitleText"));
-            lunarSubtitle.Should().NotBeNull("Lunar header subtitle must be present");
-            lunarSubtitle.Name.Should().NotBeNullOrWhiteSpace("Lunar header subtitle must contain lunar date information");
-
-            // Verify default view is MonthView
-            var monthView = window.FindFirstDescendant(cf => cf.ByAutomationId("MonthView"));
-            monthView.Should().NotBeNull("MonthView should be visible by default");
+            // Month cells show lunar days (FR-UI-2): 42 labels, all in lunar day format, including at least one mùng 1.
+            WaitFor(window, "MonthView");
+            Retry.WhileFalse(() => LunarTexts(window, "LunarDayLabel").Count == 42, _uiTimeout);
+            var cellTexts = LunarTexts(window, "LunarDayLabel");
+            cellTexts.Should().HaveCount(42);
+            cellTexts.Should().OnlyContain(t => _lunarDay.IsMatch(t));
+            cellTexts.Should().Contain(t => t.Contains('/'), "a 6-week grid always contains a first lunar day");
         }
         finally
         {
-            try
-            {
-                app.Close();
-            }
-            catch
-            {
-                app.Kill();
-            }
+            CloseApp(app);
         }
     }
 
@@ -105,60 +140,41 @@ public sealed class SmokeTests
 
         try
         {
-            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10));
-            window.Should().NotBeNull("Main window must appear within 10 seconds");
+            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
+                ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
 
-            // 1. Initial state: MonthView visible
-            var monthRadio = window.FindFirstDescendant(cf => cf.ByAutomationId("ViewModeMonth"))?.AsRadioButton();
-            monthRadio.Should().NotBeNull("Month radio button should exist in view switcher");
-            monthRadio!.IsChecked.Should().BeTrue();
+            // 1. Initial state: Month
+            var monthRadio = WaitFor(window, "ViewModeMonth").AsRadioButton();
+            monthRadio.IsChecked.Should().BeTrue();
+            WaitFor(window, "MonthView");
 
-            var monthView = window.FindFirstDescendant(cf => cf.ByAutomationId("MonthView"));
-            monthView.Should().NotBeNull("MonthView must be present initially");
+            // 2. Week: the month grid is replaced and every column header has a lunar day (FR-UI-1, FR-UI-2)
+            SelectRadioButton(WaitFor(window, "ViewModeWeek").AsRadioButton());
+            var weekView = WaitFor(window, "WeekView");
+            WaitGone(window, "MonthView");
+            var columnLunar = LunarTexts(weekView, "LunarDateText");
+            columnLunar.Should().HaveCount(7);
+            columnLunar.Should().OnlyContain(t => _lunarDay.IsMatch(t));
 
-            // 2. Switch to Week View
-            var weekRadio = window.FindFirstDescendant(cf => cf.ByAutomationId("ViewModeWeek"))?.AsRadioButton();
-            weekRadio.Should().NotBeNull("Week radio button should exist in view switcher");
-            SelectRadioButton(weekRadio);
-            Thread.Sleep(500);
+            // 3. Day: header shows the lunar label with a lunar day
+            SelectRadioButton(WaitFor(window, "ViewModeDay").AsRadioButton());
+            var dayView = WaitFor(window, "DayView");
+            WaitGone(window, "WeekView");
+            LunarTexts(dayView, "LunarDateText").Should().Contain(t => t.Any(char.IsDigit));
 
-            var weekView = window.FindFirstDescendant(cf => cf.ByAutomationId("WeekView"));
-            weekView.Should().NotBeNull("WeekView must be displayed when Week mode is selected");
+            // 4. Agenda
+            SelectRadioButton(WaitFor(window, "ViewModeAgenda").AsRadioButton());
+            WaitFor(window, "AgendaView");
+            WaitGone(window, "DayView");
 
-            // 3. Switch to Day View
-            var dayRadio = window.FindFirstDescendant(cf => cf.ByAutomationId("ViewModeDay"))?.AsRadioButton();
-            dayRadio.Should().NotBeNull("Day radio button should exist in view switcher");
-            SelectRadioButton(dayRadio);
-            Thread.Sleep(500);
-
-            var dayView = window.FindFirstDescendant(cf => cf.ByAutomationId("DayView"));
-            dayView.Should().NotBeNull("DayView must be displayed when Day mode is selected");
-
-            // 4. Switch to Agenda View
-            var agendaRadio = window.FindFirstDescendant(cf => cf.ByAutomationId("ViewModeAgenda"))?.AsRadioButton();
-            agendaRadio.Should().NotBeNull("Agenda radio button should exist in view switcher");
-            SelectRadioButton(agendaRadio);
-            Thread.Sleep(500);
-
-            var agendaView = window.FindFirstDescendant(cf => cf.ByAutomationId("AgendaView"));
-            agendaView.Should().NotBeNull("AgendaView must be displayed when Agenda mode is selected");
-
-            // 5. Switch back to Month View
+            // 5. Back to Month
             SelectRadioButton(monthRadio);
-            Thread.Sleep(500);
-            monthView = window.FindFirstDescendant(cf => cf.ByAutomationId("MonthView"));
-            monthView.Should().NotBeNull("MonthView must be displayed when returning to Month mode");
+            WaitFor(window, "MonthView");
+            WaitGone(window, "AgendaView");
         }
         finally
         {
-            try
-            {
-                app.Close();
-            }
-            catch
-            {
-                app.Kill();
-            }
+            CloseApp(app);
         }
     }
 
@@ -177,12 +193,12 @@ public sealed class SmokeTests
             settingsButton.Should().NotBeNull("the top bar must expose a Settings button (Figma S13)");
             settingsButton!.Invoke();
 
-            var settingsWindow = FlaUI.Core.Tools.Retry.WhileNull(
+            var settingsWindow = Retry.WhileNull(
                 () => window.ModalWindows.FirstOrDefault(),
                 TimeSpan.FromSeconds(5)).Result;
             settingsWindow.Should().NotBeNull("Settings must open as a window owned by the shell");
 
-            var page = FlaUI.Core.Tools.Retry.WhileNull(
+            var page = Retry.WhileNull(
                 () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("AppearanceSettingsPage")),
                 TimeSpan.FromSeconds(5)).Result;
             page.Should().NotBeNull("the Appearance page (S13) must be hosted in the Settings window");
@@ -193,7 +209,7 @@ public sealed class SmokeTests
                 var radio = settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId(id))?.AsRadioButton();
                 radio.Should().NotBeNull($"theme option {id} must exist");
                 SelectRadioButton(radio);
-                FlaUI.Core.Tools.Retry.WhileFalse(() => radio!.IsChecked == true, TimeSpan.FromSeconds(2));
+                Retry.WhileFalse(() => radio!.IsChecked == true, TimeSpan.FromSeconds(2));
                 radio!.IsChecked.Should().BeTrue($"{id} must become the selected theme");
                 app.HasExited.Should().BeFalse($"the app must survive switching to {id}");
             }
@@ -202,14 +218,7 @@ public sealed class SmokeTests
         }
         finally
         {
-            try
-            {
-                app.Close();
-            }
-            catch
-            {
-                app.Kill();
-            }
+            CloseApp(app);
         }
     }
 }
