@@ -34,7 +34,7 @@ Tên view dự kiến ở cột 4 là đề xuất (CHƯA XÁC MINH), chốt khi
 
 S06–S09 và S13 là bản nháp Claude Code vẽ ngày 2026-11-01, **chờ chủ dự án duyệt** (P2-00). Dữ liệu mẫu (16/10/2026 = mùng 7 tháng 9 Bính Ngọ, ngày Quý Hợi, tháng Mậu Tuất, tiết Hàn lộ) đã tính tay để khớp với engine. Ký hiệu tháng nhuận `n` (ví dụ `1/6n`) là đề xuất.
 
-Màn hình chưa có trong Figma (S10–S12, S14–S20): bảng ở spec §15.4. Phải có thiết kế trước khi làm phase tương ứng (spec §13); nếu chưa có thì ghi vào `docs/STATUS.md` mục "Câu hỏi mở" và dừng task UI đó.
+Màn hình chưa có trong Figma (S10–S12, S14–S20): bảng ở spec §15.4. Phải có thiết kế trước khi làm phase tương ứng (spec §13); nếu chưa có thì ghi vào `docs/STATUS.md` mục "Câu hỏi mở" và dừng task UI đó. Ngoại lệ ở Phase 3: task không có giao diện được làm trước khi có S10, S14, S18, S20 (ADR-0026); task có giao diện vẫn phải chờ.
 
 Lưu ý từ spec §15.3: thanh lệnh AI thay cho chat panel; chuỗi `settings.byok.desc` và chuỗi "nhận thay đổi gần như tức thì" đã được sửa theo spec, không theo Figma.
 
