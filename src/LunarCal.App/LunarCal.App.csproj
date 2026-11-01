@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -7,6 +7,7 @@
     <RootNamespace>LunarCal.App</RootNamespace>
     <AssemblyName>LunarCal</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UserSecretsId>46e39089-41b1-4007-b05e-a5eeb4624b12</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
