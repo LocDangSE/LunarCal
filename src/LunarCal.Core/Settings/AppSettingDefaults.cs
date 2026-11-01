@@ -56,6 +56,21 @@ public static class AppSettingDefaults
     }
 
     /// <summary>
+    /// Resolves the default time format according to UI culture:
+    /// "24h" for Vietnamese ("vi-VN"), "12h" for English ("en-US") (FR-UI-7, FR-I18N-4).
+    /// </summary>
+    public static string ResolveDefaultTimeFormat(string? cultureCode)
+    {
+        if (!string.IsNullOrWhiteSpace(cultureCode) &&
+            cultureCode.StartsWith("vi", StringComparison.OrdinalIgnoreCase))
+        {
+            return "24h";
+        }
+
+        return "12h";
+    }
+
+    /// <summary>
     /// Creates the complete dictionary of initial default settings based on culture and environment.
     /// </summary>
     public static Dictionary<string, string> CreateInitialDefaults(string? uiLanguage = null, string? osCultureName = null)
@@ -70,6 +85,7 @@ public static class AppSettingDefaults
             [SettingKeys.WeekStart] = resolvedWeekStart.ToString(),
             [SettingKeys.Theme] = DefaultTheme,
             [SettingKeys.Timezone] = ResolveDefaultTimezone(),
+            [SettingKeys.TimeFormat] = ResolveDefaultTimeFormat(resolvedLanguage),
             [SettingKeys.GeminiEnabled] = DefaultGeminiEnabled ? "true" : "false",
             [SettingKeys.TrainingOptIn] = DefaultTrainingOptIn ? "true" : "false",
         };

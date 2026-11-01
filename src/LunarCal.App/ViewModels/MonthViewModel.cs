@@ -64,10 +64,13 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
         _localizationService.PropertyChanged += OnLocalizationChanged;
 
-        _ = InitializeSettingsAndLoadAsync();
+        _ = InitializeSettingsAsync();
     }
 
-    private async Task InitializeSettingsAndLoadAsync()
+    /// <summary>
+    /// Loads settings and initializes week start and lunar visibility (FR-UI-7, FR-LUNAR-6).
+    /// </summary>
+    public async Task InitializeSettingsAsync()
     {
         IsLunarVisible = await _settingsStore.GetBoolAsync(SettingKeys.LunarEnabled, defaultValue: true);
         var weekStartStr = await _settingsStore.GetStringAsync(SettingKeys.WeekStart);

@@ -185,6 +185,41 @@ public sealed class MonthViewModelTests
         targetCell.MoreEventsText.Should().Be("+2 sự kiện khác");
     }
 
+    [Fact]
+    public async Task FR_UI_7_Month_grid_starts_on_monday_or_sunday_according_to_setting()
+    {
+        // 2026-11-01 is a Sunday
+        var targetDate = new DateOnly(2026, 11, 1);
+
+        // 1. Grid starting on Monday (vi-VN default)
+        _settingsStore.SetString(SettingKeys.WeekStart, "Monday");
+        using var vmMonday = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        await vmMonday.InitializeSettingsAsync();
+        await vmMonday.PopulateMonthAsync(targetDate);
+
+        vmMonday.WeekStart.Should().Be(DayOfWeek.Monday);
+        vmMonday.WeekdayHeaders[0].Should().Be("Th 2");
+        vmMonday.WeekdayHeaders[6].Should().Be("CN");
+        vmMonday.Days[0].SolarDate.DayOfWeek.Should().Be(DayOfWeek.Monday);
+
+        // Since 2026-11-01 is Sunday, with Monday start, it appears at index 6 (last day of first week row)
+        vmMonday.Days[6].SolarDate.Should().Be(new DateOnly(2026, 11, 1));
+
+        // 2. Grid starting on Sunday (en-US default / user setting)
+        _settingsStore.SetString(SettingKeys.WeekStart, "Sunday");
+        using var vmSunday = new MonthViewModel(_eventStore, _localizationService, _settingsStore);
+        await vmSunday.InitializeSettingsAsync();
+        await vmSunday.PopulateMonthAsync(targetDate);
+
+        vmSunday.WeekStart.Should().Be(DayOfWeek.Sunday);
+        vmSunday.WeekdayHeaders[0].Should().Be("CN");
+        vmSunday.WeekdayHeaders[1].Should().Be("Th 2");
+        vmSunday.Days[0].SolarDate.DayOfWeek.Should().Be(DayOfWeek.Sunday);
+
+        // Since 2026-11-01 is Sunday, with Sunday start, it appears right at index 0
+        vmSunday.Days[0].SolarDate.Should().Be(new DateOnly(2026, 11, 1));
+    }
+
     private sealed class FakeSettingsStore : ISettingsStore
     {
         private readonly Dictionary<string, string> _dict = new(StringComparer.Ordinal);

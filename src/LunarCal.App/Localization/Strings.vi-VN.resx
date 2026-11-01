@@ -448,4 +448,69 @@
   <data name="day_detail.lunar_disabled" xml:space="preserve">
     <value>Lịch âm đang tắt trong Cài đặt</value>
   </data>
+
+  <!-- Spec §4.3 (FR-UI-7), §4.11 (FR-I18N-4) Appearance Settings (Figma S13) -->
+  <data name="settings.appearance.title" xml:space="preserve">
+    <value>Giao diện</value>
+  </data>
+  <data name="settings.appearance.desc" xml:space="preserve">
+    <value>Tuỳ chỉnh chủ đề, ngày đầu tuần, định dạng giờ và múi giờ hiển thị.</value>
+  </data>
+  <data name="settings.appearance.theme" xml:space="preserve">
+    <value>Chủ đề</value>
+  </data>
+  <data name="settings.appearance.theme_desc" xml:space="preserve">
+    <value>Chọn màu giao diện ứng dụng</value>
+  </data>
+  <data name="settings.appearance.theme_system" xml:space="preserve">
+    <value>Theo hệ thống</value>
+  </data>
+  <data name="settings.appearance.theme_light" xml:space="preserve">
+    <value>Sáng</value>
+  </data>
+  <data name="settings.appearance.theme_dark" xml:space="preserve">
+    <value>Tối</value>
+  </data>
+  <data name="settings.appearance.theme_high_contrast" xml:space="preserve">
+    <value>Tương phản cao</value>
+  </data>
+  <data name="settings.appearance.week_start" xml:space="preserve">
+    <value>Ngày đầu tuần</value>
+  </data>
+  <data name="settings.appearance.week_start_desc" xml:space="preserve">
+    <value>Chọn thứ bắt đầu cho các cột trong lịch</value>
+  </data>
+  <data name="settings.appearance.week_start_monday" xml:space="preserve">
+    <value>Thứ Hai</value>
+  </data>
+  <data name="settings.appearance.week_start_sunday" xml:space="preserve">
+    <value>Chủ Nhật</value>
+  </data>
+  <data name="settings.appearance.time_format" xml:space="preserve">
+    <value>Định dạng giờ</value>
+  </data>
+  <data name="settings.appearance.time_format_desc" xml:space="preserve">
+    <value>Chọn hiển thị theo hệ 24 giờ hoặc 12 giờ AM/PM</value>
+  </data>
+  <data name="settings.appearance.time_format_24h" xml:space="preserve">
+    <value>24 giờ (14:00)</value>
+  </data>
+  <data name="settings.appearance.time_format_12h" xml:space="preserve">
+    <value>12 giờ (2:00 PM)</value>
+  </data>
+  <data name="settings.appearance.timezone" xml:space="preserve">
+    <value>Múi giờ hiển thị</value>
+  </data>
+  <data name="settings.appearance.timezone_desc" xml:space="preserve">
+    <value>Múi giờ dùng để tính toán và hiển thị sự kiện</value>
+  </data>
+  <data name="settings.appearance.timezone_system" xml:space="preserve">
+    <value>Múi giờ hệ thống ({0})</value>
+  </data>
+  <data name="settings.appearance.lunar_title" xml:space="preserve">
+    <value>Lịch âm Việt Nam</value>
+  </data>
+  <data name="settings.appearance.lunar_desc" xml:space="preserve">
+    <value>Hiển thị ngày âm, tháng nhuận, can chi và tiết khí</value>
+  </data>
 </root>

@@ -448,4 +448,69 @@
   <data name="day_detail.lunar_disabled" xml:space="preserve">
     <value>Lunar calendar is disabled in Settings</value>
   </data>
+
+  <!-- Spec §4.3 (FR-UI-7), §4.11 (FR-I18N-4) Appearance Settings (Figma S13) -->
+  <data name="settings.appearance.title" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="settings.appearance.desc" xml:space="preserve">
+    <value>Customize theme, first day of week, time format, and display timezone.</value>
+  </data>
+  <data name="settings.appearance.theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="settings.appearance.theme_desc" xml:space="preserve">
+    <value>Select application appearance theme</value>
+  </data>
+  <data name="settings.appearance.theme_system" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="settings.appearance.theme_light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="settings.appearance.theme_dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="settings.appearance.theme_high_contrast" xml:space="preserve">
+    <value>High contrast</value>
+  </data>
+  <data name="settings.appearance.week_start" xml:space="preserve">
+    <value>First day of week</value>
+  </data>
+  <data name="settings.appearance.week_start_desc" xml:space="preserve">
+    <value>Choose which day begins calendar columns</value>
+  </data>
+  <data name="settings.appearance.week_start_monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="settings.appearance.week_start_sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="settings.appearance.time_format" xml:space="preserve">
+    <value>Time format</value>
+  </data>
+  <data name="settings.appearance.time_format_desc" xml:space="preserve">
+    <value>Choose 24-hour or 12-hour AM/PM display</value>
+  </data>
+  <data name="settings.appearance.time_format_24h" xml:space="preserve">
+    <value>24-hour (14:00)</value>
+  </data>
+  <data name="settings.appearance.time_format_12h" xml:space="preserve">
+    <value>12-hour (2:00 PM)</value>
+  </data>
+  <data name="settings.appearance.timezone" xml:space="preserve">
+    <value>Display timezone</value>
+  </data>
+  <data name="settings.appearance.timezone_desc" xml:space="preserve">
+    <value>Timezone used to calculate and display calendar events</value>
+  </data>
+  <data name="settings.appearance.timezone_system" xml:space="preserve">
+    <value>System timezone ({0})</value>
+  </data>
+  <data name="settings.appearance.lunar_title" xml:space="preserve">
+    <value>Vietnamese lunar calendar</value>
+  </data>
+  <data name="settings.appearance.lunar_desc" xml:space="preserve">
+    <value>Display lunar days, leap months, Can Chi, and solar terms</value>
+  </data>
 </root>

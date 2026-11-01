@@ -35,6 +35,8 @@ public partial class App : Application
         builder.Services.AddSingleton<IThemeService, ThemeService>();
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
+        builder.Services.AddTransient<AppearanceSettingsViewModel>();
+        builder.Services.AddTransient<Views.Settings.AppearancePage>();
 
         _host = builder.Build();
 

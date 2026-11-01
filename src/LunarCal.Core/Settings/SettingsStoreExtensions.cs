@@ -115,4 +115,25 @@ public static class SettingsStoreExtensions
         ArgumentNullException.ThrowIfNull(store);
         return store.SetStringAsync(SettingKeys.Timezone, timezoneId, cancellationToken);
     }
+
+    /// <summary>Gets the time format setting ("24h" or "12h") (FR-UI-7, FR-I18N-4).</summary>
+    public static async ValueTask<string> GetTimeFormatAsync(
+        this ISettingsStore store,
+        string? defaultTimeFormat = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(store);
+        var value = await store.GetStringAsync(SettingKeys.TimeFormat, cancellationToken).ConfigureAwait(false);
+        return value ?? defaultTimeFormat ?? "24h";
+    }
+
+    /// <summary>Sets the time format setting ("24h" or "12h") (FR-UI-7, FR-I18N-4).</summary>
+    public static ValueTask SetTimeFormatAsync(
+        this ISettingsStore store,
+        string timeFormat,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(store);
+        return store.SetStringAsync(SettingKeys.TimeFormat, timeFormat, cancellationToken);
+    }
 }

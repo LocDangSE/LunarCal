@@ -20,6 +20,9 @@ public static class SettingKeys
     /// <summary>Display timezone identifier (FR-UI-7). Default: system local timezone.</summary>
     public const string Timezone = "timezone";
 
+    /// <summary>Time format: "12h" or "24h" (FR-UI-7, FR-I18N-4). Default: "24h" for vi-VN, "12h" for en-US.</summary>
+    public const string TimeFormat = "time_format";
+
     /// <summary>Use Gemini for command parsing: "true" or "false" (spec §7). Default: "true".</summary>
     public const string GeminiEnabled = "gemini_enabled";
 
