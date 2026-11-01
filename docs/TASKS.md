@@ -35,7 +35,7 @@ Tên test ghi trong "Xong khi" là tên đề xuất; được đổi tên, như
 - [x] **P2-10** · FR-UI-3, FR-I18N-5, FR-LUNAR-8 · Phụ thuộc: P2-07 · File: `Views/DayDetailPanel.xaml`, resx (chú giải tiếng Anh cho 10 can, 12 chi, 24 tiết khí; ADR-0008) · Panel chi tiết ngày (S09): can chi ngày/tháng/năm, tiết khí, ký hiệu nhuận, danh sách sự kiện. · Xong khi: test `FR_UI_3_Day_detail_shows_can_chi_and_tiet_khi`; test resx có đủ chú giải cho mọi giá trị của `ThienCan`, `DiaChi`, `SolarTerm`. · Xong: Antigravity, 2026-11-01 14:25 +07:00
 - [x] **P2-11** · FR-UI-7, FR-I18N-4 · Phụ thuộc: P2-04, P2-07 · File: view models, trang Cài đặt > Giao diện (S13) · Đầu tuần cấu hình được, 12h/24h, định dạng theo culture, chọn múi giờ khác múi hệ thống. · Xong khi: test lưới tháng bắt đầu từ T2 hoặc CN theo setting; test format giờ theo culture. · Xong: Antigravity, 2026-11-01 14:41 +07:00
 - [x] **P2-12** · spec §9 (UI smoke) · Phụ thuộc: P2-07, P2-08 · File: `tests/LunarCal.App.UiTests/SmokeTests.cs` · Bỏ Skip; FlaUI mở app, chuyển view Tháng/Tuần/Ngày, kiểm tra có ngày âm. · Xong khi: `App_starts_and_shows_main_window` cùng test chuyển view pass local; quyết định có chạy trên CI hay không (ghi vào STATUS). · Xong: Antigravity, 2026-11-01 15:10 +07:00
-- [ ] **P2-13** · spec §13 · Phụ thuộc: P2-01..P2-12 · Kết thúc Phase 2: cập nhật TRACEABILITY, CHANGELOG, commit hoặc PR phase. · Xong khi: CI xanh.
+- [x] **P2-13** · spec §13 · Phụ thuộc: P2-01..P2-12 · Kết thúc Phase 2: cập nhật TRACEABILITY, CHANGELOG, commit hoặc PR phase. · Xong khi: CI xanh. · Xong: Antigravity, 2026-11-01 15:43 +07:00
 
 ## Phase 3: Google OAuth, SyncEngine, SQLCipher cache, CRUD (DoD: FR-AUTH, FR-SYNC, FR-UI-4 đạt; integration test xanh)
 
