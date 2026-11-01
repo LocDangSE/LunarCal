@@ -11,11 +11,17 @@ Figma: file "GCalendar – AI-Powered Calendar (UI v1)", fileKey `4vwWjHGoSu9naj
 
 ## Ánh xạ màn hình → code
 
-Hiện chỉ có `src/LunarCal.App/Views/MainWindow.xaml` (`Grid` rỗng) và `ViewModels/MainWindowViewModel.cs`. Tên view dự kiến ở cột 4 là đề xuất (CHƯA XÁC MINH), chốt khi làm task tương ứng.
+Hiện có:
+- `src/LunarCal.App/Views/MainWindow.xaml` (Shell layout tích hợp TopBar, Sidebar, Viewport, AI Command Bar) và `ViewModels/MainWindowViewModel.cs`.
+- `src/LunarCal.App/Controls/TopBar.xaml`: Brand, nút Hôm nay, mũi tên điều hướng, tiêu đề & phụ đề âm lịch, cụm chuyển view Ngày/Tuần/Tháng/Lịch biểu, nút VI | EN, chip mạng, avatar.
+- `src/LunarCal.App/Controls/Sidebar.xaml`: Nút Tạo sự kiện, MiniCalendar, danh sách lịch với checkbox & bullet màu, khối trạng thái đồng bộ ("Đồng bộ ngay", badge lệnh AI chờ).
+- `src/LunarCal.App/Controls/MiniCalendar.xaml`: Lưới 6×7 ngày, chuyển tháng, highlight ngày hiện tại & ngày chọn.
+
+Tên view dự kiến ở cột 4 là đề xuất (CHƯA XÁC MINH), chốt khi làm task tương ứng.
 
 | Figma (node) | Nội dung | Yêu cầu | View / ViewModel dự kiến | Task |
 | --- | --- | --- | --- | --- |
-| 01 · Lịch tháng & trợ lý AI (`1:2`; Sidebar `1:3`, Main `1:196`) | Sidebar, thanh trên cùng, lưới tháng có ngày âm, thanh lệnh AI | FR-UI-1, 2, 5, 9, 10 | `MainWindow` (shell), `Views/MonthView`, `Controls/MiniCalendar`, `Controls/TopBar`, `Controls/Sidebar`, `Controls/AiCommandBar` | P2-06, P2-07, P4-09 |
+| 01 · Lịch tháng & trợ lý AI (`1:2`; Sidebar `1:3`, Main `1:196`) | Sidebar, thanh trên cùng, lưới tháng có ngày âm, thanh lệnh AI | FR-UI-1, 2, 5, 9, 10 | `MainWindow` (shell), `Views/MonthView`, `Controls/MiniCalendar`, `Controls/TopBar`, `Controls/Sidebar`, `Controls/AiCommandBar` | P2-06 (shell/controls: xong), P2-07 (lưới tháng), P4-09 (thanh lệnh AI) |
 | 02 · AI xác nhận yêu cầu (`2:2`; dialog `2:494`, scrim `2:493`) | Hộp thoại xác nhận một sự kiện | FR-CONFIRM-1..6 | `Views/AiConfirmDialog` + `AiConfirmViewModel` | P4-10 |
 | 03 · Offline & hàng chờ AI (`3:2`; drawer `3:493`) | Banner offline, ngăn kéo hàng chờ | FR-QUEUE-2, 3, 6 | `Views/AiQueueDrawer` + `AiQueueViewModel` | P4-09 |
 | 04 · Cài đặt & quyền riêng tư (`4:2`; nav `4:3`, content `4:18`) | Chung, Tài khoản Google, AI và dữ liệu huấn luyện | FR-LUNAR-6, FR-I18N-1, FR-BYOK, FR-DATA-1 | `Views/SettingsWindow` có các trang `Settings/General`, `Settings/Account`, `Settings/Ai` | P2-04, P3-15, P4-02, P6a-01 |
@@ -27,10 +33,33 @@ Lưu ý từ spec §15.3: thanh lệnh AI thay cho chat panel; chuỗi `settings
 
 ## Design token
 
-- File Figma UI v1 **không có variable hay design token nào** (kiểm tra bằng Figma variables cho node `1:2` ngày 2026-10-31: kết quả rỗng). Màu, font, spacing, radius hiện là giá trị đặt thẳng trong layer: CHƯA XÁC MINH.
-- Việc cần làm (task P2-00): trích màu, typography, spacing, radius từ các frame 01–05, ghi thành ResourceDictionary `src/LunarCal.App/Resources/Tokens.xaml` (tên đề xuất). Mỗi token có biến thể sáng, tối và High Contrast.
-- XAML chỉ được tham chiếu token qua `{DynamicResource ...}` (để đổi theme khi đang chạy), không đặt màu hay cỡ chữ thẳng trong view.
-- Thư viện style (WPF UI hay tự style): ADR-0011, chưa chốt.
+- Thư viện style: **ADR-0011 đã chốt** chọn tự định nghĩa hệ thống token bằng ResourceDictionary thuần WPF (`src/LunarCal.App/Resources/Tokens.xaml`), cùng 3 theme (`Themes/Light.xaml`, `Dark.xaml`, `HighContrast.xaml`), quản lý qua `IThemeService`.
+- XAML chỉ được tham chiếu token qua `{DynamicResource ...}` (để đổi theme khi đang chạy), không đặt màu hay cỡ chữ hard-code trong view.
+
+### Bảng Token Design System (`Tokens.xaml` & Themes)
+
+| Loại token | Key DynamicResource | Giá trị / Mô tả |
+| --- | --- | --- |
+| **Typography** | `FontFamilyBase` | Segoe UI, sans-serif |
+| | `FontSizeCaption` | 11 pt |
+| | `FontSizeBody` | 13 pt |
+| | `FontSizeSubtitle` | 14 pt |
+| | `FontSizeTitle` | 18 pt |
+| | `FontSizeDisplay` | 24 pt |
+| | `FontWeightRegular` / `Medium` / `SemiBold` / `Bold` | 400, 500, 600, 700 |
+| **Spacing** | `SpacingXSmall` (4), `SpacingSmall` (8), `SpacingMedium` (16), `SpacingLarge` (24), `SpacingXLarge` (32) | Khoảng cách margin/padding chuẩn |
+| **Radius** | `CornerRadiusSmall` (4), `CornerRadiusMedium` (8), `CornerRadiusLarge` (12), `CornerRadiusFull` (999) | Bo góc border / button / chip |
+| **Metrics** | `TopBarHeight` (56), `SidebarWidth` (240), `AiCommandBarHeight` (48) | Chiều cao / rộng cố định |
+| **Brushes (Theme)** | `WindowBackgroundBrush` | Nền chính của cửa sổ |
+| | `SurfaceBackgroundBrush` | Nền bề mặt (TopBar, Sidebar) |
+| | `SurfaceElevatedBackgroundBrush` | Nền card/dialog nổi bật |
+| | `BorderBrush` | Đường viền phân cách |
+| | `TextPrimaryBrush`, `TextSecondaryBrush`, `TextTertiaryBrush` | Màu chữ theo cấp độ phân cấp |
+| | `AccentPrimaryBrush`, `AccentHoverBrush`, `AccentTextBrush` | Màu nhấn chủ đạo (Google Blue / Tương phản) |
+| | `LunarTextPrimaryBrush`, `LunarTextSecondaryBrush` | Màu chữ âm lịch (đỏ gạch / cam đất) |
+| | `HoverBackgroundBrush`, `SelectedBackgroundBrush` | Trạng thái hover và active |
+| | `TodayHighlightBrush` | Highlight ngày hôm nay |
+| | `SuccessBrush`, `WarningBrush`, `ErrorBrush` | Màu trạng thái trực tuyến / cảnh báo / lỗi |
 
 ## Quy ước component (WPF + MVVM)
 
