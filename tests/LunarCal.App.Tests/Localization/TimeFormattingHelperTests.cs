@@ -42,11 +42,14 @@ public sealed class TimeFormattingHelperTests
         var enMorning = TimeFormattingHelper.FormatTime(morning, TimeFormattingHelper.Format12Hours, _enCulture);
         enMorning.Should().Be("9:05 AM");
 
-        // 12h format for vi-VN (uses CH / SA designator in .NET)
-        var viAfternoon = TimeFormattingHelper.FormatTime(afternoon, TimeFormattingHelper.Format12Hours, _viCulture);
-        viAfternoon.Should().Contain("02:30");
-        (viAfternoon.Contains("CH", StringComparison.OrdinalIgnoreCase) ||
-         viAfternoon.Contains("PM", StringComparison.OrdinalIgnoreCase)).Should().BeTrue();
+        // 12h format for vi-VN: two-digit hour ("hh") and the culture's own designators (SA = morning, CH = afternoon).
+        var vi = _viCulture.DateTimeFormat;
+        TimeFormattingHelper.FormatTime(afternoon, TimeFormattingHelper.Format12Hours, _viCulture)
+            .Should().Be($"02:30 {vi.PMDesignator}");
+        TimeFormattingHelper.FormatTime(morning, TimeFormattingHelper.Format12Hours, _viCulture)
+            .Should().Be($"09:05 {vi.AMDesignator}");
+        vi.AMDesignator.Should().Be("SA");
+        vi.PMDesignator.Should().Be("CH");
     }
 
     [Fact]

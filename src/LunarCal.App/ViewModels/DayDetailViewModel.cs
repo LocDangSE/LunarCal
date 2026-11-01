@@ -164,8 +164,9 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
 
     private void UpdateLunarDisplay()
     {
-        if (Date < LunarCalendar.MinSolarDate || Date > LunarCalendar.MaxSolarDate)
+        if (!IsLunarVisible || Date < LunarCalendar.MinSolarDate || Date > LunarCalendar.MaxSolarDate)
         {
+            // FR-LUNAR-6: when the master toggle is off, no lunar value is exposed at all.
             HasLunarDate = false;
             LunarDayNumberText = string.Empty;
             LunarMonthText = string.Empty;

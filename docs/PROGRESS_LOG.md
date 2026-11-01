@@ -65,3 +65,5 @@
 | 2026-11-01 17:26 +07:00 | Claude Code (Opus 5.5) | P2-R6 | START | Đo render MonthView thật (layout WPF) |
 | 2026-11-01 17:32 +07:00 | Claude Code (Opus 5.5) | P2-R6 | DONE | Test đo MonthView thật (STA, Tokens + Light, 200 sự kiện/tháng). Lần đo đầu vượt NFR-PERF: median 132 ms, max 166 ms. Sửa: tái sử dụng 42 ô (`MonthDayViewModel.Reset`) và 3 khe chip cố định (`EventChipViewModel`). Sau sửa (5 lần chạy, Release, i7-12700H): median 20–23 ms, max 39–43 ms. 216/216 test. Tiếp theo: P2-R7 |
 | 2026-11-01 17:32 +07:00 | Claude Code (Opus 5.5) | P2-R7 | START | Siết các test yếu |
+| 2026-11-01 17:35 +07:00 | Claude Code (Opus 5.5) | P2-R7 | DONE | Thêm test tháng thiếu và ô ngoài 1900–2100; DayDetail xoá mọi giá trị âm lịch khi tắt (sửa VM + test); test gloss so en ≠ vi; test 12h vi so chuỗi chính xác (SA/CH). Test null-culture: review cũ đề xuất assert vi-VN là sai (null nghĩa là hỏi OS); đổi thành so với InstalledUICulture và giữ case Invariant → vi-VN. 217/217 test. Tiếp theo: P2-R8 |
+| 2026-11-01 17:35 +07:00 | Claude Code (Opus 5.5) | P2-R8 | START | Siết UI smoke test |

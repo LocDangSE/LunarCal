@@ -221,6 +221,50 @@ public sealed class MonthViewModelTests
         vmSunday.Days[0].SolarDate.Should().Be(new DateOnly(2026, 11, 1));
     }
 
+    [Fact]
+    public async Task FR_UI_2_Short_lunar_month_rolls_from_29_to_first_day_of_next_month()
+    {
+        // Find the first 29-day (tháng thiếu) lunar month starting in 2026 and check the grid around its end.
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
+        var day = new DateOnly(2026, 1, 1);
+        LunarDate lunar;
+        while (true)
+        {
+            lunar = LunarCalendar.ToLunar(day);
+            if (lunar.Day == 29 && LunarCalendar.GetDaysInMonth(lunar.Year, lunar.Month, lunar.IsLeapMonth) == 29)
+            {
+                break;
+            }
+
+            day = day.AddDays(1);
+        }
+
+        var next = LunarCalendar.ToLunar(day.AddDays(1));
+        await vm.PopulateMonthAsync(new DateOnly(day.Year, day.Month, 1));
+
+        vm.Days.Single(d => d.SolarDate == day).LunarDayText.Should().Be("29");
+        next.Day.Should().Be(1, "a 29-day month has no day 30");
+        await vm.PopulateMonthAsync(new DateOnly(day.AddDays(1).Year, day.AddDays(1).Month, 1));
+        vm.Days.Single(d => d.SolarDate == day.AddDays(1)).LunarDayText.Should().Be($"1/{next.Month}");
+    }
+
+    [Fact]
+    public async Task FR_UI_2_Cells_outside_supported_lunar_range_show_no_lunar_text()
+    {
+        _preferences.WeekStart = DayOfWeek.Sunday; // 1 Jan 1900 is a Monday, so the grid starts on 31 Dec 1899
+        using var vm = new MonthViewModel(_eventStore, _localizationService, _preferences);
+
+        await vm.PopulateMonthAsync(new DateOnly(1900, 1, 1));
+        var before = vm.Days.Where(d => d.SolarDate < LunarCalendar.MinSolarDate).ToList();
+        before.Should().NotBeEmpty("the January 1900 grid starts in December 1899");
+        before.Should().OnlyContain(d => d.LunarDate == null && d.LunarDayText == string.Empty);
+        vm.Days.Single(d => d.SolarDate == LunarCalendar.MinSolarDate).LunarDayText.Should().NotBeEmpty();
+
+        await vm.PopulateMonthAsync(new DateOnly(2100, 12, 1));
+        vm.Days.Where(d => d.SolarDate > LunarCalendar.MaxSolarDate)
+            .Should().OnlyContain(d => d.LunarDate == null && d.LunarDayText == string.Empty);
+    }
+
     private sealed class FakeSettingsStore : ISettingsStore
     {
         private readonly Dictionary<string, string> _dict = new(StringComparer.Ordinal);

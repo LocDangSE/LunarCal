@@ -132,8 +132,20 @@ public sealed class DayDetailViewModelTests
         // Act: disable lunar display
         vm.SetLunarVisibility(false);
 
-        // Assert
+        // Assert: the flag and every lunar text are cleared (FR-LUNAR-6 hides all lunar elements)
         vm.IsLunarVisible.Should().BeFalse();
+        vm.LunarDayNumberText.Should().BeEmpty();
+        vm.LunarMonthText.Should().BeEmpty();
+        vm.DayCanChiText.Should().BeEmpty();
+        vm.MonthCanChiText.Should().BeEmpty();
+        vm.YearCanChiText.Should().BeEmpty();
+        vm.SolarTermText.Should().BeEmpty();
+        vm.SolarTermDegreesText.Should().BeEmpty();
+
+        // Turning it back on restores the values
+        vm.SetLunarVisibility(true);
+        vm.DayCanChiText.Should().Be("Quý Hợi");
+        vm.SolarTermText.Should().Be("Tiết Hàn lộ");
     }
 
     [Fact]

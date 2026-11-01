@@ -35,12 +35,15 @@ public class LocalizationTests
     }
 
     [Fact]
-    public void FR_I18N_1_Default_language_falls_back_to_vietnamese_when_os_culture_is_null()
+    public void FR_I18N_1_Null_os_culture_resolves_from_installed_ui_culture()
     {
+        // null means "ask the OS": the result must be exactly what the installed UI culture resolves to.
+        // The indeterminate case (invariant culture -> vi-VN) is covered by FR_I18N_1_Default_language_follows_OS("").
         var resolved = SupportedCultures.ResolveDefaultCulture(null);
+        var expected = SupportedCultures.ResolveDefaultCulture(CultureInfo.InstalledUICulture);
 
-        resolved.Should().NotBeNull();
-        resolved.Name.Should().BeOneOf("vi-VN", "en-US");
+        resolved.Name.Should().Be(expected.Name);
+        SupportedCultures.ResolveDefaultCulture(CultureInfo.InvariantCulture).Name.Should().Be("vi-VN");
     }
 
     [Fact]
@@ -334,6 +337,7 @@ public class LocalizationTests
             viVal.Should().NotBeNullOrWhiteSpace($"Can '{can}' must have Vietnamese name");
             enVal.Should().NotBeNullOrWhiteSpace($"Can '{can}' must have English gloss");
             enVal.Should().ContainAny(["Wood", "Fire", "Earth", "Metal", "Water"], $"English gloss for '{can}' should contain element");
+            enVal.Should().NotBe(viVal, $"Can '{can}' English gloss must not fall back to the Vietnamese name");
         }
 
         // 2. Verify all 12 Earthly Branches (DiaChi) have entries in both languages
@@ -345,6 +349,8 @@ public class LocalizationTests
 
             viVal.Should().NotBeNullOrWhiteSpace($"Chi '{chi}' must have Vietnamese name");
             enVal.Should().NotBeNullOrWhiteSpace($"Chi '{chi}' must have English gloss");
+            enVal.Should().NotBe(viVal, $"Chi '{chi}' English gloss must not fall back to the Vietnamese name");
+            enVal.Should().NotStartWith("!", $"Chi '{chi}' key must exist");
         }
 
         // 3. Verify all 24 Solar Terms (SolarTerm) have entries in both languages
@@ -358,6 +364,8 @@ public class LocalizationTests
 
             viVal.Should().NotBeNullOrWhiteSpace($"SolarTerm '{term}' must have Vietnamese name");
             enVal.Should().NotBeNullOrWhiteSpace($"SolarTerm '{term}' must have English gloss");
+            enVal.Should().NotBe(viVal, $"SolarTerm '{term}' English name must not fall back to the Vietnamese name");
+            enVal.Should().NotStartWith("!", $"SolarTerm '{term}' key must exist");
         }
     }
 
