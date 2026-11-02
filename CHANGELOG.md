@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Serilog file logging infrastructure with 14-day daily rotation, Information default level, and comprehensive redaction: `LogRedactor` (masking Gemini API key, Google OAuth access token, Bearer/Authorization headers, refresh tokens, client secrets, optional email masking), `RedactingEnricher`, `RedactingDestructuringPolicy` (sanitizing sensitive event fields like title, summary, location, description per FR-NOTIFY-9), and `RedactingTextFormatter` (SEC-LOG-1, SEC-LOG-2, ADR-0019, P3-01).
 - Phase 0 scaffold: solution, shared build props, Central Package Management, analyzers, CI, docs skeleton.
 - Phase 1 lunar engine (`LunarCal.Core.Lunar`): solar↔lunar conversion with Hồ Ngọc Đức's algorithm (UTC+7, 1900–2100), leap months, month lengths, Can Chi of day/month/year, 24 solar terms, per-year cache (FR-LUNAR-1, 2).
 - Lunar reference tests against the Hong Kong Observatory table 1901–2100 (2,474 month starts, 4,800 solar terms), the spec's Tết fixtures and Wikipedia; every difference is checked against the UTC+7/UTC+8 offset (FR-LUNAR-3, ADR-0009).

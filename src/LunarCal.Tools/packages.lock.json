@@ -44,7 +44,9 @@
         "dependencies": {
           "LunarCal.Core": "[0.1.0, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[10.0.14, )",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.14, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.14, )",
+          "Serilog": "[4.3.0, )",
+          "Serilog.Sinks.File": "[7.0.0, )"
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions": {
@@ -61,6 +63,21 @@
         "requested": "[10.0.14, )",
         "resolved": "10.0.14",
         "contentHash": "QtpQzuSZVyTPCuHW058yCs9Nj0394uUkNyFHS813nOmK9UgUdBdaprJ5PPsBgsQIpxADTsTkbaMMonykem6qdw=="
+      },
+      "Serilog": {
+        "type": "CentralTransitive",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
+      },
+      "Serilog.Sinks.File": {
+        "type": "CentralTransitive",
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "fKL7mXv7qaiNBUC71ssvn/dU0k9t0o45+qm2XgKAlSt19xF+ijjxyA3R6HmCgfKEKwfcfkwWjayuQtRueZFkYw==",
+        "dependencies": {
+          "Serilog": "4.2.0"
+        }
       }
     }
   }

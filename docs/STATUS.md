@@ -12,7 +12,7 @@
 - **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9). P3-00a và P3-00b xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-13 (kết thúc Phase 2). Bước tiếp theo: bắt đầu Phase 3 (chủ dự án chuẩn bị OAuth Client ID ở P3-00, và agent triển khai P3-01 Serilog logging với redaction).
+  - **Antigravity:** đang làm task [P3-01](file:///D:/Personal-Projects/GCalendar/docs/TASKS.md#L63) trên branch `task/P3-01`. File đang sửa: `Directory.Packages.props`, `src/LunarCal.Infrastructure/Security/LogRedactor.cs`, cấu hình App. Bước tiếp theo: thêm Serilog, hiện thực `LogRedactor`, unit tests SEC-LOG-1 và tích hợp vào App.
 - **Task tiếp theo đề xuất:**
   1. Antigravity: tạo branch `phase/3` từ `main`, làm P3-01 (Serilog, redaction) trên `task/P3-01` tách từ `phase/3`, rồi lần lượt các task Phase 3; xong task nào merge vào `phase/3` và đặt `[x]`. Xong P3-16 thì chuyển `P3-REVIEW` sang `[r]` và dừng: **không bắt đầu Phase 4 khi `P3-REVIEW` chưa `[x]`** (ADR-0027). Task UI mới phải theo bảng icon/token ở `.agents/rules/ui.md` (mục P2-R11..R15).
   2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.

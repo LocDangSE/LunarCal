@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
@@ -6,9 +7,12 @@ using LunarCal.App.Views;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Settings;
 using LunarCal.Infrastructure;
+using LunarCal.Infrastructure.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 
 namespace LunarCal.App;
 
@@ -33,6 +37,20 @@ public partial class App : Application
                 Args = e.Args,
                 ContentRootPath = AppContext.BaseDirectory,
             });
+
+            // Configure Serilog file sink with redaction and 14-day rotation (SEC-LOG-1, SEC-LOG-2, ADR-0019)
+            var logDir = builder.Configuration.GetValue<string>("LunarCal:Logging:LogDirectory");
+            var redactEmail = builder.Configuration.GetValue<bool>("LunarCal:Logging:RedactEmail");
+            var defaultLevelStr = builder.Configuration.GetValue<string>("Logging:LogLevel:Default");
+            var minLevel = Enum.TryParse<LogEventLevel>(defaultLevelStr, true, out var parsedLevel)
+                ? parsedLevel
+                : LogEventLevel.Information;
+
+            var loggerConfig = new LoggerConfiguration()
+                .ConfigureLunarCalLogging(logDir, minLevel, redactEmail);
+
+            Log.Logger = loggerConfig.CreateLogger();
+            builder.Services.AddSerilog(Log.Logger, dispose: true);
 
             builder.Services.AddLunarCalInfrastructure(builder.Configuration);
 
@@ -65,6 +83,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            Log.Fatal(ex, "Application startup failed.");
             MessageBox.Show(ex.Message, "LunarCal", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
@@ -74,6 +93,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _host?.Dispose();
+        Log.CloseAndFlush();
         base.OnExit(e);
     }
 }
