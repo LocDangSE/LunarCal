@@ -40,6 +40,19 @@ public sealed partial class AgendaDayGroupViewModel : ObservableObject
     /// <summary>Whether this date is the 1st day of a lunar month (mùng 1 âm).</summary>
     public bool IsFirstLunarDay => (LunarDate?.Day ?? 0) == 1;
 
+    /// <summary>Day number in the 36 px badge (Figma S08 25:165).</summary>
+    public string DayNumberText => Date.Day.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Weekday and month (25:168): "T6, Th10 · Hôm nay" / "T7, Th10".</summary>
+    public string DateLabel { get; init; } = string.Empty;
+
+    /// <summary>Lunar line (25:169): "Âm: 7/9", "Âm: 15/9 · Rằm", "Âm: 1/10".</summary>
+    [ObservableProperty]
+    private string _lunarLabelText = string.Empty;
+
+    /// <summary>Localization used for <see cref="LunarLabelText"/>.</summary>
+    public ILocalizationService? Localization { get; init; }
+
     /// <summary>Events occurring on this date that match active filters.</summary>
     public ObservableCollection<AgendaEventItemViewModel> Events { get; } = new();
 
@@ -85,6 +98,7 @@ public sealed partial class AgendaDayGroupViewModel : ObservableObject
         if (!IsLunarVisible || LunarDate is null)
         {
             LunarDayText = string.Empty;
+            LunarLabelText = string.Empty;
             return;
         }
 
@@ -94,5 +108,9 @@ public sealed partial class AgendaDayGroupViewModel : ObservableObject
             CultureInfo.InvariantCulture,
             $"{ld.Day}/{ld.Month}{(ld.Day == 1 && ld.IsLeapMonth ? _leapMarker : string.Empty)}");
         LunarDayText = string.Format(CultureInfo.CurrentCulture, _lunarFormat, dayMonth);
+
+        var loc = Localization ?? LocalizationService.Instance;
+        var label = loc.Format("agenda.lunar", dayMonth);
+        LunarLabelText = ld.Day == 15 ? loc.Format("format.dot_pair", label, loc["agenda.full_moon"]) : label;
     }
 }

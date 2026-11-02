@@ -35,6 +35,12 @@ public sealed partial class AgendaEventItemViewModel : ObservableObject
     /// <summary>Formatted time display string (e.g. "Cả ngày" or "09:00 – 10:30").</summary>
     public string TimeDisplay { get; }
 
+    /// <summary>Second line in the day detail panel (Figma S09 25:36): "14:00 – 15:30 · Cá nhân · Google".</summary>
+    public string MetaText => string.IsNullOrEmpty(CalendarName) ? TimeDisplay : $"{TimeDisplay} · {CalendarName}";
+
+    /// <summary>True for events created by the AI command bar (Figma S08 "✦ Họp nhóm").</summary>
+    public bool IsAi => CalendarColors.IsAiEvent(Event);
+
     /// <summary>
     /// Initializes a new instance of <see cref="AgendaEventItemViewModel"/>.
     /// </summary>
