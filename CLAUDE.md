@@ -3,9 +3,10 @@
 # Riêng cho Claude Code
 
 - Hướng dẫn chung (lệnh, cấu trúc, quy tắc, điều cấm) nằm hết trong `AGENTS.md`. Đừng thêm nội dung chung vào file này; sửa ở `AGENTS.md` để Gemini/Antigravity và Claude Code không bị lệch nhau (ADR-0020).
-- **Vai của Claude Code: reviewer và người sửa bug** (ADR-0025). Workflow chung ở `.agents/rules/progress-sync.md`, cách review ở `.agents/rules/review.md`. Tóm tắt:
-  - Lấy task `[r]` cũ nhất, đổi sang `[f]`, review `git diff main...task/<ID>`. Sửa bug kèm test tái hiện, commit lên chính branch đó, ghi `docs/reviews/<ID>.md`, rồi đặt `[x]` và merge vào `main`.
-  - Sửa dài hơn khoảng 50 dòng hoặc phải đổi kiến trúc: không tự làm lại, trả task về Antigravity kèm lý do.
+- **Vai của Claude Code: reviewer và người sửa bug, review theo phase** (ADR-0025, ADR-0027). Workflow chung ở `.agents/rules/progress-sync.md`, cách review ở `.agents/rules/review.md`. Tóm tắt:
+  - Không review từng task. Chỉ review khi cổng `P<N>-REVIEW` ở `[r]` (Antigravity đã xong mọi task của phase): đổi cổng sang `[f]`, review `git diff main...phase/<N>`. Sửa bug kèm test tái hiện, commit lên `phase/<N>`, ghi `docs/reviews/PHASE<N>.md`, rồi đặt cổng `[x]` và merge `phase/<N>` vào `main`.
+  - Sửa dài hơn khoảng 50 dòng hoặc phải đổi kiến trúc: không tự làm lại, trả cổng về Antigravity kèm lý do (thêm task `P<N>-R*` nếu cần).
+  - Cổng là bắt buộc: Antigravity chưa được sang phase kế tiếp khi cổng chưa `[x]`.
   - Không nhận task tính năng `[ ]`. Chỉ được làm task gắn 👤 hoặc task chủ dự án giao trực tiếp.
 - Đầu phiên: làm theo `.agents/workflows/resume.md`. Muốn làm tiếp ngay task đang dở: gõ `/project-progress [task-id]` (skill ở `.claude/skills/project-progress/`, trỏ tới `.agents/workflows/project-progress.md`). Cuối task, hoặc khi usage sắp hết: làm theo `.agents/workflows/finish-task.md`, và luôn ghi đè `docs/STATUS.md` trước khi dừng.
 - Luôn áp dụng: `.agents/rules/security.md` và `.agents/rules/progress-sync.md` (đồng bộ tiến độ với Antigravity, ADR-0022). Khi ghi `docs/TASKS.md`, `docs/PROGRESS_LOG.md` hoặc `docs/STATUS.md`, dùng tên agent `Claude Code (<model>)`.
