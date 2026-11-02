@@ -28,6 +28,7 @@ pwsh -NoProfile -Command "./eng/Test-Coverage.ps1 -Reports 'TestResults/*.cobert
 
 - `git diff`: không có secret, key, token, client ID hay model ID hard-code; không có chuỗi UI hard-code; không có `#pragma` thiếu comment giải thích; không có `async void` ngoài event handler; không có `.Result` hay `.Wait()` trên UI thread.
 - Mỗi tiêu chí hoàn thành của task trong `docs/TASKS.md` đều đạt (test đã nêu tên phải tồn tại và pass).
+- **Với task có sửa/cập nhật/dựng giao diện (UI):** Antigravity bắt buộc phải khởi động app (`dotnet run` / FlaUI) để đối chiếu trực tiếp với frame Figma nguồn; giao diện thực tế phải khớp 100% với Figma (bố cục, token, màu, font, bo góc, icon) thì mới được pass.
 
 ## Bước 3: Cập nhật tài liệu
 
