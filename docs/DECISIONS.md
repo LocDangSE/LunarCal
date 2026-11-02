@@ -32,3 +32,4 @@ Trạng thái: Proposed / Accepted / Superseded.
 | [0024](adr/0024-localization-infrastructure-and-key-conventions.md) | Hạ tầng song ngữ (i18n) và quy ước đặt key | Accepted |
 | [0025](adr/0025-executor-reviewer-roles.md) | Antigravity thực thi, Claude Code review và sửa bug | Accepted |
 | [0026](adr/0026-phase3-oauth-testing-and-ui-gate.md) | Phase 3: consent screen Testing, làm task không có giao diện trước khi có thiết kế | Accepted |
+| [0027](adr/0027-phase-level-review-gate.md) | Claude Code review theo phase, cổng review bắt buộc trước phase kế tiếp | Accepted |

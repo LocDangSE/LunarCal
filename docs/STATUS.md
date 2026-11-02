@@ -3,18 +3,18 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-02 19:15 +07:00, Claude Code (Opus 5.5). Hoàn thành P2-R11..P2-R15 (chủ dự án giao): dựng lại giao diện Phase 2 theo Figma 01, S06–S09.
+**Cập nhật lần cuối:** 2026-11-02 19:40 +07:00, Claude Code (Opus 5.5). Đổi quy trình review sang theo phase, có cổng `P<N>-REVIEW` bắt buộc (ADR-0027, chủ dự án yêu cầu).
 
-**Trước đó:** 2026-11-02 18:31 +07:00, Claude Code (Opus 5.5). P2-R10: sửa chữ vô hình/đè, bo góc elip, sự kiện 20 px, icon emoji.
+**Trước đó:** 2026-11-02 19:15 +07:00, Claude Code (Opus 5.5). Hoàn thành P2-R11..P2-R15: dựng lại giao diện Phase 2 theo Figma 01, S06–S09.
 
 ## Phase và task
 
 - **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9). P3-00a và P3-00b xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Vừa xong P2-R11..P2-R15 trên branch `task/P2-R11` (đã merge vào `main`). File đang sửa dở: không có. Bước tiếp theo: review task `[r]` đầu tiên khi Antigravity bàn giao.
+  - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
   - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-13 (kết thúc Phase 2). Bước tiếp theo: bắt đầu Phase 3 (chủ dự án chuẩn bị OAuth Client ID ở P3-00, và agent triển khai P3-01 Serilog logging với redaction).
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: P3-01 (Serilog, redaction), rồi các task Phase 3 không có giao diện. Task UI mới phải theo bảng icon/token ở `.agents/rules/ui.md` (mục P2-R11..R15).
+  1. Antigravity: tạo branch `phase/3` từ `main`, làm P3-01 (Serilog, redaction) trên `task/P3-01` tách từ `phase/3`, rồi lần lượt các task Phase 3; xong task nào merge vào `phase/3` và đặt `[x]`. Xong P3-16 thì chuyển `P3-REVIEW` sang `[r]` và dừng: **không bắt đầu Phase 4 khi `P3-REVIEW` chưa `[x]`** (ADR-0027). Task UI mới phải theo bảng icon/token ở `.agents/rules/ui.md` (mục P2-R11..R15).
   2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.
 
 ## Đã hoàn thành (đối chiếu spec §13)
@@ -47,6 +47,8 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 - CI cũ (commit f418386) đỏ ở job `core-linux-container` do assertion nằm trong vùng bấm giờ; đã sửa ở commit 159781c (run 41267053678).
 
 ## Quyết định đã chốt mà spec chưa ghi
+
+- ADR-0027 (2026-11-02): Claude Code review theo phase thay vì từng task. Task `[x]` = đã merge vào `phase/<N>`, chưa review. Cổng `P<N>-REVIEW` phải `[x]` (đã review, đã merge vào `main`) thì mới được sang phase sau.
 
 Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 

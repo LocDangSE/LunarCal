@@ -1,6 +1,6 @@
 # ADR-0025: Antigravity thực thi, Claude Code review và sửa bug
 
-- **Status:** Accepted (2026-11-01). Bổ sung cho ADR-0022.
+- **Status:** Accepted (2026-11-01). Bổ sung cho ADR-0022. Phần review từng task đã được thay bằng review theo phase (ADR-0027, 2026-11-02).
 - **Bối cảnh:** Trước đây hai agent cùng nhận task tính năng và tự đánh dấu `[x]`. Review Phase 2 (`docs/reviews/PHASE2.md`) cho thấy nhiều lỗi lọt qua: test assert yếu, edge case âm lịch và i18n bị thiếu, giá trị bị hard-code. Không có bước kiểm tra độc lập trước khi task được coi là xong.
 - **Quyết định:**
   1. Antigravity là người thực thi: nhận task `[ ]`, viết code và test trên branch `task/<ID>`, chạy build/test/format, cập nhật TRACEABILITY/STATUS, rồi chuyển task sang `[r]`. Antigravity không đặt `[x]`.

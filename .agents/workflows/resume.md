@@ -10,7 +10,7 @@ Mục đích: bắt đầu một phiên mới mà không cần biết phiên tr�
 
 1. Đọc `AGENTS.md` ở gốc repo.
 2. Đọc `docs/STATUS.md`. Ghi lại: phase hiện tại, task đang `[~]`, các file đang sửa dở, "Bước tiếp theo", và các câu hỏi mở.
-3. Đọc `docs/TASKS.md`. Tìm task `[~]` (ghi lại agent đang giữ, theo phần `Đang làm:`), rồi tới task `[ ]` đầu tiên mà mọi task phụ thuộc của nó đã `[x]`.
+3. Đọc `docs/TASKS.md`. Tìm task `[~]` (ghi lại agent đang giữ, theo phần `Làm:`/`Đang làm:`), rồi tới task `[ ]` đầu tiên mà mọi task phụ thuộc của nó đã `[x]` **và** cổng `P<N>-REVIEW` của phase trước đã `[x]` (ADR-0027). Ghi lại trạng thái cổng review của phase hiện tại; Claude Code chỉ có việc review khi có cổng `[r]`.
 4. Đọc 20 dòng cuối `docs/PROGRESS_LOG.md`. Liệt kê những gì agent khác (Claude Code hoặc Antigravity) đã làm kể từ dòng log cuối cùng của chính mình (`.agents/rules/progress-sync.md`).
 
 ## Bước 2: Xác nhận trạng thái thật (đừng tin STATUS.md một cách mù quáng)

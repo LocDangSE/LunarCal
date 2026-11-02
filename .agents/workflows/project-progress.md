@@ -13,7 +13,7 @@ Tham số (tuỳ chọn): một task ID trong `docs/TASKS.md`, ví dụ `P2-01`.
 | File | Vai trò |
 | --- | --- |
 | `docs/STATUS.md` | Ảnh chụp trạng thái: phase, task đang làm, file sửa dở, bước tiếp theo, câu hỏi mở |
-| `docs/TASKS.md` | Backlog theo phase, trạng thái `[ ]` `[~]` `[x]` `[!]`, agent đang giữ, phụ thuộc, tiêu chí "Xong khi" |
+| `docs/TASKS.md` | Backlog theo phase, trạng thái `[ ]` `[~]` `[x]` `[!]`, cổng review phase `P<N>-REVIEW` (`[r]` `[f]`), agent đang giữ, phụ thuộc, tiêu chí "Xong khi" |
 | `docs/PROGRESS_LOG.md` | Log chỉ ghi nối tiếp: agent nào làm gì, lúc nào (đồng bộ Claude Code và Antigravity) |
 | `docs/TRACEABILITY.md` | Mã yêu cầu ↔ test |
 | `CHANGELOG.md` | Thay đổi đã phát hành |

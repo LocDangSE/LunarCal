@@ -31,7 +31,7 @@ pwsh -NoProfile -Command "./eng/Test-Coverage.ps1 -Reports 'TestResults/*.cobert
 
 ## Bước 3: Cập nhật tài liệu
 
-1. `docs/TASKS.md` (đọc lại file ngay trước khi sửa): đổi trạng thái task thành `[x]` và thay `· Đang làm: ...` bằng `· Xong: <agent>, <thời gian>`. Nếu phát sinh việc mới, thêm task mới (ID tiếp theo trong phase, có đủ trường).
+1. `docs/TASKS.md` (đọc lại file ngay trước khi sửa): đổi trạng thái task thành `[x]` và thay `· Làm: ...` bằng `· Xong: <agent>, <thời gian>`; Antigravity merge `task/<ID>` vào `phase/<N>`. Nếu đây là task cuối của phase: chuyển cổng `P<N>-REVIEW` sang `[r]` và dừng, chờ Claude Code review (`.agents/rules/progress-sync.md`, ADR-0027). Nếu phát sinh việc mới, thêm task mới (ID tiếp theo trong phase, có đủ trường).
 2. `docs/TRACEABILITY.md`: thêm hoặc cập nhật dòng cho mỗi FR-*, SEC-*, NFR-* mà task cover, ghi tên test đầy đủ.
 3. `CHANGELOG.md`: thêm dòng vào `## [Unreleased]` nếu có thay đổi người dùng thấy được hoặc thay đổi đáng kể.
 4. Quyết định kỹ thuật mới: tạo `docs/adr/NNNN-slug.md` và thêm vào mục lục `docs/DECISIONS.md`.

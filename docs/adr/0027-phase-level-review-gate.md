@@ -1,0 +1,13 @@
+# ADR-0027: Claude Code review theo phase, cổng review bắt buộc trước phase kế tiếp
+
+- **Status:** Accepted (2026-11-02, chủ dự án yêu cầu). Thay thế phần "review từng task" của ADR-0025; phân vai thực thi/review của ADR-0025 giữ nguyên.
+- **Bối cảnh:** Theo ADR-0025, mỗi task (ví dụ P3-01, P3-02, ...) đều phải qua một vòng review của Claude Code trước khi task sau được bắt đầu. Phase có tới 15–20 task nhỏ, nên Antigravity thường phải chờ review, và Claude Code phải review từng mảnh nhỏ mà không thấy được bức tranh cả phase. Chủ dự án muốn Antigravity làm hết các task của một phase, rồi Claude Code review một lần, bắt buộc trước khi sang phase sau.
+- **Quyết định:**
+  1. Mỗi phase có branch tích hợp `phase/<N>` tạo từ `main`. Antigravity làm từng task trên `task/<ID>` tách từ `phase/<N>`; xong task (build, test, format pass) thì merge vào `phase/<N>` và tự đặt task `[x]`. `[x]` của task nghĩa là "xong, chưa review".
+  2. Mỗi phase (từ Phase 3; 6a, 6b, 6c tính là ba phase) có dòng cổng `P<N>-REVIEW` ở cuối mục phase trong `docs/TASKS.md`, đi qua `[ ]` → `[r]` → `[f]` → `[x]` (hoặc `[~]` khi bị trả lại).
+  3. Xong mọi task của phase, Antigravity chuyển cổng sang `[r]` (log `READY`) và dừng. Claude Code review `git diff main...phase/<N>` theo `.agents/rules/review.md`, sửa bug kèm test tái hiện trên `phase/<N>`, ghi `docs/reviews/PHASE<N>.md`, rồi đặt cổng `[x]` và merge `phase/<N>` vào `main`.
+  4. **Cổng là bắt buộc:** không task nào của phase N+1 được bắt đầu khi `P<N>-REVIEW` chưa `[x]`. Ngoại lệ: task 👤 (thiết kế Figma, câu hỏi spec §14), vì không phải code.
+  5. Lỗi sai thiết kế hoặc thiếu hẳn phần việc (sửa dài hơn khoảng 50 dòng, hoặc phải đổi kiến trúc): Claude Code trả cổng về `[~]`, thêm task sửa `P<N>-R*` nếu cần; Antigravity sửa xong thì chuyển cổng lại `[r]`.
+  6. Phase 0, 1, 2 đã xong theo mô hình cũ, không thêm cổng. Phase 3 là phase đầu tiên áp dụng (chưa task code nào của Phase 3 được bắt đầu tại thời điểm quyết định).
+- **Phương án đã loại:** Giữ review từng task (ADR-0025): chậm, Antigravity bị chặn liên tục. Review theo phase nhưng không bắt buộc: lỗi của phase trước sẽ bị code phase sau xây chồng lên, càng sửa muộn càng đắt. Merge từng task thẳng vào `main` rồi review sau: `main` chứa code chưa review, trái mục tiêu của ADR-0025.
+- **Hệ quả:** Antigravity chạy liên tục trong một phase. Diff review lớn hơn; `review.md` hướng dẫn đi theo commit merge của từng task. Lỗi trong task đầu phase có thể bị các task sau xây chồng lên trước khi được phát hiện; bù lại, Antigravity vẫn phải chạy build/test/format cho từng task. `main` vẫn chỉ nhận code đã review. Commit/PR riêng cho mỗi phase (spec §0, §13) chính là commit merge `phase/<N>` vào `main`.
