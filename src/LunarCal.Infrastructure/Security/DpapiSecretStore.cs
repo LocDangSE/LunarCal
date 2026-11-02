@@ -132,7 +132,7 @@ public sealed class DpapiSecretStore : ISecretStore, IDisposable
         ValidateKey(key);
         ArgumentNullException.ThrowIfNull(secret);
 
-        Directory.CreateDirectory(_baseDirectory);
+        Storage.LocalStorageDirectorySecurity.EnsureCurrentUserOnlyAcl(_baseDirectory);
         string targetPath = GetSecretFilePath(key);
 
         byte[] keyBytes = Encoding.UTF8.GetBytes(key);

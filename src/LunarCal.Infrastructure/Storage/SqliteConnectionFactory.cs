@@ -71,7 +71,7 @@ public sealed class SqliteConnectionFactory : ISqliteConnectionFactory, IDisposa
                 string? directory = Path.GetDirectoryName(_databasePath);
                 if (!string.IsNullOrWhiteSpace(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    LocalStorageDirectorySecurity.EnsureCurrentUserOnlyAcl(directory);
                 }
             }
 

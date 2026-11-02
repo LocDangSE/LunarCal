@@ -50,6 +50,9 @@ public static class DependencyInjection
             return new SqliteConnectionFactory(secretStore, storageOptions, runner);
         });
 
+        // Phase 3: Local data wipe service (SEC-DATA-3)
+        services.AddSingleton<ILocalDataWipeService, LocalDataWipeService>();
+
         return services;
     }
 }
