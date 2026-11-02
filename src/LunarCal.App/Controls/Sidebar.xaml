@@ -21,8 +21,8 @@
     <!-- Style for Create Event Action Button (Figma 01) -->
     <Style x:Key="CreateEventButtonStyle" TargetType="Button">
       <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
-      <Setter Property="Height" Value="44" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+      <Setter Property="Height" Value="34" />
       <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
       <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
       <Setter Property="BorderThickness" Value="0" />
@@ -32,10 +32,10 @@
           <ControlTemplate TargetType="Button">
             <Border x:Name="btnBorder"
                     Background="{TemplateBinding Background}"
-                    CornerRadius="{DynamicResource CornerRadiusFull}"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
                     Padding="16,0">
               <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="+" FontSize="{DynamicResource IconSizeLarge}" FontWeight="{DynamicResource FontWeightBold}" Margin="0,0,8,2" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource IconGlyphAdd}" FontFamily="{DynamicResource FontFamilyIcon}" FontSize="{DynamicResource IconSizeSmall}" Margin="0,0,8,0" VerticalAlignment="Center" />
                 <ContentPresenter VerticalAlignment="Center" />
               </StackPanel>
             </Border>
@@ -60,14 +60,14 @@
           <ControlTemplate TargetType="CheckBox">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
               <!-- Color Indicator Bullet -->
-              <Border Width="14" Height="14"
-                      CornerRadius="{DynamicResource CornerRadiusFull}"
+              <Border Width="16" Height="16"
+                      CornerRadius="{DynamicResource CornerRadiusCheckbox}"
                       Background="{Binding Color, Converter={StaticResource ColorToBrush}}"
                       Margin="0,0,8,0"
                       VerticalAlignment="Center">
                 <Path x:Name="checkMark"
-                      Data="M 3,7 L 6,10 L 11,4"
-                      Stroke="{DynamicResource AccentTextBrush}"
+                      Data="M 4,8 L 7,11 L 12,5"
+                      Stroke="{DynamicResource OnAccentBrush}"
                       StrokeThickness="2"
                       Visibility="Collapsed" />
               </Border>
@@ -152,7 +152,9 @@
                      VerticalAlignment="Center" />
 
           <!-- Sync Now Button -->
-          <Button Content="↻"
+          <Button Content="{DynamicResource IconGlyphSync}"
+                  FontFamily="{DynamicResource FontFamilyIcon}"
+                  FontSize="{DynamicResource IconSizeSmall}"
                   Command="{Binding SyncNowCommand}"
                   HorizontalAlignment="Right"
                   Background="Transparent"

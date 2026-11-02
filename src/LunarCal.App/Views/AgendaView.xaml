@@ -27,8 +27,9 @@
             <Border Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{DynamicResource CornerRadiusFull}"
-                    Padding="10,5">
+                    CornerRadius="{DynamicResource CornerRadiusPill}"
+                    Height="26"
+                    Padding="10,0">
               <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
             </Border>
           </ControlTemplate>
@@ -150,7 +151,9 @@
               </Style.Triggers>
             </Style>
           </StackPanel.Style>
-          <TextBlock Text="📅"
+          <TextBlock Text="{DynamicResource IconGlyphCalendar}"
+                     FontFamily="{DynamicResource FontFamilyIcon}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
                      FontSize="{DynamicResource IconSizeEmptyState}"
                      HorizontalAlignment="Center"
                      Margin="0,0,0,12" />
