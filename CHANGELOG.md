@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Windows DPAPI encrypted secret storage (`ISecretStore`, `DpapiSecretStore`, `DpapiSecretStoreOptions`, `KnownSecretKeys`): encrypts secrets at rest using DPAPI `CurrentUser` scope with app-specific entropy; supports string and raw byte secrets, atomic writes via temp file replacement, thread-safe access, round-trip retrieval, and deletion; verifies stored ciphertext contains zero plaintext secret or key data (SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018, P3-02).
 - Serilog file logging infrastructure with 14-day daily rotation, Information default level, and comprehensive redaction: `LogRedactor` (masking Gemini API key, Google OAuth access token, Bearer/Authorization headers, refresh tokens, client secrets, optional email masking), `RedactingEnricher`, `RedactingDestructuringPolicy` (sanitizing sensitive event fields like title, summary, location, description per FR-NOTIFY-9), and `RedactingTextFormatter` (SEC-LOG-1, SEC-LOG-2, ADR-0019, P3-01).
 - Phase 0 scaffold: solution, shared build props, Central Package Management, analyzers, CI, docs skeleton.
 - Phase 1 lunar engine (`LunarCal.Core.Lunar`): solar↔lunar conversion with Hồ Ngọc Đức's algorithm (UTC+7, 1900–2100), leap months, month lengths, Can Chi of day/month/year, 24 solar terms, per-year cache (FR-LUNAR-1, 2).

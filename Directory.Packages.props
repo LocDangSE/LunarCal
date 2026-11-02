@@ -19,6 +19,11 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Security">
+    <!-- Windows DPAPI secret storage (SEC-KEY-1, SEC-OAUTH-3, ADR-0018) -->
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="10.0.14" />
+  </ItemGroup>
+
   <ItemGroup Label="UI">
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
