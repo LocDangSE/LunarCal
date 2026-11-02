@@ -3,19 +3,19 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-01 18:55 +07:00, Claude Code (Opus 5.5). Hoàn thành P3-00b: vẽ S10, S14, S18, S20 trong Figma (bản nháp, chờ chủ dự án duyệt), ghi node id vào `.agents/rules/ui.md`. P3-00 xong cả hai phần.
+**Cập nhật lần cuối:** 2026-11-02 18:31 +07:00, Claude Code (Opus 5.5). Hoàn thành P2-R10 (chủ dự án giao): so app chạy thật với Figma, sửa chữ vô hình/đè, bo góc elip, sự kiện Tuần/Ngày 20 px, icon emoji, thanh lệnh AI; tách phần lệch bố cục thành P2-R11..P2-R15.
 
-**Trước đó:** 2026-11-01 18:40 +07:00, Claude Code (Opus 5.5). P3-00a (Client ID, consent screen Testing), ADR-0026.
+**Trước đó:** 2026-11-01 18:55 +07:00, Claude Code (Opus 5.5). P3-00b: vẽ S10, S14, S18, S20 trong Figma (bản nháp, chờ chủ dự án duyệt).
 
 ## Phase và task
 
 - **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9). P3-00a và P3-00b xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Vừa xong P3-00b trên branch `task/P3-00b` (đã merge vào `main`). File đang sửa dở: không có. Bước tiếp theo: review task `[r]` đầu tiên của Phase 3 khi Antigravity bàn giao.
+  - **Claude Code:** không giữ task nào. Vừa xong P2-R10 trên branch `task/P2-R10` (đã merge vào `main`). File đang sửa dở: không có. Bước tiếp theo: review task `[r]` đầu tiên khi Antigravity bàn giao.
   - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-13 (kết thúc Phase 2). Bước tiếp theo: bắt đầu Phase 3 (chủ dự án chuẩn bị OAuth Client ID ở P3-00, và agent triển khai P3-01 Serilog logging với redaction).
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: P3-01 (SEC-LOG-1, SEC-LOG-2 · Serilog, redaction; làm trước OAuth theo ADR-0019), rồi P3-02, P3-03, P3-04, P3-08.
-  2. Chủ dự án: duyệt các frame S10, S14, S18, S20 trong Figma (node id ở `.agents/rules/ui.md`); sửa trực tiếp trong Figma nếu cần, trước khi tới P3-14.
+  1. Antigravity: P2-R11..P2-R15 (giao diện còn lệch Figma S06–S09, xem `docs/reviews/P2-R10.md`), làm trước các task UI Phase 3 để không nhân bản lỗi; P3-01 (Serilog, redaction) làm song song được vì không có UI.
+  2. Chủ dự án: duyệt các frame S10, S14, S18, S20 trong Figma (node id ở `.agents/rules/ui.md`), trước khi tới P3-14.
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -29,14 +29,14 @@
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
-## Build, test, format (chạy ngày 2026-11-01, Windows 11, .NET SDK 10.0.403, Release)
+## Build, test, format (chạy ngày 2026-11-02, Windows 11, .NET SDK 10.0.403, Release)
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 218 test: 218 pass, 0 fail, 0 skip |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.22% (ngưỡng 95% và 85%) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 224 test: 224 pass, 0 fail, 0 skip (P2-R10). Test NFR-PERF MonthView fail 1/4 lần khi chạy cả solution song song, pass khi chạy riêng; theo dõi trên CI |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.22% (ngưỡng 95% và 85%; đo 2026-11-01, P2-R10 không đổi Core) |
 | UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 5/5 lần liên tiếp ở máy local (P2-R8) |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
@@ -66,6 +66,7 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - P2-R2: Cài đặt > Giao diện (S13) tạm mở bằng cửa sổ con từ nút ⚙ trên thanh trên cùng, chờ màn hình Cài đặt đầy đủ ở phase sau.
 - ADR-0026: consent screen để ở Testing (refresh token hết hạn sau 7 ngày, xử lý ở P3-06). Task Phase 3 không có giao diện được làm trước khi có S10, S14, S18, S20; P3-14, P3-15 phải chờ P3-00b. Đây là ngoại lệ có chủ đích với spec §13. Lưu ý cho P3-05: tên key trong user-secrets (`Google:ClientId`, `Google:ClientSecret`) chưa khớp `appsettings.json` (`LunarCal:Google:OAuthClientId`); user-secrets chỉ được nạp khi `DOTNET_ENVIRONMENT=Development`.
 - P3-00b (thiết kế, chờ duyệt): hộp thoại đồng ý thu thập dữ liệu hiện trước lệnh AI đầu tiên, không nằm trong lần chạy đầu (FR-DATA-1 thắng mô tả S14 ở spec §15.4); lần chạy đầu còn 3 bước (ngôn ngữ, Google, Gemini key tuỳ chọn). S20 vẽ sẵn phần nhiều tài khoản dù FR-AUTH-5 để phase sau. Chuỗi công tắc âm lịch và đóng góp dữ liệu theo đúng bảng FR-I18N-7.
+- P2-R10: icon dùng font Segoe Fluent Icons (Windows 11), fallback Segoe MDL2 Assets (Windows 10, cùng mã glyph), không nhúng thêm font; ngôi sao 4 cánh (logo, AI) là geometry trong `Tokens.xaml`. Spec và Figma không quy định bộ icon; đổi được ở token `IconGlyph*`.
 - P2-R5: thêm token `FontSizeBadge`, `FontSizeLunarHero`, `IconSize*`, `CornerRadiusStripe`, `CornerRadiusAiBar`, `OnWarningBrush` với giá trị giữ nguyên như đang hiển thị; bảng ở `.agents/rules/ui.md`.
 
 ## Câu hỏi mở

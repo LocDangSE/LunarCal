@@ -97,6 +97,24 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void FR_UI_1_Header_follows_view_mode_changed_without_command()
+    {
+        // Selecting a view radio through UI Automation or the keyboard updates ActiveViewMode via the IsChecked
+        // binding without running ChangeViewCommand; the Day title stayed on the Month view (P2-R10).
+        using var vm = CreateViewModel();
+        vm.ChangeViewCommand.Execute(CalendarViewMode.Month);
+        var monthTitle = vm.HeaderTitle;
+        var monthSubtitle = vm.LunarHeaderSubtitle;
+        vm.ChangeViewCommand.Execute(CalendarViewMode.Day);
+        vm.HeaderTitle.Should().NotBe(monthTitle);
+
+        vm.ActiveViewMode = CalendarViewMode.Month;
+
+        vm.HeaderTitle.Should().Be(monthTitle);
+        vm.LunarHeaderSubtitle.Should().Be(monthSubtitle);
+    }
+
+    [Fact]
     public void FR_UI_9_SwitchLanguage_updates_culture_immediately_without_restart()
     {
         using var vm = CreateViewModel();

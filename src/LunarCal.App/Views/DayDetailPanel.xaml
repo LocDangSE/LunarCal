@@ -60,8 +60,9 @@
                 Cursor="Hand"
                 VerticalAlignment="Center"
                 AutomationProperties.AutomationId="BtnCloseDayDetail">
-          <TextBlock Text="✕"
-                     FontSize="{DynamicResource IconSizeSmall}"
+          <TextBlock Text="{DynamicResource IconGlyphClose}"
+                     FontFamily="{DynamicResource FontFamilyIcon}"
+                     FontSize="{DynamicResource FontSizeBody}"
                      Foreground="{DynamicResource TextSecondaryBrush}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center" />
@@ -250,7 +251,7 @@
             </StackPanel>
 
             <!-- When Lunar is Disabled (FR-LUNAR-6) -->
-            <StackPanel Visibility="{Binding IsLunarVisible, Converter={StaticResource BoolToVis}, ConverterParameter=Inverse}">
+            <StackPanel>
               <StackPanel.Style>
                 <Style TargetType="StackPanel">
                   <Setter Property="Visibility" Value="Collapsed" />
@@ -261,7 +262,9 @@
                   </Style.Triggers>
                 </Style>
               </StackPanel.Style>
-              <TextBlock Text="🌙"
+              <TextBlock Text="{DynamicResource IconGlyphMoon}"
+                         FontFamily="{DynamicResource FontFamilyIcon}"
+                         Foreground="{DynamicResource TextTertiaryBrush}"
                          FontSize="{DynamicResource IconSizeLarge}"
                          HorizontalAlignment="Center"
                          Margin="0,0,0,6" />
@@ -291,7 +294,7 @@
           <!-- Event Count Badge -->
           <Border Grid.Column="1"
                   Background="{DynamicResource ControlTrackBrush}"
-                  CornerRadius="{DynamicResource CornerRadiusFull}"
+                  CornerRadius="{DynamicResource CornerRadiusPill}"
                   Padding="8,2"
                   VerticalAlignment="Center">
             <TextBlock Text="{Binding Events.Count}"
@@ -318,7 +321,9 @@
             </Style>
           </Border.Style>
           <StackPanel HorizontalAlignment="Center">
-            <TextBlock Text="📅"
+            <TextBlock Text="{DynamicResource IconGlyphCalendar}"
+                       FontFamily="{DynamicResource FontFamilyIcon}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
                        FontSize="{DynamicResource IconSizeXLarge}"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,8" />

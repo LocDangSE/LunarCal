@@ -50,7 +50,7 @@
               <!-- Selected Day: Solid accent background -->
               <DataTrigger Binding="{Binding IsSelected}" Value="True">
                 <Setter TargetName="cellBorder" Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
-                <Setter TargetName="dayText" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                <Setter TargetName="dayText" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
                 <Setter TargetName="dayText" Property="FontWeight" Value="Bold" />
               </DataTrigger>
 
@@ -80,7 +80,9 @@
                  AutomationProperties.AutomationId="MiniMonthTitle" />
 
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-        <Button Content="&lt;"
+        <Button Content="{DynamicResource IconGlyphChevronLeft}"
+                FontFamily="{DynamicResource FontFamilyIcon}"
+                FontSize="{DynamicResource FontSizeCaption}"
                 Command="{Binding PreviousMonthCommand}"
                 Width="24" Height="24"
                 Background="Transparent"
@@ -90,7 +92,9 @@
                 AutomationProperties.AutomationId="MiniPrevMonth"
                 AutomationProperties.Name="{loc:Loc Key=minical.prev_month}" />
 
-        <Button Content="&gt;"
+        <Button Content="{DynamicResource IconGlyphChevronRight}"
+                FontFamily="{DynamicResource FontFamilyIcon}"
+                FontSize="{DynamicResource FontSizeCaption}"
                 Command="{Binding NextMonthCommand}"
                 Width="24" Height="24"
                 Background="Transparent"

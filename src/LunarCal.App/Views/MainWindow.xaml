@@ -102,12 +102,12 @@
 
       <!-- AI Command Bar Placeholder (FR-UI-5, Figma 01) -->
       <Border Grid.Row="1"
-              Height="{DynamicResource AiCommandBarHeight}"
-              Margin="16,0,16,16"
-              Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusAiBar}"
+              Height="{DynamicResource AiCommandInputHeight}"
+              Margin="24,16,24,16"
+              Background="{DynamicResource AiSubtleBrush}"
+              BorderBrush="{DynamicResource AiAccentBrush}"
+              BorderThickness="1.5"
+              CornerRadius="{DynamicResource CornerRadiusAiCard}"
               Padding="16,0"
               AutomationProperties.AutomationId="AiCommandBar">
         <Grid VerticalAlignment="Center">
@@ -118,11 +118,14 @@
           </Grid.ColumnDefinitions>
 
           <!-- AI Sparkle Icon -->
-          <TextBlock Grid.Column="0"
-                     Text="✨"
-                     FontSize="{DynamicResource IconSizeMedium}"
-                     Margin="0,0,10,0"
-                     VerticalAlignment="Center" />
+          <Path Grid.Column="0"
+                Data="{DynamicResource IconSparkleGeometry}"
+                Fill="{DynamicResource AiAccentBrush}"
+                Width="{DynamicResource IconSizeMedium}"
+                Height="{DynamicResource IconSizeMedium}"
+                Stretch="Uniform"
+                Margin="0,0,12,0"
+                VerticalAlignment="Center" />
 
           <!-- Prompt Placeholder -->
           <TextBlock Grid.Column="1"
@@ -133,14 +136,15 @@
 
           <!-- Send Action Button -->
           <Border Grid.Column="2"
-                  Width="28" Height="28"
+                  Width="36" Height="36"
                   CornerRadius="{DynamicResource CornerRadiusFull}"
-                  Background="{DynamicResource AccentPrimaryBrush}"
+                  Background="{DynamicResource AiAccentBrush}"
                   Cursor="Hand"
                   AutomationProperties.AutomationId="BtnAiSubmit">
-            <TextBlock Text="↑"
-                       Foreground="{DynamicResource AccentTextBrush}"
-                       FontWeight="{DynamicResource FontWeightBold}"
+            <TextBlock Text="{DynamicResource IconGlyphSend}"
+                       FontFamily="{DynamicResource FontFamilyIcon}"
+                       FontSize="{DynamicResource IconSizeSmall}"
+                       Foreground="{DynamicResource OnAccentBrush}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" />
           </Border>

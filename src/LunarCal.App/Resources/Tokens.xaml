@@ -4,6 +4,8 @@
 
   <!-- Typography: Families (Inter with Segoe UI fallback) -->
   <FontFamily x:Key="FontFamilyBase">Inter, Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif</FontFamily>
+  <!-- Icon font (P2-R10): Segoe Fluent Icons on Windows 11, Segoe MDL2 Assets on Windows 10 (same code points) -->
+  <FontFamily x:Key="FontFamilyIcon">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
   <FontFamily x:Key="FontFamilyMonospace">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
 
   <!-- Typography: Sizes (measured from Figma 01-05 & .agents/rules/ui.md) -->
@@ -24,6 +26,19 @@
   <sys:Double x:Key="IconSizeLarge">20</sys:Double>
   <sys:Double x:Key="IconSizeXLarge">24</sys:Double>
   <sys:Double x:Key="IconSizeEmptyState">36</sys:Double>
+
+  <!-- Icon glyphs in FontFamilyIcon (P2-R10). Do not use emoji or arrow characters as icons. -->
+  <sys:String x:Key="IconGlyphAdd">&#xE710;</sys:String>
+  <sys:String x:Key="IconGlyphCalendar">&#xE787;</sys:String>
+  <sys:String x:Key="IconGlyphChevronLeft">&#xE76B;</sys:String>
+  <sys:String x:Key="IconGlyphChevronRight">&#xE76C;</sys:String>
+  <sys:String x:Key="IconGlyphClose">&#xE711;</sys:String>
+  <sys:String x:Key="IconGlyphMoon">&#xE708;</sys:String>
+  <sys:String x:Key="IconGlyphSend">&#xE724;</sys:String>
+  <sys:String x:Key="IconGlyphSettings">&#xE713;</sys:String>
+  <sys:String x:Key="IconGlyphSync">&#xE895;</sys:String>
+  <!-- Four-point sparkle of Figma 01 (brand mark, AI command bar), 24×24 box -->
+  <Geometry x:Key="IconSparkleGeometry">M12,1 C12.7,7.2 16.8,11.3 23,12 C16.8,12.7 12.7,16.8 12,23 C11.3,16.8 7.2,12.7 1,12 C7.2,11.3 11.3,7.2 12,1 Z</Geometry>
 
   <!-- Typography: Weights -->
   <FontWeight x:Key="FontWeightRegular">Normal</FontWeight>
@@ -60,7 +75,12 @@
   <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
   <CornerRadius x:Key="CornerRadiusAiCard">14</CornerRadius>
   <CornerRadius x:Key="CornerRadiusDayNumber">13</CornerRadius>
+  <!-- Circles only (equal width and height). WPF scales radii that exceed the size, so 999 on a wide box draws an ellipse. -->
   <CornerRadius x:Key="CornerRadiusFull">999</CornerRadius>
+  <!-- Pills: chips about 24 px high (Online chip, filter chips, count badge) -->
+  <CornerRadius x:Key="CornerRadiusPill">12</CornerRadius>
+  <!-- Checkbox square (Figma 01 calendar list) -->
+  <CornerRadius x:Key="CornerRadiusCheckbox">4</CornerRadius>
   <CornerRadius x:Key="CornerRadiusStripe">2</CornerRadius>
   <CornerRadius x:Key="CornerRadiusAiBar">24</CornerRadius>
 
@@ -69,6 +89,8 @@
   <sys:Double x:Key="SidebarWidth">280</sys:Double>
   <sys:Double x:Key="MiniCalendarCellSize">28</sys:Double>
   <sys:Double x:Key="AiCommandBarHeight">92</sys:Double>
+  <!-- Input box inside the 92 px command bar (Figma 01: 59 px high, 16 px margin above and below) -->
+  <sys:Double x:Key="AiCommandInputHeight">59</sys:Double>
   <sys:Double x:Key="WeekdayHeaderHeight">36</sys:Double>
   <sys:Double x:Key="DayDetailPanelWidth">360</sys:Double>
   <sys:Double x:Key="HourRowHeight">48</sys:Double>

@@ -128,6 +128,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     partial void OnPendingAiCommandsCountChanged(int value) => UpdatePendingAiCommandsText();
 
+    // The view radios also set ActiveViewMode through their IsChecked binding (UI Automation, keyboard) without
+    // running ChangeViewCommand, so the titles must follow the property itself.
+    partial void OnActiveViewModeChanged(CalendarViewMode value) => UpdateTitles();
+
     private void UpdatePendingAiCommandsText() =>
         PendingAiCommandsText = _localizationService.Format("sidebar.pending_ai_commands", PendingAiCommandsCount);
 

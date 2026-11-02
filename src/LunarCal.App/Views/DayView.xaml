@@ -230,8 +230,11 @@
                     BorderThickness="1,0,0,0"
                     DataContext="{Binding DayColumn}">
               <Canvas Height="1152" ClipToBounds="True">
-                <!-- Timed Events on Canvas -->
-                <ItemsControl ItemsSource="{Binding TimedEvents}">
+                <!-- Timed Events on Canvas. The ItemsControl must span the column: inside a Canvas it would otherwise be
+                     0 px wide and every event block would collapse to the 20 px minimum of LaneWidthConverter (P2-R10). -->
+                <ItemsControl ItemsSource="{Binding TimedEvents}"
+                              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                              Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                       <Canvas />
