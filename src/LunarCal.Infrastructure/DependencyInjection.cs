@@ -1,6 +1,7 @@
 using LunarCal.Core.Abstractions;
 using LunarCal.Infrastructure.Security;
 using LunarCal.Infrastructure.Storage;
+using LunarCal.Infrastructure.Storage.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,23 @@ public static class DependencyInjection
             }
 
             return new DpapiSecretStore();
+        });
+
+        // Phase 3: SQLCipher encrypted local database & migration runner (SEC-DATA-1, spec §6, ADR-0013)
+        services.AddSingleton<SqliteMigrationRunner>();
+        services.AddSingleton<ISqliteConnectionFactory>(sp =>
+        {
+            var secretStore = sp.GetRequiredService<ISecretStore>();
+            var runner = sp.GetRequiredService<SqliteMigrationRunner>();
+
+            var storageOptions = new SqliteStorageOptions();
+            string? configuredDbPath = configuration["LunarCal:Storage:DatabasePath"];
+            if (!string.IsNullOrWhiteSpace(configuredDbPath))
+            {
+                storageOptions.DatabasePath = configuredDbPath;
+            }
+
+            return new SqliteConnectionFactory(secretStore, storageOptions, runner);
         });
 
         return services;
