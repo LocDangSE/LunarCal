@@ -147,7 +147,22 @@ Giữ nguyên giá trị đang hiển thị ở Phase 2, chỉ đặt tên. Khi 
 | `CornerRadiusAiBar` | 24 | Thanh lệnh AI |
 | `OnWarningBrush` | Sáng/Tối `#101828`, HC `WindowColor` | Chữ trên nền `WarningBrush` |
 
-Hình tròn (chấm màu, ô mini-calendar, avatar, nút gửi) dùng `CornerRadiusFull`. Màu mặc định cho calendar không có màu: hằng `CalendarColors.DefaultHex` (= `AccentPrimaryBrush` sáng). Test `ThemeDictionaryTests.FR_UI_11_Views_and_controls_use_tokens_instead_of_literal_sizes_and_colors` chặn literal mới trong `Views/` và `Controls/`.
+### Token bổ sung khi so app với Figma (P2-R10, Claude Code, 2026-11-02)
+
+| Key | Giá trị | Dùng cho |
+| --- | --- | --- |
+| `CornerRadiusPill` | 12 | Chip cao khoảng 24 px (Online, chip lọc, badge đếm) |
+| `CornerRadiusCheckbox` | 4 | Ô checkbox danh sách lịch |
+| `AiCommandInputHeight` | 59 | Ô nhập lệnh AI trong thanh 92 px |
+| `FontFamilyIcon` | Segoe Fluent Icons, Segoe MDL2 Assets | Mọi icon dạng glyph |
+| `IconGlyph*` | Add, Calendar, ChevronLeft/Right, Close, Moon, Send, Settings, Sync | Mã glyph (dùng chung cho Win10/Win11) |
+| `IconSparkleGeometry` | Ngôi sao 4 cánh, khung 24×24 | Logo, thanh lệnh AI, sự kiện AI |
+
+- Không dùng emoji hoặc ký tự mũi tên làm icon; test `UiRegressionTests.FR_UI_11_Icons_do_not_use_emoji_or_symbol_characters`.
+- Chữ trên nền `AccentPrimaryBrush` dùng `OnAccentBrush`; `AccentTextBrush` chỉ dùng trên nền nhạt (`AccentSubtleBrush`).
+- Không dùng `ConverterParameter` với `BooleanToVisibilityConverter` (WPF bỏ qua tham số này); muốn ẩn ngược thì dùng `DataTrigger` trong style và không đặt `Visibility` local.
+
+Hình tròn (chấm màu, ô mini-calendar, avatar, nút gửi) dùng `CornerRadiusFull`. WPF không kẹp bán kính như CSS: `CornerRadiusFull` trên khung không vuông sẽ thành hình elip, nên chỉ dùng cho khung có Width = Height. Màu mặc định cho calendar không có màu: hằng `CalendarColors.DefaultHex` (= `AccentPrimaryBrush` sáng). Test `ThemeDictionaryTests.FR_UI_11_Views_and_controls_use_tokens_instead_of_literal_sizes_and_colors` chặn literal mới trong `Views/` và `Controls/`.
 
 ## Quy ước component (WPF + MVVM)
 
