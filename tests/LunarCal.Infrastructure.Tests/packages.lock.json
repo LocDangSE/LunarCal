@@ -228,7 +228,8 @@
           "Microsoft.Extensions.Configuration.Abstractions": "[10.0.14, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.14, )",
           "Serilog": "[4.3.0, )",
-          "Serilog.Sinks.File": "[7.0.0, )"
+          "Serilog.Sinks.File": "[7.0.0, )",
+          "System.Security.Cryptography.ProtectedData": "[10.0.14, )"
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions": {
@@ -260,6 +261,12 @@
         "dependencies": {
           "Serilog": "4.2.0"
         }
+      },
+      "System.Security.Cryptography.ProtectedData": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.14, )",
+        "resolved": "10.0.14",
+        "contentHash": "UuaBUHgmtc9h6CMxaQqFDDJxkS5JVy7XEB+DbtCvD68GFcVM9/AccuNwFpARx8nwCnvjaxzoOBjG3gPz32P1Eg=="
       }
     }
   }
