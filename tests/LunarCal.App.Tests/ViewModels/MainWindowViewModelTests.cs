@@ -220,7 +220,7 @@ public sealed class MainWindowViewModelTests
         _preferences.WeekStart = DayOfWeek.Sunday;
 
         vm.MonthView.WeekStart.Should().Be(DayOfWeek.Sunday);
-        vm.MonthView.WeekdayHeaders[0].Should().Be("CN");
+        vm.MonthView.WeekdayHeaders[0].Should().Be("Chủ nhật");
         vm.WeekView.WeekStart.Should().Be(DayOfWeek.Sunday);
         vm.MiniCalendar.DayHeaders[0].Should().Be("CN");
         vm.HeaderTitle.Should().StartWith("15 – 21");

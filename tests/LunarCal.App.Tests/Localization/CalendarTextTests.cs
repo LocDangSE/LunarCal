@@ -46,8 +46,8 @@ public sealed class CalendarTextTests
     [Fact]
     public void FR_I18N_4_Weekday_headers_follow_culture()
     {
-        CalendarText.WeekdayShort(_vi, DayOfWeek.Monday).Should().Be("Th 2");
-        CalendarText.WeekdayShort(_vi, DayOfWeek.Sunday).Should().Be("CN");
+        CalendarText.WeekdayShort(_vi, DayOfWeek.Monday).Should().Be("Thứ 2");
+        CalendarText.WeekdayShort(_vi, DayOfWeek.Sunday).Should().Be("Chủ nhật");
         CalendarText.WeekdayShort(_en, DayOfWeek.Monday).Should().Be("Mon");
         CalendarText.WeekdayMin(_vi, DayOfWeek.Saturday).Should().Be("T7");
         CalendarText.WeekdayMin(_en, DayOfWeek.Saturday).Should().Be("Sa");

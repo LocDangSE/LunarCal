@@ -52,6 +52,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _pendingAiCommandsText = string.Empty;
 
+    /// <summary>Second line of the sidebar sync card (Figma 1:195): "2 phút trước · Hàng chờ AI: 0".</summary>
+    public string SyncDetailText => _localizationService.Format("format.dot_pair", SyncStatusText, PendingAiCommandsText);
+
+    /// <summary>Initials shown in the avatar (Figma 1:227) until a Google account is signed in (Phase 3).</summary>
+    public string UserInitials { get; } = InitialsOf(Environment.UserName);
+
     [ObservableProperty]
     private string _currentLanguage = "vi-VN";
 
@@ -120,6 +126,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _preferences.PropertyChanged += OnPreferencesChanged;
 
         UpdateLanguageState();
+        UpdatePendingAiCommandsText();
         UpdateTitles();
 
         // Load calendars from store
@@ -127,6 +134,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     partial void OnPendingAiCommandsCountChanged(int value) => UpdatePendingAiCommandsText();
+
+    partial void OnSyncStatusTextChanged(string value) => OnPropertyChanged(nameof(SyncDetailText));
+
+    partial void OnPendingAiCommandsTextChanged(string value) => OnPropertyChanged(nameof(SyncDetailText));
+
+    private static string InitialsOf(string? name)
+    {
+        var words = (name ?? string.Empty).Split([' ', '.', '_', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var initials = string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
+        return initials.Length > 0 ? initials : "?";
+    }
 
     // The view radios also set ActiveViewMode through their IsChecked binding (UI Automation, keyboard) without
     // running ChangeViewCommand, so the titles must follow the property itself.
@@ -330,67 +348,36 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             : _localizationService["network.offline"];
 
         SyncStatusText = _localizationService["sidebar.sync_status_now"];
+        UpdatePendingAiCommandsText();
     }
 
     private void UpdateTitles()
     {
-        var culture = _localizationService.CurrentCulture;
         var dateOnly = DateOnly.FromDateTime(SelectedDate);
+        var monthFirst = new DateOnly(dateOnly.Year, dateOnly.Month, 1);
+        var monthLast = monthFirst.AddMonths(1).AddDays(-1);
+        var weekStart = dateOnly.AddDays(-((7 + (dateOnly.DayOfWeek - _preferences.WeekStart)) % 7));
+        var weekEnd = weekStart.AddDays(6);
 
-        // 1. Solar Header Title (FR-I18N-4: wording and order come from resx)
+        // Solar title and lunar subtitle per view (Figma 01, S06, S07, S08; FR-UI-9, FR-I18N-4)
         switch (ActiveViewMode)
         {
             case CalendarViewMode.Day:
-                HeaderTitle = CalendarText.DayFull(_localizationService, dateOnly);
+                HeaderTitle = CalendarText.DayTitle(_localizationService, dateOnly);
+                LunarHeaderSubtitle = CalendarText.LunarDayHeader(_localizationService, dateOnly);
                 break;
             case CalendarViewMode.Week:
-                int diff = (7 + (dateOnly.DayOfWeek - _preferences.WeekStart)) % 7;
-                var weekStart = dateOnly.AddDays(-diff);
-                HeaderTitle = CalendarText.WeekRange(_localizationService, weekStart, weekStart.AddDays(6));
+                HeaderTitle = CalendarText.WeekRange(_localizationService, weekStart, weekEnd);
+                LunarHeaderSubtitle = CalendarText.LunarWeekHeader(_localizationService, weekStart, weekEnd);
                 break;
             default:
                 HeaderTitle = CalendarText.MonthYear(_localizationService, dateOnly);
+                LunarHeaderSubtitle = CalendarText.LunarMonthHeader(_localizationService, monthFirst, monthLast);
                 break;
         }
 
-        // 2. Lunar Header Subtitle (FR-UI-9, FR-LUNAR-1, FR-LUNAR-6)
+        // FR-LUNAR-6: no lunar text when the lunar calendar is off
         if (!IsLunarVisible)
-        {
-            LunarHeaderSubtitle = string.Empty;
-            return;
-        }
-
-        try
-        {
-            if (dateOnly >= LunarCalendar.MinSolarDate && dateOnly <= LunarCalendar.MaxSolarDate)
-            {
-                var lunar = LunarCalendar.ToLunar(dateOnly);
-                var yearCanChi = LunarCalendar.GetYearCanChi(lunar.Year);
-                var daysInMonth = LunarCalendar.GetDaysInMonth(lunar.Year, lunar.Month, lunar.IsLeapMonth);
-                var monthQuality = _localizationService[daysInMonth == 30 ? "lunar.month_full" : "lunar.month_short"];
-                var month = lunar.IsLeapMonth
-                    ? string.Create(culture, $"{lunar.Month} {_localizationService["lunar.leap"]}")
-                    : lunar.Month.ToString(culture);
-
-                if (ActiveViewMode == CalendarViewMode.Day)
-                {
-                    var dayCanChi = LunarCalendar.GetDayCanChi(dateOnly);
-                    var tietKhi = LunarCalendar.GetTietKhi(dateOnly);
-                    LunarHeaderSubtitle = _localizationService.Format(
-                        "lunar.header_day", lunar.Day, month, dayCanChi, tietKhi.VietnameseName);
-                }
-                else
-                {
-                    LunarHeaderSubtitle = _localizationService.Format(
-                        "lunar.header_month", month, monthQuality, yearCanChi);
-                }
-            }
-            else
-            {
-                LunarHeaderSubtitle = string.Empty;
-            }
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             LunarHeaderSubtitle = string.Empty;
         }

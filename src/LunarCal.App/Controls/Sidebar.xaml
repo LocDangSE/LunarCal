@@ -10,35 +10,42 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
              Width="{DynamicResource SidebarWidth}"
-             Background="{DynamicResource SidebarBackgroundBrush}"
-             BorderBrush="{DynamicResource BorderBrush}"
-             BorderThickness="0,0,1,0"
              AutomationProperties.AutomationId="Sidebar">
 
+  <!-- Figma 01 sidebar (1:3): white, right border #E4E7EC, shadow (4,0,16) 4%, padding 20/16/16/16, gap 20. -->
   <UserControl.Resources>
     <conv:ColorToBrushConverter x:Key="ColorToBrush" />
 
-    <!-- Style for Create Event Action Button (Figma 01) -->
+    <!-- Button/Tạo sự kiện (1:9): accent, radius 8, padding 9/14, plus icon 16 + 13 SemiBold white, glow shadow -->
     <Style x:Key="CreateEventButtonStyle" TargetType="Button">
-      <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
-      <Setter Property="Height" Value="34" />
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
-      <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
-      <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
-            <Border x:Name="btnBorder"
-                    Background="{TemplateBinding Background}"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="16,0">
-              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="{DynamicResource IconGlyphAdd}" FontFamily="{DynamicResource FontFamilyIcon}" FontSize="{DynamicResource IconSizeSmall}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                <ContentPresenter VerticalAlignment="Center" />
-              </StackPanel>
-            </Border>
+            <Grid>
+              <Border Background="{DynamicResource AccentPrimaryBrush}"
+                      CornerRadius="{DynamicResource CornerRadiusMedium}"
+                      Effect="{DynamicResource ShadowAccentButton}" />
+              <Border x:Name="btnBorder"
+                      Background="{DynamicResource AccentPrimaryBrush}"
+                      CornerRadius="{DynamicResource CornerRadiusMedium}"
+                      Padding="{DynamicResource ThicknessPaddingButton}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <Path Width="16" Height="16"
+                        Data="{DynamicResource IconPlus16}"
+                        Stroke="{DynamicResource OnAccentBrush}"
+                        StrokeThickness="1.33333"
+                        StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                        Stretch="None"
+                        VerticalAlignment="Center" />
+                  <ContentPresenter Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    TextElement.Foreground="{DynamicResource OnAccentBrush}"
+                                    TextElement.FontSize="{DynamicResource FontSizeBodyStrong}"
+                                    TextElement.FontWeight="{DynamicResource FontWeightSemiBold}" />
+                </StackPanel>
+              </Border>
+            </Grid>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True">
                 <Setter TargetName="btnBorder" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
@@ -49,36 +56,38 @@
       </Setter>
     </Style>
 
-    <!-- Custom CheckBox for Calendar List -->
+    <!-- Calendar list item (1:170): 16 px square checkbox in the calendar colour, radius 4, white check 11 px;
+         label 13 Regular #344054, gap 10 -->
     <Style x:Key="CalendarCheckBoxStyle" TargetType="CheckBox">
       <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-      <Setter Property="Margin" Value="0,4" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="CheckBox">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-              <!-- Color Indicator Bullet -->
-              <Border Width="16" Height="16"
+            <StackPanel Orientation="Horizontal" Background="Transparent">
+              <Border x:Name="box"
+                      Width="16" Height="16"
                       CornerRadius="{DynamicResource CornerRadiusCheckbox}"
                       Background="{Binding Color, Converter={StaticResource ColorToBrush}}"
-                      Margin="0,0,8,0"
+                      BorderBrush="{Binding Color, Converter={StaticResource ColorToBrush}}"
+                      BorderThickness="1.5"
                       VerticalAlignment="Center">
                 <Path x:Name="checkMark"
-                      Data="M 4,8 L 7,11 L 12,5"
+                      Width="11" Height="11"
+                      Data="{DynamicResource IconCheck11}"
                       Stroke="{DynamicResource OnAccentBrush}"
-                      StrokeThickness="2"
-                      Visibility="Collapsed" />
+                      StrokeThickness="1.375"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                      Stretch="None" />
               </Border>
-              <ContentPresenter VerticalAlignment="Center" />
+              <ContentPresenter Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                TextElement.FontSize="{DynamicResource FontSizeBodyStrong}"
+                                TextElement.Foreground="{DynamicResource TextBodyBrush}" />
             </StackPanel>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="checkMark" Property="Visibility" Value="Visible" />
-              </Trigger>
               <Trigger Property="IsChecked" Value="False">
-                <Setter Property="Opacity" Value="0.6" />
+                <Setter TargetName="checkMark" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="box" Property="Background" Value="Transparent" />
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -87,99 +96,120 @@
     </Style>
   </UserControl.Resources>
 
-  <Grid Margin="16,16,16,12">
-    <Grid.RowDefinitions>
-      <!-- Top: Create Event Button -->
-      <RowDefinition Height="Auto" />
-      <!-- Middle: Mini Calendar + Calendar List (Scrollable) -->
-      <RowDefinition Height="*" />
-      <!-- Bottom: Sync Status & AI Queue Block -->
-      <RowDefinition Height="Auto" />
-    </Grid.RowDefinitions>
+  <Grid>
+    <!-- Background + right border; the shadow layer stays behind so it does not blur content -->
+    <Border Background="{DynamicResource SidebarBackgroundBrush}" Effect="{DynamicResource ShadowSidebar}" />
+    <Border Background="{DynamicResource SidebarBackgroundBrush}"
+            BorderBrush="{DynamicResource ShellBorderBrush}"
+            BorderThickness="0,0,1,0" />
 
-    <!-- 1. CREATE EVENT BUTTON (FR-UI-10) -->
-    <Button Grid.Row="0"
-            Content="{loc:Loc Key=sidebar.create_event}"
-            Command="{Binding CreateEventCommand}"
-            Style="{StaticResource CreateEventButtonStyle}"
-            AutomationProperties.AutomationId="BtnCreateEvent"
-            AutomationProperties.Name="{loc:Loc Key=sidebar.create_event}"
-            Margin="0,0,0,16" />
+    <Grid Margin="16,20,16,16">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
 
-    <!-- 2. SCROLLABLE MIDDLE SECTION -->
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-      <StackPanel>
-        <!-- Mini Calendar -->
-        <controls:MiniCalendar DataContext="{Binding MiniCalendar}" Margin="0,0,0,16" />
-
-        <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,16" />
-
-        <!-- My Calendars Header -->
-        <TextBlock Text="{loc:Loc Key=sidebar.my_calendars}"
-                   FontSize="{DynamicResource FontSizeCaption}"
-                   FontWeight="{DynamicResource FontWeightSemiBold}"
-                   Foreground="{DynamicResource TextSecondaryBrush}"
-                   Margin="0,0,0,8" />
-
-        <!-- Calendar Collections List -->
-        <ItemsControl ItemsSource="{Binding Calendars}" AutomationProperties.AutomationId="CalendarList">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <CheckBox Content="{Binding Summary}"
-                        IsChecked="{Binding IsSelected}"
-                        Style="{StaticResource CalendarCheckBoxStyle}"
-                        AutomationProperties.Name="{Binding Summary}" />
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+      <!-- Logo (1:4): 34 px accent tile radius 9 with an 18 px sparkle, "LunarCal" 19 Bold -->
+      <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+        <Border Width="34" Height="34"
+                Background="{DynamicResource AccentPrimaryBrush}"
+                CornerRadius="{DynamicResource CornerRadiusLogo}">
+          <Path Width="18" Height="18"
+                Data="{DynamicResource IconSparkle18}"
+                Fill="{DynamicResource OnAccentBrush}"
+                Stretch="None" />
+        </Border>
+        <TextBlock Text="LunarCal"
+                   Margin="10,0,0,0"
+                   FontSize="{DynamicResource FontSizeBrand}"
+                   FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   VerticalAlignment="Center" />
       </StackPanel>
-    </ScrollViewer>
 
-    <!-- 3. SYNC STATUS & AI QUEUE (FR-UI-10) -->
-    <Border Grid.Row="2"
-            Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1"
-            CornerRadius="{DynamicResource CornerRadiusSmall}"
-            Padding="10,8"
-            Margin="0,12,0,0"
-            AutomationProperties.AutomationId="SyncStatusBlock">
-      <StackPanel>
-        <Grid>
-          <TextBlock Text="{Binding SyncStatusText}"
+      <!-- Create event (FR-UI-10) -->
+      <Button Grid.Row="1"
+              Content="{loc:Loc Key=sidebar.create_event}"
+              Command="{Binding CreateEventCommand}"
+              Style="{StaticResource CreateEventButtonStyle}"
+              AutomationProperties.AutomationId="BtnCreateEvent"
+              AutomationProperties.Name="{loc:Loc Key=sidebar.create_event}"
+              Margin="0,0,0,20" />
+
+      <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+          <controls:MiniCalendar DataContext="{Binding MiniCalendar}" Margin="0,0,0,14" />
+
+          <!-- My calendars (1:168): header 11 SemiBold tertiary uppercase, items gap 10 -->
+          <TextBlock Text="{loc:Loc Key=sidebar.my_calendars}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
+                     Margin="0,0,0,10" />
+
+          <ItemsControl ItemsSource="{Binding Calendars}" AutomationProperties.AutomationId="CalendarList" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <CheckBox Content="{Binding Summary}"
+                          IsChecked="{Binding IsSelected}"
+                          Style="{StaticResource CalendarCheckBoxStyle}"
+                          Margin="0,0,0,10"
+                          AutomationProperties.Name="{Binding Summary}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Sync status (1:191): muted card, border, radius 12, padding 12, gap 8; click to sync now -->
+      <Button Grid.Row="3"
+              Margin="0,20,0,0"
+              Command="{Binding SyncNowCommand}"
+              Cursor="Hand"
+              ToolTip="{loc:Loc Key=sidebar.sync_now}"
+              AutomationProperties.AutomationId="SyncStatusBlock"
+              AutomationProperties.Name="{loc:Loc Key=sidebar.sync_now}">
+        <Button.Template>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{DynamicResource SurfaceMutedBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}"
+                    Padding="12">
+              <ContentPresenter />
+            </Border>
+          </ControlTemplate>
+        </Button.Template>
+        <StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+              <Ellipse.Style>
+                <Style TargetType="Ellipse">
+                  <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsOnline}" Value="False">
+                      <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Ellipse.Style>
+            </Ellipse>
+            <TextBlock Text="{loc:Loc Key=sidebar.sync_title}"
+                       Margin="8,0,0,0"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       FontWeight="{DynamicResource FontWeightMedium}"
+                       Foreground="{DynamicResource TextBodyBrush}"
+                       VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBlock Text="{Binding SyncDetailText}"
+                     Margin="0,8,0,0"
                      FontSize="{DynamicResource FontSizeCaption}"
                      Foreground="{DynamicResource TextSecondaryBrush}"
-                     VerticalAlignment="Center" />
-
-          <!-- Sync Now Button -->
-          <Button Content="{DynamicResource IconGlyphSync}"
-                  FontFamily="{DynamicResource FontFamilyIcon}"
-                  FontSize="{DynamicResource IconSizeSmall}"
-                  Command="{Binding SyncNowCommand}"
-                  HorizontalAlignment="Right"
-                  Background="Transparent"
-                  BorderThickness="0"
-                  Foreground="{DynamicResource AccentPrimaryBrush}"
-                  FontWeight="{DynamicResource FontWeightBold}"
-                  Cursor="Hand"
-                  ToolTip="{loc:Loc Key=sidebar.sync_now}"
-                  AutomationProperties.AutomationId="BtnSyncNow" />
-        </Grid>
-
-        <!-- Pending AI Commands Badge (if count > 0) -->
-        <Border x:Name="aiBadge"
-                Background="{DynamicResource WarningBrush}"
-                CornerRadius="{DynamicResource CornerRadiusSmall}"
-                Padding="6,2"
-                Margin="0,6,0,0"
-                HorizontalAlignment="Left"
-                Visibility="Collapsed">
-          <TextBlock Text="{Binding PendingAiCommandsText}"
-                     FontSize="{DynamicResource FontSizeBadge}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource OnWarningBrush}" />
-        </Border>
-      </StackPanel>
-    </Border>
+                     AutomationProperties.AutomationId="SyncDetailText" />
+        </StackPanel>
+      </Button>
+    </Grid>
   </Grid>
 </UserControl>

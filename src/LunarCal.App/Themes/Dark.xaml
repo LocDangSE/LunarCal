@@ -58,6 +58,17 @@
   <SolidColorBrush x:Key="WarningSubtleBrush" Color="#3E2C08" />
   <SolidColorBrush x:Key="OnWarningBrush" Color="#101828" />
   <SolidColorBrush x:Key="NowLineBrush" Color="#F04438" />
+  <!-- Added in P2-R11..R15 (no dark design in Figma yet; proposal) -->
+  <SolidColorBrush x:Key="ShellBorderBrush" Color="#373A40" />
+  <SolidColorBrush x:Key="TextSecondaryStrongBrush" Color="#D0D5DD" />
+  <SolidColorBrush x:Key="CellOutsideMonthBrush" Color="#1E2024" />
+  <SolidColorBrush x:Key="TodayColumnTintBrush" Color="#144E83FF" />
+  <SolidColorBrush x:Key="TodayRowBrush" Color="#801E2D4A" />
+  <SolidColorBrush x:Key="AvatarBackgroundBrush" Color="#1E2D4A" />
+  <SolidColorBrush x:Key="AvatarTextBrush" Color="#8AB4F8" />
+  <SolidColorBrush x:Key="AiChipBrush" Color="#2B2347" />
+  <SolidColorBrush x:Key="AiBorderSubtleBrush" Color="#4A3D86" />
+  <SolidColorBrush x:Key="SuccessBorderBrush" Color="#155E3B" />
   <SolidColorBrush x:Key="ScrimBrush" Color="#A6000000" />
 
 </ResourceDictionary>

@@ -19,6 +19,12 @@
   <sys:Double x:Key="FontSizeMini">9.5</sys:Double>
   <sys:Double x:Key="FontSizeBadge">10</sys:Double>
   <sys:Double x:Key="FontSizeLunarHero">40</sys:Double>
+  <!-- Figma 01, S06-S09 sizes (P2-R11..R15) -->
+  <sys:Double x:Key="FontSizeBrand">19</sys:Double>
+  <sys:Double x:Key="FontSizeColumnDate">17</sys:Double>
+  <sys:Double x:Key="FontSizeAgendaDate">18</sys:Double>
+  <sys:Double x:Key="FontSizePanelTitle">18</sys:Double>
+  <sys:Double x:Key="FontSizeLunarBlock">36</sys:Double>
 
   <!-- Icon glyph sizes for emoji/symbol glyphs (P2-R5; values unchanged from the Phase 2 views) -->
   <sys:Double x:Key="IconSizeSmall">14</sys:Double>
@@ -27,18 +33,29 @@
   <sys:Double x:Key="IconSizeXLarge">24</sys:Double>
   <sys:Double x:Key="IconSizeEmptyState">36</sys:Double>
 
-  <!-- Icon glyphs in FontFamilyIcon (P2-R10). Do not use emoji or arrow characters as icons. -->
-  <sys:String x:Key="IconGlyphAdd">&#xE710;</sys:String>
+  <!-- Icon glyphs in FontFamilyIcon for icons Figma has not drawn yet (empty states). Do not use emoji or arrow characters as icons. -->
   <sys:String x:Key="IconGlyphCalendar">&#xE787;</sys:String>
-  <sys:String x:Key="IconGlyphChevronLeft">&#xE76B;</sys:String>
-  <sys:String x:Key="IconGlyphChevronRight">&#xE76C;</sys:String>
-  <sys:String x:Key="IconGlyphClose">&#xE711;</sys:String>
-  <sys:String x:Key="IconGlyphMoon">&#xE708;</sys:String>
-  <sys:String x:Key="IconGlyphSend">&#xE724;</sys:String>
-  <sys:String x:Key="IconGlyphSettings">&#xE713;</sys:String>
-  <sys:String x:Key="IconGlyphSync">&#xE895;</sys:String>
-  <!-- Four-point sparkle of Figma 01 (brand mark, AI command bar), 24×24 box -->
-  <Geometry x:Key="IconSparkleGeometry">M12,1 C12.7,7.2 16.8,11.3 23,12 C16.8,12.7 12.7,16.8 12,23 C11.3,16.8 7.2,12.7 1,12 C7.2,11.3 11.3,7.2 12,1 Z</Geometry>
+
+  <!-- Figma icon paths (P2-R11..R15), copied from the exported SVG of each icon node. Coordinates are in the icon's
+       own box (the number in the key), so draw them with Stretch="None" inside a box of that size. -->
+  <Geometry x:Key="IconPlus16">M8 3.33333V8M8 8V12.6667M8 8H3.33333M8 8H12.6667</Geometry>
+  <Geometry x:Key="IconChevronLeft16">M10 12L6 8L10 4</Geometry>
+  <Geometry x:Key="IconChevronRight16">M6 12L10 8L6 4</Geometry>
+  <Geometry x:Key="IconChevronLeft18">M11.25 13.5L6.75 9L11.25 4.5</Geometry>
+  <Geometry x:Key="IconChevronRight18">M6.75 13.5L11.25 9L6.75 4.5</Geometry>
+  <Geometry x:Key="IconCheck11">M9.16667 2.75L4.125 7.79167L1.83333 5.5</Geometry>
+  <Geometry x:Key="IconSend16">M14.6667 1.33333L7.33333 8.66667M7.33333 8.66667L1.33333 6L14.6667 1.33333L10 14.6667L7.33333 8.66667Z</Geometry>
+  <Geometry x:Key="IconClose32">M11 11L16 16M16 16L21 21M16 16L21 11M16 16L11 21</Geometry>
+  <Geometry x:Key="IconSparkle10">M5 0.833333L6.08333 3.91667L9.16667 5L6.08333 6.08333L5 9.16667L3.91667 6.08333L0.833333 5L3.91667 3.91667L5 0.833333Z</Geometry>
+  <Geometry x:Key="IconSparkle18">M9 1.5L10.95 7.05L16.5 9L10.95 10.95L9 16.5L7.05 10.95L1.5 9L7.05 7.05L9 1.5Z</Geometry>
+  <Geometry x:Key="IconSparkle20">M10 1.66667L12.1667 7.83333L18.3333 10L12.1667 12.1667L10 18.3333L7.83333 12.1667L1.66667 10L7.83333 7.83333L10 1.66667Z</Geometry>
+
+  <!-- Figma shadows (x, y, blur, colour). WPF DropShadowEffect: Direction 270 = downwards, 0 = right. -->
+  <DropShadowEffect x:Key="ShadowAccentButton" Color="#2F6BFF" Opacity="0.2" BlurRadius="20" ShadowDepth="8" Direction="270" />
+  <DropShadowEffect x:Key="ShadowAiInput" Color="#7A5AF8" Opacity="0.2" BlurRadius="24" ShadowDepth="8" Direction="270" />
+  <DropShadowEffect x:Key="ShadowAiSend" Color="#7A5AF8" Opacity="0.4" BlurRadius="20" ShadowDepth="8" Direction="270" />
+  <DropShadowEffect x:Key="ShadowSidebar" Color="#101828" Opacity="0.04" BlurRadius="16" ShadowDepth="4" Direction="0" />
+  <DropShadowEffect x:Key="ShadowTopBar" Color="#101828" Opacity="0.03" BlurRadius="12" ShadowDepth="4" Direction="270" />
 
   <!-- Typography: Weights -->
   <FontWeight x:Key="FontWeightRegular">Normal</FontWeight>
@@ -82,6 +99,11 @@
   <!-- Checkbox square (Figma 01 calendar list) -->
   <CornerRadius x:Key="CornerRadiusCheckbox">4</CornerRadius>
   <CornerRadius x:Key="CornerRadiusStripe">2</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusLogo">9</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusSegment">7</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusSegmentTrack">9</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusEventBlock">6</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusListItem">10</CornerRadius>
   <CornerRadius x:Key="CornerRadiusAiBar">24</CornerRadius>
 
   <!-- Layout Metrics (Figma 01-05 & .agents/rules/ui.md) -->
@@ -92,8 +114,12 @@
   <!-- Input box inside the 92 px command bar (Figma 01: 59 px high, 16 px margin above and below) -->
   <sys:Double x:Key="AiCommandInputHeight">59</sys:Double>
   <sys:Double x:Key="WeekdayHeaderHeight">36</sys:Double>
+  <GridLength x:Key="WeekdayHeaderGridHeight">36</GridLength>
   <sys:Double x:Key="DayDetailPanelWidth">360</sys:Double>
   <sys:Double x:Key="HourRowHeight">48</sys:Double>
   <sys:Double x:Key="HourColumnWidth">56</sys:Double>
+  <GridLength x:Key="HourGutterGridWidth">56</GridLength>
+  <!-- 24 × 48 px hours plus 8 px above the first line and below the last one (Figma S06 24:60) -->
+  <sys:Double x:Key="TimeGridHeight">1168</sys:Double>
 
 </ResourceDictionary>

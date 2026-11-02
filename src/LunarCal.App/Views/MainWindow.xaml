@@ -14,142 +14,157 @@
         Width="1280" Height="800"
         MinWidth="960" MinHeight="600"
         WindowStartupLocation="CenterScreen"
+        FontFamily="{DynamicResource FontFamilyBase}"
         Background="{DynamicResource WindowBackgroundBrush}">
 
-  <DockPanel LastChildFill="True">
-    <!-- Top Bar (FR-UI-9) -->
-    <controls:TopBar DockPanel.Dock="Top" DataContext="{Binding}" />
+  <!-- Figma 01 (1:2): full-height sidebar (1:3) on the left; the main column (1:196) holds the top bar, the
+       calendar body and the AI command bar. -->
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
 
-    <!-- Sidebar (FR-UI-10) -->
-    <controls:Sidebar DockPanel.Dock="Left" DataContext="{Binding}" />
-
-    <!-- Main View Content Area -->
-    <Grid Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid Grid.Column="1">
       <Grid.RowDefinitions>
-        <!-- Center Calendar Viewport (Month/Week/Day/Agenda) -->
+        <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
-        <!-- Bottom AI Command Bar Placeholder (FR-UI-5, Figma 01) -->
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
 
-      <!-- Calendar View Area (FR-UI-1, FR-UI-2, FR-LUNAR-6) -->
-      <Border Grid.Row="0"
-              Margin="16"
-              Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusMedium}"
-              ClipToBounds="True"
-              AutomationProperties.AutomationId="MainViewContainer">
-        <Grid>
-          <!-- 6×7 Month View Grid -->
-          <views:MonthView DataContext="{Binding MonthView}">
-            <views:MonthView.Style>
-              <Style TargetType="views:MonthView">
-                <Setter Property="Visibility" Value="Collapsed" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Month">
-                    <Setter Property="Visibility" Value="Visible" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </views:MonthView.Style>
-          </views:MonthView>
+      <!-- Calendar body (FR-UI-1, FR-UI-2, FR-LUNAR-6) -->
+      <Grid Grid.Row="1"
+            Background="{DynamicResource WindowBackgroundBrush}"
+            ClipToBounds="True"
+            AutomationProperties.AutomationId="MainViewContainer">
+        <views:MonthView DataContext="{Binding MonthView}">
+          <views:MonthView.Style>
+            <Style TargetType="views:MonthView">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Month">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </views:MonthView.Style>
+        </views:MonthView>
 
-          <!-- 7-Day Week View Grid (Figma S06, FR-UI-1) -->
-          <views:WeekView DataContext="{Binding WeekView}">
-            <views:WeekView.Style>
-              <Style TargetType="views:WeekView">
-                <Setter Property="Visibility" Value="Collapsed" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Week">
-                    <Setter Property="Visibility" Value="Visible" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </views:WeekView.Style>
-          </views:WeekView>
+        <views:WeekView DataContext="{Binding WeekView}">
+          <views:WeekView.Style>
+            <Style TargetType="views:WeekView">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Week">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </views:WeekView.Style>
+        </views:WeekView>
 
-          <!-- Single Day View Grid (Figma S07, FR-UI-1) -->
-          <views:DayView DataContext="{Binding DayView}">
-            <views:DayView.Style>
-              <Style TargetType="views:DayView">
-                <Setter Property="Visibility" Value="Collapsed" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Day">
-                    <Setter Property="Visibility" Value="Visible" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </views:DayView.Style>
-          </views:DayView>
+        <views:DayView DataContext="{Binding DayView}">
+          <views:DayView.Style>
+            <Style TargetType="views:DayView">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Day">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </views:DayView.Style>
+        </views:DayView>
 
-          <!-- Agenda (Schedule) View (Figma S08, FR-UI-1) -->
-          <views:AgendaView DataContext="{Binding AgendaView}">
-            <views:AgendaView.Style>
-              <Style TargetType="views:AgendaView">
-                <Setter Property="Visibility" Value="Collapsed" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Agenda">
-                    <Setter Property="Visibility" Value="Visible" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </views:AgendaView.Style>
-          </views:AgendaView>
-        </Grid>
-      </Border>
+        <views:AgendaView DataContext="{Binding AgendaView}">
+          <views:AgendaView.Style>
+            <Style TargetType="views:AgendaView">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.ActiveViewMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="Agenda">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </views:AgendaView.Style>
+        </views:AgendaView>
+      </Grid>
 
-      <!-- AI Command Bar Placeholder (FR-UI-5, Figma 01) -->
-      <Border Grid.Row="1"
-              Height="{DynamicResource AiCommandInputHeight}"
-              Margin="24,16,24,16"
-              Background="{DynamicResource AiSubtleBrush}"
-              BorderBrush="{DynamicResource AiAccentBrush}"
-              BorderThickness="1.5"
-              CornerRadius="{DynamicResource CornerRadiusAiCard}"
-              Padding="16,0"
-              AutomationProperties.AutomationId="AiCommandBar">
-        <Grid VerticalAlignment="Center">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
+      <!-- AI command bar (Figma 1:483, FR-UI-5): white bar, top border, 24/16 padding -->
+      <Grid Grid.Row="2" Height="{DynamicResource AiCommandBarHeight}">
+        <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+                BorderBrush="{DynamicResource ShellBorderBrush}"
+                BorderThickness="0,1,0,0" />
+        <Grid Margin="24,16" AutomationProperties.AutomationId="AiCommandBar">
+          <!-- Shadow layer kept separate so the effect does not blur the text -->
+          <Border Background="{DynamicResource AiSubtleBrush}"
+                  CornerRadius="{DynamicResource CornerRadiusAiCard}"
+                  Effect="{DynamicResource ShadowAiInput}" />
+          <Border Background="{DynamicResource AiSubtleBrush}"
+                  BorderBrush="{DynamicResource AiAccentBrush}"
+                  BorderThickness="1.5"
+                  CornerRadius="{DynamicResource CornerRadiusAiCard}"
+                  Padding="16,0,8,0">
+            <Grid VerticalAlignment="Center">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
 
-          <!-- AI Sparkle Icon -->
-          <Path Grid.Column="0"
-                Data="{DynamicResource IconSparkleGeometry}"
-                Fill="{DynamicResource AiAccentBrush}"
-                Width="{DynamicResource IconSizeMedium}"
-                Height="{DynamicResource IconSizeMedium}"
-                Stretch="Uniform"
-                Margin="0,0,12,0"
-                VerticalAlignment="Center" />
+              <Path Grid.Column="0"
+                    Width="20" Height="20"
+                    Data="{DynamicResource IconSparkle20}"
+                    Fill="{DynamicResource AiAccentBrush}"
+                    Stretch="None"
+                    VerticalAlignment="Center" />
 
-          <!-- Prompt Placeholder -->
-          <TextBlock Grid.Column="1"
-                     Text="{loc:Loc Key=ai.command_placeholder}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextTertiaryBrush}"
-                     VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1"
+                         Margin="12,0"
+                         Text="{loc:Loc Key=ai.command_placeholder}"
+                         FontSize="{DynamicResource FontSizeSubtitle}"
+                         Foreground="{DynamicResource TextSecondaryBrush}"
+                         TextTrimming="CharacterEllipsis"
+                         VerticalAlignment="Center" />
 
-          <!-- Send Action Button -->
-          <Border Grid.Column="2"
-                  Width="36" Height="36"
-                  CornerRadius="{DynamicResource CornerRadiusFull}"
-                  Background="{DynamicResource AiAccentBrush}"
-                  Cursor="Hand"
-                  AutomationProperties.AutomationId="BtnAiSubmit">
-            <TextBlock Text="{DynamicResource IconGlyphSend}"
-                       FontFamily="{DynamicResource FontFamilyIcon}"
-                       FontSize="{DynamicResource IconSizeSmall}"
-                       Foreground="{DynamicResource OnAccentBrush}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+              <Border Grid.Column="2"
+                      Background="{DynamicResource AiChipBrush}"
+                      BorderBrush="{DynamicResource AiBorderSubtleBrush}"
+                      BorderThickness="1"
+                      CornerRadius="{DynamicResource CornerRadiusPill}"
+                      Padding="10,4"
+                      Margin="0,0,12,0"
+                      VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc Key=ai.lang_hint}"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource AiTextBrush}" />
+              </Border>
+
+              <Grid Grid.Column="3" Width="36" Height="36" Cursor="Hand"
+                    AutomationProperties.AutomationId="BtnAiSubmit">
+                <Border Background="{DynamicResource AiAccentBrush}"
+                        CornerRadius="{DynamicResource CornerRadiusFull}"
+                        Width="36" Height="36"
+                        Effect="{DynamicResource ShadowAiSend}" />
+                <Path Width="16" Height="16"
+                      Data="{DynamicResource IconSend16}"
+                      Stroke="{DynamicResource OnAccentBrush}"
+                      StrokeThickness="1.33333"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                      Stretch="None" />
+              </Grid>
+            </Grid>
           </Border>
         </Grid>
-      </Border>
+      </Grid>
+
+      <!-- Top bar (Figma 1:197, FR-UI-9) -->
+      <controls:TopBar Grid.Row="0" DataContext="{Binding}" />
     </Grid>
-  </DockPanel>
+
+    <!-- Sidebar (Figma 1:3, FR-UI-10), drawn last so its shadow falls on the main column -->
+    <controls:Sidebar Grid.Column="0" DataContext="{Binding}" />
+  </Grid>
 </Window>

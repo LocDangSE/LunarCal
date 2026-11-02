@@ -58,6 +58,17 @@
   <SolidColorBrush x:Key="WarningSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="OnWarningBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="NowLineBrush" Color="{x:Static SystemColors.HighlightColor}" />
+  <!-- Added in P2-R11..R15 -->
+  <SolidColorBrush x:Key="ShellBorderBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
+  <SolidColorBrush x:Key="TextSecondaryStrongBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="CellOutsideMonthBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="TodayColumnTintBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="TodayRowBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="AvatarBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="AvatarTextBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+  <SolidColorBrush x:Key="AiChipBrush" Color="{x:Static SystemColors.WindowColor}" />
+  <SolidColorBrush x:Key="AiBorderSubtleBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
+  <SolidColorBrush x:Key="SuccessBorderBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
   <SolidColorBrush x:Key="ScrimBrush" Color="{x:Static SystemColors.WindowColor}" />
 
 </ResourceDictionary>

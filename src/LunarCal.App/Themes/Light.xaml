@@ -58,6 +58,17 @@
   <SolidColorBrush x:Key="WarningSubtleBrush" Color="#FFFAEB" />
   <SolidColorBrush x:Key="OnWarningBrush" Color="#101828" />
   <SolidColorBrush x:Key="NowLineBrush" Color="#F04438" />
+  <!-- Added in P2-R11..R15 from Figma 01, S06-S09 -->
+  <SolidColorBrush x:Key="ShellBorderBrush" Color="#E4E7EC" />
+  <SolidColorBrush x:Key="TextSecondaryStrongBrush" Color="#475467" />
+  <SolidColorBrush x:Key="CellOutsideMonthBrush" Color="#FAFAFB" />
+  <SolidColorBrush x:Key="TodayColumnTintBrush" Color="#082F6BFF" />
+  <SolidColorBrush x:Key="TodayRowBrush" Color="#80EAF1FF" />
+  <SolidColorBrush x:Key="AvatarBackgroundBrush" Color="#EEF2FF" />
+  <SolidColorBrush x:Key="AvatarTextBrush" Color="#444CE7" />
+  <SolidColorBrush x:Key="AiChipBrush" Color="#F1ECFF" />
+  <SolidColorBrush x:Key="AiBorderSubtleBrush" Color="#DDD6FE" />
+  <SolidColorBrush x:Key="SuccessBorderBrush" Color="#D1FADF" />
   <SolidColorBrush x:Key="ScrimBrush" Color="#73101828" />
 
 </ResourceDictionary>

@@ -39,8 +39,8 @@ public sealed class MonthViewModelTests
 
         vm.Days.Should().HaveCount(42);
         vm.WeekdayHeaders.Should().HaveCount(7);
-        vm.WeekdayHeaders[0].Should().Be("Th 2");
-        vm.WeekdayHeaders[6].Should().Be("CN");
+        vm.WeekdayHeaders[0].Should().Be("Thứ 2");
+        vm.WeekdayHeaders[6].Should().Be("Chủ nhật");
 
         // Verify current month flagging
         var novFirst = vm.Days.First(d => d.SolarDate == new DateOnly(2026, 11, 1));
@@ -199,8 +199,8 @@ public sealed class MonthViewModelTests
         await vmMonday.PopulateMonthAsync(targetDate);
 
         vmMonday.WeekStart.Should().Be(DayOfWeek.Monday);
-        vmMonday.WeekdayHeaders[0].Should().Be("Th 2");
-        vmMonday.WeekdayHeaders[6].Should().Be("CN");
+        vmMonday.WeekdayHeaders[0].Should().Be("Thứ 2");
+        vmMonday.WeekdayHeaders[6].Should().Be("Chủ nhật");
         vmMonday.Days[0].SolarDate.DayOfWeek.Should().Be(DayOfWeek.Monday);
 
         // Since 2026-11-01 is Sunday, with Monday start, it appears at index 6 (last day of first week row)
@@ -213,8 +213,8 @@ public sealed class MonthViewModelTests
         await vmSunday.PopulateMonthAsync(targetDate);
 
         vmSunday.WeekStart.Should().Be(DayOfWeek.Sunday);
-        vmSunday.WeekdayHeaders[0].Should().Be("CN");
-        vmSunday.WeekdayHeaders[1].Should().Be("Th 2");
+        vmSunday.WeekdayHeaders[0].Should().Be("Chủ nhật");
+        vmSunday.WeekdayHeaders[1].Should().Be("Thứ 2");
         vmSunday.Days[0].SolarDate.DayOfWeek.Should().Be(DayOfWeek.Sunday);
 
         // Since 2026-11-01 is Sunday, with Sunday start, it appears right at index 0
