@@ -362,16 +362,16 @@
     <value>Create event</value>
   </data>
   <data name="sidebar.my_calendars" xml:space="preserve">
-    <value>My calendars</value>
+    <value>MY CALENDARS</value>
   </data>
   <data name="sidebar.sync_status_now" xml:space="preserve">
-    <value>Synced just now</value>
+    <value>Just now</value>
   </data>
   <data name="sidebar.sync_now" xml:space="preserve">
     <value>Sync now</value>
   </data>
   <data name="sidebar.pending_ai_commands" xml:space="preserve">
-    <value>{0} pending AI commands</value>
+    <value>AI queue: {0}</value>
   </data>
   <data name="network.online" xml:space="preserve">
     <value>Online</value>
@@ -401,7 +401,7 @@
     <value>No events in this time period</value>
   </data>
   <data name="agenda.filter_by" xml:space="preserve">
-    <value>Filter by calendar</value>
+    <value>Show:</value>
   </data>
   <data name="day_detail.title" xml:space="preserve">
     <value>Day Details</value>
@@ -419,13 +419,13 @@
     <value>Lunar year</value>
   </data>
   <data name="day_detail.can_chi_day" xml:space="preserve">
-    <value>Day stem-branch</value>
+    <value>Day</value>
   </data>
   <data name="day_detail.can_chi_month" xml:space="preserve">
-    <value>Month stem-branch</value>
+    <value>Month</value>
   </data>
   <data name="day_detail.can_chi_year" xml:space="preserve">
-    <value>Year stem-branch</value>
+    <value>Year</value>
   </data>
   <data name="day_detail.solar_term" xml:space="preserve">
     <value>Solar term</value>
@@ -440,10 +440,10 @@
     <value>No events scheduled for this day</value>
   </data>
   <data name="day_detail.add_event" xml:space="preserve">
-    <value>+ Add event</value>
+    <value>+ Add event on this day</value>
   </data>
   <data name="day_detail.add_lunar_rule" xml:space="preserve">
-    <value>+ Add lunar rule</value>
+    <value>Add lunar rule (repeat by lunar date)</value>
   </data>
   <data name="day_detail.lunar_disabled" xml:space="preserve">
     <value>Lunar calendar is disabled in Settings</value>
@@ -604,21 +604,102 @@
     <value>29 days</value>
   </data>
   <data name="lunar.header_day" xml:space="preserve">
-    <value>Lunar {0}/{1} · {2} · Term {3}</value>
+    <value>Lunar: day {0} of month {1}, year of {2} · {3}</value>
   </data>
   <data name="lunar.header_month" xml:space="preserve">
-    <value>Lunar month {0} ({1}) · {2}</value>
+    <value>Lunar: month {0}, year of {1}</value>
   </data>
   <data name="lunar.solar_term_vi" xml:space="preserve">
     <value>Solar term {0}</value>
   </data>
   <data name="ai.command_placeholder" xml:space="preserve">
-    <value>Type a command to create an event with AI (e.g. 'Remind me about the dentist at 3 pm on Friday')...</value>
+    <value>Remind me to call mom tomorrow at 7pm   /   Nhắc tôi họp nhóm thứ 5 tuần sau lúc 9h…</value>
   </data>
   <data name="minical.prev_month" xml:space="preserve">
     <value>Previous month</value>
   </data>
   <data name="minical.next_month" xml:space="preserve">
     <value>Next month</value>
+  </data>
+  <data name="format.day_title" xml:space="preserve">
+    <value>{0}, {1:MMMM d, yyyy}</value>
+  </data>
+  <data name="format.dot_pair" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="lunar.header_month_range" xml:space="preserve">
+    <value>Lunar: months {0} – {1}, year of {2}</value>
+  </data>
+  <data name="lunar.header_month_range_years" xml:space="preserve">
+    <value>Lunar: month {0} of {1} – month {2} of {3}</value>
+  </data>
+  <data name="lunar.header_week" xml:space="preserve">
+    <value>Lunar: {0} – {1} of month {2}, year of {3}</value>
+  </data>
+  <data name="lunar.header_week_cross" xml:space="preserve">
+    <value>Lunar: {0}/{1} – {2}/{3}, year of {4}</value>
+  </data>
+  <data name="lunar.day_month_mung" xml:space="preserve">
+    <value>Lunar {0}/{1}</value>
+  </data>
+  <data name="lunar.day_month" xml:space="preserve">
+    <value>Lunar {0}/{1}</value>
+  </data>
+  <data name="lunar.month_label_leap" xml:space="preserve">
+    <value>{0} (leap)</value>
+  </data>
+  <data name="lunar.full_date" xml:space="preserve">
+    <value>{0}, year of {1}</value>
+  </data>
+  <data name="lunar.month_info" xml:space="preserve">
+    <value>Month {0}: {1} · {2}</value>
+  </data>
+  <data name="lunar.month_full_long" xml:space="preserve">
+    <value>full (30 days)</value>
+  </data>
+  <data name="lunar.month_short_long" xml:space="preserve">
+    <value>short (29 days)</value>
+  </data>
+  <data name="lunar.not_leap" xml:space="preserve">
+    <value>not leap</value>
+  </data>
+  <data name="lunar.is_leap" xml:space="preserve">
+    <value>leap month</value>
+  </data>
+  <data name="ai.lang_hint" xml:space="preserve">
+    <value>VI · EN</value>
+  </data>
+  <data name="sidebar.sync_title" xml:space="preserve">
+    <value>Synced with Google Calendar</value>
+  </data>
+  <data name="day.header_today" xml:space="preserve">
+    <value>{0} · Today</value>
+  </data>
+  <data name="day.all_day_empty" xml:space="preserve">
+    <value>No all-day events</value>
+  </data>
+  <data name="week.gmt" xml:space="preserve">
+    <value>GMT{0}</value>
+  </data>
+  <data name="day_detail.solar_term_since" xml:space="preserve">
+    <value>{0} · since {1:MMM d}</value>
+  </data>
+  <data name="day_detail.events_count" xml:space="preserve">
+    <value>EVENTS ({0})</value>
+  </data>
+  <data name="agenda.summary" xml:space="preserve">
+    <value>{0:MMM d} – {1:MMM d, yyyy} · {2} events</value>
+  </data>
+  <data name="format.agenda_label" xml:space="preserve">
+    <value>{0}, {1:MMM}</value>
+  </data>
+  <data name="agenda.lunar" xml:space="preserve">
+    <value>Lunar: {0}</value>
+  </data>
+  <data name="agenda.full_moon" xml:space="preserve">
+    <value>Full moon</value>
+  </data>
+  <data name="day_detail.close" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>

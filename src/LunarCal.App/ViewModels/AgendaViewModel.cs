@@ -36,6 +36,10 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _hasEvents;
 
+    /// <summary>Range and count after the filter chips (Figma S08 25:161): "16/10 – 15/11/2026 · 9 sự kiện".</summary>
+    [ObservableProperty]
+    private string _summaryText = string.Empty;
+
     [ObservableProperty]
     private bool _isAllCalendarsSelected = true;
 
@@ -129,10 +133,8 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         var version = ++_loadVersion;
         var sw = Stopwatch.StartNew();
 
-        var monthStart = new DateOnly(DisplayDate.Year, DisplayDate.Month, 1);
-        var monthEnd = new DateOnly(DisplayDate.Year, DisplayDate.Month, DateTime.DaysInMonth(DisplayDate.Year, DisplayDate.Month));
-
-        var (startUtc, endUtc) = CalendarTime.GetUtcRange(monthStart, monthEnd.AddDays(1), _preferences.TimeZone);
+        var (rangeStart, rangeEnd) = Range(DisplayDate);
+        var (startUtc, endUtc) = CalendarTime.GetUtcRange(rangeStart, rangeEnd.AddDays(1), _preferences.TimeZone);
 
         IReadOnlyList<CalendarInfo> calendars;
         IReadOnlyList<CalendarEvent> events;
@@ -209,8 +211,7 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         var timeZone = _preferences.TimeZone;
         var culture = _localizationService.CurrentCulture;
         var today = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, timeZone);
-        var monthStart = new DateOnly(DisplayDate.Year, DisplayDate.Month, 1);
-        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+        var (monthStart, monthEnd) = Range(DisplayDate);
         var allDayLabel = _localizationService["calendar.all_day"];
         var lunarFormat = _localizationService["lunar.short_suffix"];
         var leapMarker = CalendarText.LeapMarker(_localizationService);
@@ -257,7 +258,19 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
 
             var dateDisplay = CalendarText.AgendaDay(_localizationService, date, isToday);
 
-            var groupVm = new AgendaDayGroupViewModel(date, lunar, dayName, dateDisplay, isToday, IsLunarVisible, lunarFormat, leapMarker);
+            var dateLabel = _localizationService.Format(
+                "format.agenda_label", CalendarText.WeekdayMin(_localizationService, date.DayOfWeek), date.ToDateTime(TimeOnly.MinValue));
+            if (isToday)
+            {
+                dateLabel = _localizationService.Format("day.header_today", dateLabel);
+            }
+
+            var groupVm = new AgendaDayGroupViewModel(date, lunar, dayName, dateDisplay, isToday, IsLunarVisible, lunarFormat, leapMarker)
+            {
+                DateLabel = dateLabel,
+                Localization = _localizationService,
+            };
+            groupVm.UpdateLunarText();
 
             // Sort events: all-day first, then by start time
             var sortedEvents = events
@@ -292,7 +305,20 @@ public sealed partial class AgendaViewModel : ObservableObject, IDisposable
         }
 
         HasEvents = DayGroups.Count > 0;
+        SummaryText = _localizationService.Format(
+            "agenda.summary",
+            monthStart.ToDateTime(TimeOnly.MinValue),
+            monthEnd.ToDateTime(TimeOnly.MinValue),
+            DayGroups.Sum(g => g.Events.Count));
     }
+
+    /// <summary>
+    /// Dates listed by the agenda (Figma S08): the display date and the 30 days after it, e.g. 16/10 – 15/11/2026.
+    /// </summary>
+    public static (DateOnly First, DateOnly Last) Range(DateOnly displayDate) => (displayDate, displayDate.AddDays(AgendaDays - 1));
+
+    /// <summary>Number of days listed by the agenda.</summary>
+    public const int AgendaDays = 31;
 
     private void OnLocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {

@@ -12,9 +12,9 @@ Figma: file "GCalendar – AI-Powered Calendar (UI v1)", fileKey `4vwWjHGoSu9naj
 ## Ánh xạ màn hình → code
 
 Hiện có:
-- `src/LunarCal.App/Views/MainWindow.xaml` (Shell layout tích hợp TopBar, Sidebar, Viewport, AI Command Bar) và `ViewModels/MainWindowViewModel.cs`.
-- `src/LunarCal.App/Controls/TopBar.xaml`: Brand, nút Hôm nay, mũi tên điều hướng, tiêu đề & phụ đề âm lịch, cụm chuyển view Ngày/Tuần/Tháng/Lịch biểu, nút VI | EN, chip mạng, avatar.
-- `src/LunarCal.App/Controls/Sidebar.xaml`: Nút Tạo sự kiện, MiniCalendar, danh sách lịch với checkbox & bullet màu, khối trạng thái đồng bộ ("Đồng bộ ngay", badge lệnh AI chờ).
+- `src/LunarCal.App/Views/MainWindow.xaml`: như Figma 01, sidebar cao hết cửa sổ ở bên trái; cột chính gồm TopBar, thân lịch (không viền/không lề) và thanh lệnh AI. `ViewModels/MainWindowViewModel.cs`.
+- `src/LunarCal.App/Controls/TopBar.xaml`: nút Hôm nay, 2 nút mũi tên tròn, tiêu đề và phụ đề âm lịch, cụm chuyển view, VI | EN, chip mạng, avatar. Figma không có nút Cài đặt riêng nên avatar mở Cài đặt (S13, AutomationId `BtnSettings`). Cụm bên trái co lại (tiêu đề hiện "…") khi cửa sổ hẹp.
+- `src/LunarCal.App/Controls/Sidebar.xaml`: logo (ô 34 px + "LunarCal"), nút Tạo sự kiện, MiniCalendar, "LỊCH CỦA TÔI" với checkbox vuông theo màu lịch, thẻ đồng bộ 2 dòng (bấm để đồng bộ ngay).
 - `src/LunarCal.App/Controls/MiniCalendar.xaml`: Lưới 6×7 ngày, chuyển tháng, highlight ngày hiện tại & ngày chọn.
 
 Tên view dự kiến ở cột 4 là đề xuất (CHƯA XÁC MINH), chốt khi làm task tương ứng.
@@ -154,13 +154,29 @@ Giữ nguyên giá trị đang hiển thị ở Phase 2, chỉ đặt tên. Khi 
 | `CornerRadiusPill` | 12 | Chip cao khoảng 24 px (Online, chip lọc, badge đếm) |
 | `CornerRadiusCheckbox` | 4 | Ô checkbox danh sách lịch |
 | `AiCommandInputHeight` | 59 | Ô nhập lệnh AI trong thanh 92 px |
-| `FontFamilyIcon` | Segoe Fluent Icons, Segoe MDL2 Assets | Mọi icon dạng glyph |
-| `IconGlyph*` | Add, Calendar, ChevronLeft/Right, Close, Moon, Send, Settings, Sync | Mã glyph (dùng chung cho Win10/Win11) |
-| `IconSparkleGeometry` | Ngôi sao 4 cánh, khung 24×24 | Logo, thanh lệnh AI, sự kiện AI |
+| `FontFamilyIcon`, `IconGlyphCalendar` | Segoe Fluent Icons / MDL2 | Chỉ cho icon Figma chưa vẽ (trạng thái rỗng) |
 
-- Không dùng emoji hoặc ký tự mũi tên làm icon; test `UiRegressionTests.FR_UI_11_Icons_do_not_use_emoji_or_symbol_characters`.
+- Icon lấy đúng path SVG của Figma (bảng dưới), không dùng emoji hoặc ký tự mũi tên; test `UiRegressionTests.FR_UI_11_Icons_do_not_use_emoji_or_symbol_characters`.
 - Chữ trên nền `AccentPrimaryBrush` dùng `OnAccentBrush`; `AccentTextBrush` chỉ dùng trên nền nhạt (`AccentSubtleBrush`).
 - Không dùng `ConverterParameter` với `BooleanToVisibilityConverter` (WPF bỏ qua tham số này); muốn ẩn ngược thì dùng `DataTrigger` trong style và không đặt `Visibility` local.
+
+### Dựng lại theo Figma 01, S06–S09 (P2-R11..R15, Claude Code, 2026-11-02)
+
+Icon: path copy từ SVG xuất của node Figma, toạ độ theo khung của icon (số trong tên key), vẽ bằng `Path` có `Stretch="None"` trong khung đúng kích thước.
+
+| Key | Figma | Dùng cho |
+| --- | --- | --- |
+| `IconPlus16`, `IconCheck11` | 1:10, 1:172 | Nút Tạo sự kiện, checkbox lịch (nét trắng) |
+| `IconChevronLeft16/Right16` | 1:17, 1:19 | Mini-calendar (nét 1.33, `TextSecondaryBrush`) |
+| `IconChevronLeft18/Right18` | 1:201, 1:204 | Nút điều hướng thanh trên (nét 1.5, `TextSecondaryStrongBrush`) |
+| `IconSparkle10/18/20` | 1:383, 1:6, 1:485 | Sự kiện AI, logo, thanh lệnh AI |
+| `IconSend16`, `IconClose32` | 1:491, 25:7 | Nút gửi AI, nút đóng panel ngày |
+
+Token mới: `FontSizeBrand` 19, `FontSizeColumnDate` 17, `FontSizeAgendaDate` 18, `FontSizePanelTitle` 18, `FontSizeLunarBlock` 36; `CornerRadiusLogo` 9, `CornerRadiusSegment` 7, `CornerRadiusSegmentTrack` 9, `CornerRadiusEventBlock` 6, `CornerRadiusListItem` 10; `HourGutterGridWidth` 56, `WeekdayHeaderGridHeight` 36, `TimeGridHeight` 1168 (24 × 48 + 8 trên + 8 dưới); bóng `ShadowAccentButton`, `ShadowAiInput`, `ShadowAiSend`, `ShadowSidebar`, `ShadowTopBar` (đặt trên một lớp nền riêng để không làm mờ chữ). Brush mới (đủ 3 theme): `ShellBorderBrush` #E4E7EC, `TextSecondaryStrongBrush` #475467, `CellOutsideMonthBrush` #FAFAFB, `TodayColumnTintBrush` #2F6BFF 3 %, `TodayRowBrush` #EAF1FF 50 %, `AvatarBackgroundBrush` #EEF2FF, `AvatarTextBrush` #444CE7, `AiChipBrush` #F1ECFF, `AiBorderSubtleBrush` #DDD6FE, `SuccessBorderBrush` #D1FADF. Theme Tối/Tương phản cao vẫn là đề xuất.
+
+Màu sự kiện theo lịch: `CalendarColors.Palette` trả cặp (nền nhạt, chữ đậm) đúng Figma cho 4 màu #2F6BFF, #12B76A, #F79009, #7A5AF8; màu Google khác thì nền = 12 % màu trên trắng, chữ = 60 % màu. Sự kiện AI (`createdBy = lunarcal-chat`) có ngôi sao ✦.
+
+Lưới Tuần/Ngày: vạch giờ nằm dưới đầu nhãn 8 px; khối sự kiện cách vạch cột 3 px, cách cột sau 5 px, hai làn cách 2 px (Tuần) hoặc 8/16 px (Ngày); khối cao = thời lượng × 48 − 2. Mở ra ở 07:00 (`ScrollViewerBehavior.InitialVerticalOffset`).
 
 Hình tròn (chấm màu, ô mini-calendar, avatar, nút gửi) dùng `CornerRadiusFull`. WPF không kẹp bán kính như CSS: `CornerRadiusFull` trên khung không vuông sẽ thành hình elip, nên chỉ dùng cho khung có Width = Height. Màu mặc định cho calendar không có màu: hằng `CalendarColors.DefaultHex` (= `AccentPrimaryBrush` sáng). Test `ThemeDictionaryTests.FR_UI_11_Views_and_controls_use_tokens_instead_of_literal_sizes_and_colors` chặn literal mới trong `Views/` và `Controls/`.
 

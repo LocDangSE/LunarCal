@@ -38,6 +38,7 @@ public sealed class InMemoryEventStore : IEventStore
 
         var result = query
             .OrderBy(c => !c.IsPrimary)
+            .ThenBy(c => c.AccountId, StringComparer.Ordinal) // keep each account's calendars together (Figma 01)
             .ThenBy(c => c.Summary, StringComparer.CurrentCulture)
             .ToList();
 
@@ -160,8 +161,8 @@ public sealed class InMemoryEventStore : IEventStore
         {
             Id = "cal-google-primary",
             AccountId = "acc-google-default",
-            Summary = "Cá nhân",
-            Color = "#4285F4", // Google Blue
+            Summary = "Cá nhân · Google",
+            Color = "#2F6BFF", // Figma 01 calendar colours
             IsSelected = true,
             IsPrimary = true,
             TimeZone = "Asia/Ho_Chi_Minh",
@@ -172,8 +173,8 @@ public sealed class InMemoryEventStore : IEventStore
         {
             Id = "cal-google-work",
             AccountId = "acc-google-default",
-            Summary = "Công việc",
-            Color = "#0B8043", // Google Green
+            Summary = "Công việc · Google",
+            Color = "#12B76A",
             IsSelected = true,
             IsPrimary = false,
             TimeZone = "Asia/Ho_Chi_Minh",
@@ -185,7 +186,7 @@ public sealed class InMemoryEventStore : IEventStore
             Id = "cal-lunar-local",
             AccountId = "acc-local",
             Summary = "Âm lịch · cục bộ",
-            Color = "#D93025", // Red
+            Color = "#F79009",
             IsSelected = true,
             IsPrimary = false,
             TimeZone = "Asia/Ho_Chi_Minh",
@@ -197,7 +198,7 @@ public sealed class InMemoryEventStore : IEventStore
             Id = "cal-ai-tasks",
             AccountId = "acc-local",
             Summary = "Nhắc việc từ AI",
-            Color = "#8E24AA", // Purple
+            Color = "#7A5AF8",
             IsSelected = true,
             IsPrimary = false,
             TimeZone = "Asia/Ho_Chi_Minh",

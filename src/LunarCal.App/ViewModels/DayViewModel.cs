@@ -41,6 +41,14 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
     /// <summary>The 24 hour labels (00:00 .. 23:00) displayed in the left hour column.</summary>
     public ObservableCollection<string> HourLabels { get; } = new();
 
+    /// <summary>
+    /// Vertical offset the time grid opens at: 07:00, as in Figma S06/S07 (the grid still covers 00:00–24:00).
+    /// </summary>
+    public double InitialScrollOffset { get; } = DayColumnViewModel.HourRowHeight * DayColumnViewModel.FirstVisibleHour;
+
+    /// <summary>Time zone label in the hour gutter (Figma S06 24:5): "GMT+7".</summary>
+    public string TimeZoneLabel => CalendarText.GmtOffset(_localizationService, _preferences.TimeZone, DateTimeOffset.UtcNow);
+
     /// <summary>Detail panel child view model (Figma S07 &amp; S09, FR-UI-3).</summary>
     public DayDetailViewModel DetailPanel { get; }
 
@@ -132,19 +140,22 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
         var isToday = targetDate == today;
 
         var col = new DayColumnViewModel(
-            targetDate, lunar, dayName, isToday, IsLunarVisible, CalendarText.LeapMarker(_localizationService));
+            targetDate, lunar, dayName, isToday, IsLunarVisible, CalendarText.LeapMarker(_localizationService), _localizationService);
 
         // Query events from store
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(targetDate, targetDate.AddDays(1), timeZone);
 
         IReadOnlyList<CalendarEvent> events;
+        IReadOnlyDictionary<string, CalendarInfo> colors;
         try
         {
             events = await _eventStore.GetEventsAsync(startUtc, endUtc, cancellationToken: cancellationToken);
+            colors = await CalendarColors.LoadAsync(_eventStore, cancellationToken);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             events = Array.Empty<CalendarEvent>();
+            colors = new Dictionary<string, CalendarInfo>();
         }
 
         if (version != _loadVersion)
@@ -152,7 +163,7 @@ public sealed partial class DayViewModel : ObservableObject, IDisposable
             return; // superseded by a newer request
         }
 
-        col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture);
+        col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture, colors);
         DayColumn = col;
 
         // Day title

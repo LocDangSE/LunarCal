@@ -159,6 +159,42 @@ public sealed class UiRegressionTests
         chipWidth.Should().BeGreaterThan(columnWidth * 0.8, "a single event takes the whole column, not a 20 px sliver");
     }
 
+    [Theory]
+    [InlineData("Month")]
+    [InlineData("Week")]
+    [InlineData("Day")]
+    [InlineData("Agenda")]
+    public void FR_UI_1_Calendar_views_load_and_lay_out_with_app_resources(string view)
+    {
+        // A XAML error (wrong resource type, duplicate property) only shows up when the view is loaded; the
+        // P2-R11 shell crashed at start-up on a double used as a GridLength.
+        var size = RunOnSta(() =>
+        {
+            var store = Substitute.For<IEventStore>();
+            store.GetEventsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<IReadOnlyList<CalendarEvent>>(Array.Empty<CalendarEvent>()));
+            store.GetCalendarsAsync(Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<IReadOnlyList<CalendarInfo>>(Array.Empty<CalendarInfo>()));
+            var loc = new LocalizationService(SupportedCultures.Vietnamese);
+            var prefs = new TestDisplayPreferences();
+            FrameworkElement element = view switch
+            {
+                "Month" => new MonthView { DataContext = new MonthViewModel(store, loc, prefs) },
+                "Week" => new WeekView { DataContext = new WeekViewModel(store, loc, prefs) },
+                "Day" => new DayView { DataContext = new DayViewModel(store, loc, prefs) },
+                _ => new AgendaView { DataContext = new AgendaViewModel(store, loc, prefs) },
+            };
+            element.Resources.MergedDictionaries.Add(LoadAppResources());
+            var bounds = new Size(1160, 744);
+            element.Measure(bounds);
+            element.Arrange(new Rect(bounds));
+            element.UpdateLayout();
+            return element.RenderSize;
+        });
+
+        size.Width.Should().Be(1160);
+    }
+
     private static bool IsSymbol(char c) =>
         char.IsSurrogate(c)
         || c is '<' or '>'

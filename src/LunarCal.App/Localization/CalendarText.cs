@@ -67,6 +67,103 @@ public static class CalendarText
     public static string LunarMonthName(ILocalizationService loc, int month, bool isLeap) =>
         Format(loc, isLeap ? "lunar.month_name_leap" : "lunar.month_name", month);
 
+    /// <summary>
+    /// Day title of the top bar in Day view (Figma S07): "Thứ 6, 16 Tháng 10, 2026" / "Fri, October 16, 2026".
+    /// </summary>
+    public static string DayTitle(ILocalizationService loc, DateOnly date) =>
+        Format(loc, "format.day_title", WeekdayShort(loc, date.DayOfWeek), ToDateTime(date));
+
+    /// <summary>
+    /// Lunar subtitle for a range of solar dates shown as months (Month and Agenda views, Figma 01, S08):
+    /// "Âm lịch: tháng 8 – 9 năm Bính Ngọ", or one month, or a range across two lunar years (FR-UI-9).
+    /// </summary>
+    public static string LunarMonthHeader(ILocalizationService loc, DateOnly first, DateOnly last)
+    {
+        if (!TryLunar(first, out var a) || !TryLunar(last, out var b))
+        {
+            return string.Empty;
+        }
+
+        if (a.Year != b.Year)
+        {
+            return Format(
+                loc,
+                "lunar.header_month_range_years",
+                MonthLabel(loc, a),
+                LunarCalendar.GetYearCanChi(a.Year),
+                MonthLabel(loc, b),
+                LunarCalendar.GetYearCanChi(b.Year));
+        }
+
+        var year = LunarCalendar.GetYearCanChi(a.Year);
+        return a.Month == b.Month && a.IsLeapMonth == b.IsLeapMonth
+            ? Format(loc, "lunar.header_month", MonthLabel(loc, a), year)
+            : Format(loc, "lunar.header_month_range", MonthLabel(loc, a), MonthLabel(loc, b), year);
+    }
+
+    /// <summary>
+    /// Lunar subtitle for a week (Figma S06): "Âm lịch: 3 – 9 tháng 9 năm Bính Ngọ", or "28/8 – 4/9" when the
+    /// week crosses a lunar month (FR-UI-9).
+    /// </summary>
+    public static string LunarWeekHeader(ILocalizationService loc, DateOnly start, DateOnly end)
+    {
+        if (!TryLunar(start, out var a) || !TryLunar(end, out var b))
+        {
+            return string.Empty;
+        }
+
+        var year = LunarCalendar.GetYearCanChi(b.Year);
+        return a.Year == b.Year && a.Month == b.Month && a.IsLeapMonth == b.IsLeapMonth
+            ? Format(loc, "lunar.header_week", a.Day, b.Day, MonthLabel(loc, a), year)
+            : Format(loc, "lunar.header_week_cross", a.Day, MonthLabel(loc, a), b.Day, MonthLabel(loc, b), year);
+    }
+
+    /// <summary>
+    /// Lunar subtitle for one day (Figma S07): "Âm lịch: 7 tháng 9 năm Bính Ngọ · Quý Hợi" (FR-UI-9).
+    /// </summary>
+    public static string LunarDayHeader(ILocalizationService loc, DateOnly date) =>
+        TryLunar(date, out var l)
+            ? Format(loc, "lunar.header_day", l.Day, MonthLabel(loc, l), LunarCalendar.GetYearCanChi(l.Year), LunarCalendar.GetDayCanChi(date))
+            : string.Empty;
+
+    /// <summary>
+    /// Lunar date in words (Figma S07 column header, S09 lunar block): "Mùng 7 tháng 9" for days 1–10,
+    /// "15 tháng 9" afterwards; "Lunar 7/9" in English.
+    /// </summary>
+    public static string LunarDayMonth(ILocalizationService loc, LunarDate lunar) =>
+        Format(loc, lunar.Day <= 10 ? "lunar.day_month_mung" : "lunar.day_month", lunar.Day, MonthLabel(loc, lunar));
+
+    /// <summary>UTC offset label of the hour gutter (Figma S06): "GMT+7", "GMT-5", "GMT+5:30".</summary>
+    public static string GmtOffset(ILocalizationService loc, TimeZoneInfo zone, DateTimeOffset at)
+    {
+        ArgumentNullException.ThrowIfNull(zone);
+        var offset = zone.GetUtcOffset(at);
+        var sign = offset < TimeSpan.Zero ? "-" : "+";
+        var abs = offset.Duration();
+        var value = abs.Minutes == 0
+            ? string.Create(CultureInfo.InvariantCulture, $"{sign}{abs.Hours}")
+            : string.Create(CultureInfo.InvariantCulture, $"{sign}{abs.Hours}:{abs.Minutes:D2}");
+        return Format(loc, "week.gmt", value);
+    }
+
+    /// <summary>Lunar month number with the localized leap suffix ("6 nhuận" / "6 (leap)").</summary>
+    public static string MonthLabel(ILocalizationService loc, LunarDate lunar) =>
+        lunar.IsLeapMonth
+            ? Format(loc, "lunar.month_label_leap", lunar.Month)
+            : lunar.Month.ToString(loc.CurrentCulture);
+
+    private static bool TryLunar(DateOnly date, out LunarDate lunar)
+    {
+        if (date >= LunarCalendar.MinSolarDate && date <= LunarCalendar.MaxSolarDate)
+        {
+            lunar = LunarCalendar.ToLunar(date);
+            return true;
+        }
+
+        lunar = default;
+        return false;
+    }
+
     private static DateTime ToDateTime(DateOnly date) => date.ToDateTime(TimeOnly.MinValue);
 
     private static string Get(ILocalizationService loc, string key)

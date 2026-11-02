@@ -41,7 +41,7 @@ public sealed class ConcurrentLoadTests
         await Task.Yield();
 
         vm.WeekStart.Should().Be(DayOfWeek.Sunday);
-        vm.WeekdayHeaders[0].Should().Be("CN");
+        vm.WeekdayHeaders[0].Should().Be("Chủ nhật");
         vm.Days.Should().HaveCount(42);
         vm.Days[0].SolarDate.DayOfWeek.Should().Be(DayOfWeek.Sunday, "the grid of the last request must be kept");
     }

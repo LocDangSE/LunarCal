@@ -4,32 +4,19 @@ using System.Windows.Data;
 namespace LunarCal.App.Converters;
 
 /// <summary>
-/// Computes the width in pixels for a timed event within an overlapping cluster.
+/// Computes the width in pixels for a timed event within an overlapping cluster (<see cref="LaneGeometry"/>).
+/// Values: column width, number of lanes.
 /// </summary>
 public sealed class LaneWidthConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
-        if (values.Length >= 2 &&
-            values[0] is double actualWidth &&
-            values[1] is int totalColumns &&
-            totalColumns > 0)
-        {
-            double availableWidth = Math.Max(0, actualWidth - 4);
-            double laneWidth = availableWidth / totalColumns;
-            return Math.Max(20.0, laneWidth - 4);
-        }
-
-        if (values.Length >= 1 && values[0] is double fallbackWidth)
-        {
-            return Math.Max(20.0, fallbackWidth - 8);
-        }
-
-        return 100.0;
+        var (left, right) = LaneGeometry.Insets(parameter);
+        return values is [double width, int lanes, ..]
+            ? LaneGeometry.Width(width, lanes, left, right)
+            : LaneGeometry.MinWidth;
     }
 
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    {
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
-    }
 }

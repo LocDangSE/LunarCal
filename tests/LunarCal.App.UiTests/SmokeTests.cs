@@ -61,9 +61,9 @@ public sealed class SmokeTests
 
     private static readonly TimeSpan _uiTimeout = TimeSpan.FromSeconds(5);
 
-    // Month subtitle "Tháng 9 (Đủ) · Năm Bính Ngọ" / "Lunar month 9 (30 days) · Bính Ngọ";
-    // day subtitle "Ngày 7 tháng 9 · ..." / "Lunar 7/9 · ...".
-    private static readonly Regex _lunarSubtitle = new(@"^(Tháng \d+|Ngày \d+ tháng \d+|Lunar (month )?\d+)", RegexOptions.CultureInvariant);
+    // Figma 01/S06/S07 subtitles: "Âm lịch: tháng 8 – 9 năm Bính Ngọ", "Âm lịch: 3 – 9 tháng 9 …", "Âm lịch: 7 tháng 9 …";
+    // English "Lunar: months 8 – 9, …", "Lunar: 3 – 9 of month 9, …", "Lunar: day 7 of month 9, …".
+    private static readonly Regex _lunarSubtitle = new(@"^(Âm lịch: (tháng )?\d+|Lunar: (months? |day )?\d+)", RegexOptions.CultureInvariant);
 
     // Lunar day text in a cell or column header: "7", "1/9", "1/2n" or "1/2L".
     private static readonly Regex _lunarDay = new(@"^\d{1,2}(/\d{1,2}[nL]?)?$", RegexOptions.CultureInvariant);

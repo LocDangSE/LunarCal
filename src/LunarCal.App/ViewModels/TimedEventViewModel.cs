@@ -17,6 +17,15 @@ public sealed partial class TimedEventViewModel : ObservableObject
     /// <summary>Display hex color for the event.</summary>
     public string Color { get; }
 
+    /// <summary>Block background (hex), the subtle tint of the calendar colour (Figma S06).</summary>
+    public string Background => CalendarColors.Palette(Color).Subtle;
+
+    /// <summary>Block text colour (hex), the dark shade of the calendar colour (Figma S06).</summary>
+    public string Foreground => CalendarColors.Palette(Color).Text;
+
+    /// <summary>True for events created by the AI command bar; the block shows the sparkle.</summary>
+    public bool IsAi => CalendarColors.IsAiEvent(Event);
+
     /// <summary>Start time converted to the display timezone offset.</summary>
     public DateTimeOffset Start { get; }
 
@@ -31,6 +40,12 @@ public sealed partial class TimedEventViewModel : ObservableObject
 
     /// <summary>Formatted time range string, e.g. "09:00 – 10:30".</summary>
     public string TimeRangeText { get; }
+
+    /// <summary>Name of the event's calendar, e.g. "Cá nhân · Google".</summary>
+    public string CalendarName { get; init; } = string.Empty;
+
+    /// <summary>Day view meta line (Figma S07 25:93): "14:00 – 15:30 · Cá nhân · Google".</summary>
+    public string DetailText => string.IsNullOrEmpty(CalendarName) ? TimeRangeText : $"{TimeRangeText} · {CalendarName}";
 
     /// <summary>0-based column lane index within an overlapping event cluster.</summary>
     [ObservableProperty]

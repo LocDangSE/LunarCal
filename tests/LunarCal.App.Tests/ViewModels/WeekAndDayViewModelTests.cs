@@ -294,19 +294,17 @@ public sealed class WeekAndDayViewModelTests
         var posConv = new LaneMarginConverter();
         var widthConv = new LaneWidthConverter();
 
-        // Total column width = 144px. 2 overlapping lanes (columnIndex 0 and 1).
-        // availableWidth = 144 - 4 = 140px. laneWidth = 70px.
-        // Event 0: left = 2.0 + 0 * 70 = 2.0. Margin = (2, 0, 0, 0).
-        // Event 1: left = 2.0 + 1 * 70 = 72.0. Margin = (72, 0, 0, 0).
-        // Width = 70 - 4 = 66px.
+        // Figma S06 (24:60): a 157.7 px column holds two overlapping 73.86 px blocks at x = 3 and 78.86
+        // (3 px left inset, 5 px right inset, 2 px between lanes). With a 158 px column: (158 - 8 - 2) / 2 = 74.
+        var margin0 = (Thickness)posConv.Convert(new object[] { 158.0, 0, 2 }, typeof(Thickness), null!, CultureInfo.InvariantCulture);
+        var margin1 = (Thickness)posConv.Convert(new object[] { 158.0, 1, 2 }, typeof(Thickness), null!, CultureInfo.InvariantCulture);
+        var width = (double)widthConv.Convert(new object[] { 158.0, 2 }, typeof(double), null!, CultureInfo.InvariantCulture);
+        var single = (double)widthConv.Convert(new object[] { 158.0, 1 }, typeof(double), null!, CultureInfo.InvariantCulture);
 
-        var margin0 = (Thickness)posConv.Convert(new object[] { 144.0, 0, 2 }, typeof(Thickness), null!, CultureInfo.InvariantCulture);
-        var margin1 = (Thickness)posConv.Convert(new object[] { 144.0, 1, 2 }, typeof(Thickness), null!, CultureInfo.InvariantCulture);
-        var width = (double)widthConv.Convert(new object[] { 144.0, 2 }, typeof(double), null!, CultureInfo.InvariantCulture);
-
-        margin0.Left.Should().Be(2.0);
-        margin1.Left.Should().Be(72.0);
-        width.Should().Be(66.0);
+        margin0.Left.Should().Be(3.0);
+        margin1.Left.Should().Be(79.0);
+        width.Should().Be(74.0);
+        single.Should().Be(150.0);
     }
 
     private sealed class FakeSettingsStore : ISettingsStore

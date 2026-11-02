@@ -9,59 +9,65 @@
              d:DataContext="{d:DesignInstance Type=vm:MiniCalendarViewModel}"
              AutomationProperties.AutomationId="MiniCalendar">
 
+  <!-- Figma 01 mini calendar (1:13): header 14 SemiBold, weekday row 22 px, day rows 28 px with a 26 px circle. -->
   <UserControl.Resources>
-    <!-- Mini Cell Button Style -->
-    <Style x:Key="MiniDayButtonStyle" TargetType="Button">
-      <Setter Property="Width" Value="{DynamicResource MiniCalendarCellSize}" />
-      <Setter Property="Height" Value="{DynamicResource MiniCalendarCellSize}" />
+    <!-- Chevron button with no chrome (Figma icon/l, icon/r: 16 px, #667085) -->
+    <Style x:Key="MiniNavButtonStyle" TargetType="Button">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
       <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Padding" Value="0" />
+      <Setter Property="Focusable" Value="True" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
-            <Border x:Name="cellBorder"
-                    CornerRadius="{DynamicResource CornerRadiusFull}"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}">
-              <TextBlock x:Name="dayText"
-                         Text="{Binding DayNumber}"
-                         FontSize="{DynamicResource FontSizeCaption}"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"
-                         Foreground="{DynamicResource TextPrimaryBrush}" />
+            <Border Background="Transparent">
+              <Path Width="16" Height="16"
+                    Data="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                    Stroke="{DynamicResource TextSecondaryBrush}"
+                    StrokeThickness="1.33333"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                    Stretch="None" />
             </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="MiniDayButtonStyle" TargetType="Button">
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Grid Background="Transparent">
+              <Border x:Name="dayCircle"
+                      Width="26" Height="26"
+                      CornerRadius="{DynamicResource CornerRadiusFull}"
+                      Background="Transparent">
+                <TextBlock x:Name="dayText"
+                           Text="{Binding DayNumber}"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource TextBodyBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+              </Border>
+            </Grid>
             <ControlTemplate.Triggers>
-              <!-- Non-current month days (muted text) -->
               <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
-                <Setter TargetName="dayText" Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+                <Setter TargetName="dayText" Property="Foreground" Value="{DynamicResource TextDisabledBrush}" />
               </DataTrigger>
-
-              <!-- Today: Accent border -->
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="dayCircle" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+              </Trigger>
               <DataTrigger Binding="{Binding IsToday}" Value="True">
-                <Setter TargetName="cellBorder" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
-                <Setter TargetName="cellBorder" Property="BorderThickness" Value="1" />
                 <Setter TargetName="dayText" Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
-                <Setter TargetName="dayText" Property="FontWeight" Value="SemiBold" />
+                <Setter TargetName="dayText" Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
               </DataTrigger>
-
-              <!-- Selected Day: Solid accent background -->
               <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                <Setter TargetName="cellBorder" Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="dayCircle" Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
                 <Setter TargetName="dayText" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
-                <Setter TargetName="dayText" Property="FontWeight" Value="Bold" />
+                <Setter TargetName="dayText" Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
               </DataTrigger>
-
-              <!-- Mouse hover on unselected -->
-              <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                  <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True" />
-                  <Condition Binding="{Binding IsSelected}" Value="False" />
-                </MultiDataTrigger.Conditions>
-                <Setter TargetName="cellBorder" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
-              </MultiDataTrigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
@@ -70,45 +76,34 @@
   </UserControl.Resources>
 
   <StackPanel>
-    <!-- Mini Calendar Header (Month Year + Prev/Next buttons) -->
-    <Grid Margin="0,0,0,8">
+    <!-- Header: "Tháng 10, 2026" + chevrons (gap 8) -->
+    <Grid Margin="0,0,0,6">
       <TextBlock Text="{Binding MonthTitle}"
-                 FontSize="{DynamicResource FontSizeBody}"
+                 FontSize="{DynamicResource FontSizeSubtitle}"
                  FontWeight="{DynamicResource FontWeightSemiBold}"
                  Foreground="{DynamicResource TextPrimaryBrush}"
                  VerticalAlignment="Center"
                  AutomationProperties.AutomationId="MiniMonthTitle" />
 
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-        <Button Content="{DynamicResource IconGlyphChevronLeft}"
-                FontFamily="{DynamicResource FontFamilyIcon}"
-                FontSize="{DynamicResource FontSizeCaption}"
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <Button Style="{StaticResource MiniNavButtonStyle}"
+                Content="{DynamicResource IconChevronLeft16}"
                 Command="{Binding PreviousMonthCommand}"
-                Width="24" Height="24"
-                Background="Transparent"
-                BorderThickness="0"
-                Cursor="Hand"
-                Foreground="{DynamicResource TextSecondaryBrush}"
+                ToolTip="{loc:Loc Key=minical.prev_month}"
                 AutomationProperties.AutomationId="MiniPrevMonth"
                 AutomationProperties.Name="{loc:Loc Key=minical.prev_month}" />
-
-        <Button Content="{DynamicResource IconGlyphChevronRight}"
-                FontFamily="{DynamicResource FontFamilyIcon}"
-                FontSize="{DynamicResource FontSizeCaption}"
+        <Button Style="{StaticResource MiniNavButtonStyle}"
+                Content="{DynamicResource IconChevronRight16}"
                 Command="{Binding NextMonthCommand}"
-                Width="24" Height="24"
-                Background="Transparent"
-                BorderThickness="0"
-                Cursor="Hand"
-                Foreground="{DynamicResource TextSecondaryBrush}"
+                ToolTip="{loc:Loc Key=minical.next_month}"
+                Margin="8,0,0,0"
                 AutomationProperties.AutomationId="MiniNextMonth"
-                AutomationProperties.Name="{loc:Loc Key=minical.next_month}"
-                Margin="4,0,0,0" />
+                AutomationProperties.Name="{loc:Loc Key=minical.next_month}" />
       </StackPanel>
     </Grid>
 
-    <!-- 7 Day Headers (T2, T3, ...) -->
-    <ItemsControl ItemsSource="{Binding DayHeaders}" Margin="0,0,0,4">
+    <!-- Weekday row (T2 … CN): 22 px, 11 Medium, tertiary -->
+    <ItemsControl ItemsSource="{Binding DayHeaders}" Margin="0,0,0,6" Focusable="False">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <UniformGrid Columns="7" />
@@ -116,18 +111,20 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <TextBlock Text="{Binding}"
-                     FontSize="{DynamicResource FontSizeCaption}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     Height="20" />
+          <Grid Height="22">
+            <TextBlock Text="{Binding}"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       FontWeight="{DynamicResource FontWeightMedium}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </Grid>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>
 
-    <!-- 6x7 Grid of Days -->
-    <ItemsControl ItemsSource="{Binding Days}" x:Name="MiniDaysGrid">
+    <!-- 6×7 days; Figma rows are 28 px apart with a 6 px gap -->
+    <ItemsControl ItemsSource="{Binding Days}" x:Name="MiniDaysGrid" Focusable="False">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <UniformGrid Columns="7" />
@@ -136,6 +133,7 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <Button Style="{StaticResource MiniDayButtonStyle}"
+                  Margin="0,0,0,6"
                   Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   CommandParameter="{Binding}"
                   AutomationProperties.Name="{Binding AccessibleName}" />
