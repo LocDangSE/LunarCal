@@ -9,454 +9,270 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:DayDetailViewModel}"
              Width="{DynamicResource DayDetailPanelWidth}"
-             Background="{DynamicResource SurfaceBackgroundBrush}"
              AutomationProperties.AutomationId="DayDetailPanel">
 
+  <!-- Figma S09 "Day detail panel" component (25:2): 360 px, white, left border, padding 20, gap 20.
+       With the lunar calendar off (FR-LUNAR-6) the lunar block and the can chi table are hidden. -->
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <conv:ColorToBrushConverter x:Key="ColorToBrush" />
+
+    <!-- Row of the can chi / tiết khí table (25:17): padding 10/14, label 12 Regular, value 13 SemiBold -->
+    <Style x:Key="TableLabel" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="TableValue" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBodyStrong}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="Margin" Value="12,0,0,0" />
+      <Setter Property="TextAlignment" Value="Right" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="TableRow" TargetType="Border">
+      <Setter Property="Padding" Value="14,10" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+
+    <!-- Buttons (25:44, 25:46): radius 8, padding 9/14, 13 SemiBold -->
+    <Style x:Key="PanelButton" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="{DynamicResource ThicknessPaddingButton}">
+              <ContentPresenter HorizontalAlignment="Center"
+                                TextElement.FontSize="{DynamicResource FontSizeBodyStrong}"
+                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="border" Property="Opacity" Value="0.9" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </UserControl.Resources>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <!-- Row 0: Top Header with Solar Date Title & Close Button -->
-      <RowDefinition Height="Auto" />
-      <!-- Row 1: Scrollable Body (Lunar Block + Events) -->
-      <RowDefinition Height="*" />
-      <!-- Row 2: Bottom Action Buttons -->
-      <RowDefinition Height="Auto" />
-    </Grid.RowDefinitions>
+  <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1,0,0,0">
+    <DockPanel Margin="20" LastChildFill="True">
 
-    <!-- ROW 0: HEADER -->
-    <Border Grid.Row="0"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,0,0,1"
-            Padding="20,16">
-      <Grid>
+      <!-- Header (25:3): weekday 12 Medium, date 18 Bold, close button 32 px -->
+      <Grid DockPanel.Dock="Top" Margin="0,0,0,20">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-
-        <StackPanel Grid.Column="0">
-          <TextBlock Text="{loc:Loc day_detail.title}"
-                     FontSize="{DynamicResource FontSizeCaption}"
+        <StackPanel>
+          <TextBlock Text="{Binding WeekdayName}"
+                     FontSize="{DynamicResource FontSizeBody}"
                      FontWeight="{DynamicResource FontWeightMedium}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,2" />
-          <TextBlock Text="{Binding SolarDateTitle}"
-                     FontSize="{DynamicResource FontSizeSubtitle}"
+                     Foreground="{DynamicResource TextSecondaryBrush}" />
+          <TextBlock Text="{Binding SolarDateShort}"
+                     Margin="0,2,0,0"
+                     FontSize="{DynamicResource FontSizePanelTitle}"
                      FontWeight="{DynamicResource FontWeightBold}"
                      Foreground="{DynamicResource TextPrimaryBrush}"
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
-
-        <!-- Close Button (if applicable) -->
         <Button Grid.Column="1"
                 Command="{Binding CloseCommand}"
-                Width="28" Height="28"
-                Background="Transparent"
-                BorderThickness="0"
                 Cursor="Hand"
-                VerticalAlignment="Center"
+                VerticalAlignment="Top"
+                ToolTip="{loc:Loc Key=day_detail.close}"
+                AutomationProperties.Name="{loc:Loc Key=day_detail.close}"
                 AutomationProperties.AutomationId="BtnCloseDayDetail">
-          <TextBlock Text="{DynamicResource IconGlyphClose}"
-                     FontFamily="{DynamicResource FontFamilyIcon}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center" />
+          <Button.Template>
+            <ControlTemplate TargetType="Button">
+              <Grid Width="32" Height="32">
+                <Border x:Name="border"
+                        Background="{DynamicResource SurfaceBackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{DynamicResource CornerRadiusMedium}" />
+                <Path Width="32" Height="32"
+                      Data="{DynamicResource IconClose32}"
+                      Stroke="{DynamicResource TextSecondaryBrush}"
+                      StrokeThickness="1.5"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                      Stretch="None" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Button.Template>
         </Button>
       </Grid>
-    </Border>
 
-    <!-- ROW 1: SCROLLABLE CONTENT BODY -->
-    <ScrollViewer Grid.Row="1"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  Padding="20,16">
-      <StackPanel>
-
-        <!-- LUNAR DETAILS CARD (Figma S09, FR-UI-3, FR-I18N-5, FR-LUNAR-8) -->
-        <Border Margin="0,0,0,20"
-                CornerRadius="{DynamicResource CornerRadiusLarge}"
-                AutomationProperties.AutomationId="LunarDetailBlock">
-          <Border.Style>
-            <Style TargetType="Border">
-              <Setter Property="Background" Value="{DynamicResource LunarSubtleBrush}" />
-              <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-              <Setter Property="BorderThickness" Value="1" />
-              <Setter Property="Padding" Value="16" />
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsLunarVisible}" Value="False">
-                  <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Border.Style>
-
-          <Grid>
-            <!-- When Lunar is Enabled -->
-            <StackPanel Visibility="{Binding IsLunarVisible, Converter={StaticResource BoolToVis}}">
-              <!-- Top Row: Big Lunar Day + Month & Year -->
-              <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!-- Big Lunar Day Number -->
-                <TextBlock Grid.Column="0"
-                           Text="{Binding LunarDayNumberText}"
-                           FontSize="{DynamicResource FontSizeLunarHero}"
-                           FontWeight="{DynamicResource FontWeightBold}"
-                           Foreground="{DynamicResource LunarStrongBrush}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,14,0"
-                           AutomationProperties.AutomationId="LunarDayNumber" />
-
-                <!-- Lunar Month & Year info -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding LunarMonthText}"
-                               FontSize="{DynamicResource FontSizeSubtitle}"
-                               FontWeight="{DynamicResource FontWeightBold}"
-                               Foreground="{DynamicResource LunarTextPrimaryBrush}" />
-                    <!-- Leap Badge if applicable -->
-                    <Border Background="{DynamicResource LunarStrongBrush}"
-                            CornerRadius="{DynamicResource CornerRadiusSmall}"
-                            Padding="6,2"
-                            Margin="8,0,0,0"
-                            VerticalAlignment="Center"
-                            Visibility="{Binding IsLeapMonth, Converter={StaticResource BoolToVis}}">
-                      <TextBlock Text="{loc:Loc lunar.leap}"
-                                 FontSize="{DynamicResource FontSizeMini}"
-                                 FontWeight="{DynamicResource FontWeightBold}"
-                                 Foreground="{DynamicResource OnAccentBrush}" />
-                    </Border>
-                  </StackPanel>
-
-                  <TextBlock Text="{Binding YearCanChiText}"
-                             FontSize="{DynamicResource FontSizeBody}"
-                             FontWeight="{DynamicResource FontWeightMedium}"
-                             Foreground="{DynamicResource TextSecondaryBrush}"
-                             Margin="0,2,0,0"
-                             AutomationProperties.AutomationId="YearCanChiText" />
-                </StackPanel>
-              </Grid>
-
-              <!-- Subtle Divider -->
-              <Border Height="1"
-                      Background="{DynamicResource BorderBrush}"
-                      Margin="0,0,0,12" />
-
-              <!-- Can Chi Matrix (Day / Month / Year) -->
-              <Grid Margin="0,0,0,12">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="110" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!-- Row 0: Can Chi Ngày -->
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                           Text="{loc:Loc day_detail.can_chi_day}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           Margin="0,0,0,6" />
-                <TextBlock Grid.Row="0" Grid.Column="1"
-                           Text="{Binding DayCanChiText}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           FontWeight="{DynamicResource FontWeightSemiBold}"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
-                           Margin="0,0,0,6"
-                           AutomationProperties.AutomationId="DayCanChiText" />
-
-                <!-- Row 1: Can Chi Tháng -->
-                <TextBlock Grid.Row="1" Grid.Column="0"
-                           Text="{loc:Loc day_detail.can_chi_month}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           Margin="0,0,0,6" />
-                <TextBlock Grid.Row="1" Grid.Column="1"
-                           Text="{Binding MonthCanChiText}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           FontWeight="{DynamicResource FontWeightSemiBold}"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
-                           Margin="0,0,0,6"
-                           AutomationProperties.AutomationId="MonthCanChiText" />
-
-                <!-- Row 2: Can Chi Năm -->
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                           Text="{loc:Loc day_detail.can_chi_year}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           Foreground="{DynamicResource TextSecondaryBrush}" />
-                <TextBlock Grid.Row="2" Grid.Column="1"
-                           Text="{Binding YearCanChiText}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           FontWeight="{DynamicResource FontWeightSemiBold}"
-                           Foreground="{DynamicResource TextPrimaryBrush}" />
-              </Grid>
-
-              <!-- Solar Term (Tiết khí) Row -->
-              <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-                      BorderBrush="{DynamicResource BorderBrush}"
-                      BorderThickness="1"
-                      CornerRadius="{DynamicResource CornerRadiusMedium}"
-                      Padding="10,8">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                  </Grid.ColumnDefinitions>
-
-                  <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{loc:Loc day_detail.solar_term}"
-                               FontSize="{DynamicResource FontSizeMini}"
-                               FontWeight="{DynamicResource FontWeightMedium}"
-                               Foreground="{DynamicResource TextTertiaryBrush}" />
-                    <TextBlock Text="{Binding SolarTermText}"
-                               FontSize="{DynamicResource FontSizeBodyStrong}"
-                               FontWeight="{DynamicResource FontWeightSemiBold}"
-                               Foreground="{DynamicResource LunarTextPrimaryBrush}"
-                               Margin="0,2,0,0"
-                               AutomationProperties.AutomationId="SolarTermText" />
-                  </StackPanel>
-
-                  <!-- Term Starts Today badge or Term degrees -->
-                  <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{DynamicResource AccentSubtleBrush}"
-                            CornerRadius="{DynamicResource CornerRadiusSmall}"
-                            Padding="6,2"
-                            Margin="0,0,6,0"
-                            Visibility="{Binding IsSolarTermStartDay, Converter={StaticResource BoolToVis}}">
-                      <TextBlock Text="{loc:Loc day_detail.solar_term_start}"
-                                 FontSize="{DynamicResource FontSizeMini}"
-                                 FontWeight="{DynamicResource FontWeightSemiBold}"
-                                 Foreground="{DynamicResource AccentTextBrush}" />
-                    </Border>
-
-                    <TextBlock Text="{Binding SolarTermDegreesText}"
-                               FontSize="{DynamicResource FontSizeCaption}"
-                               FontWeight="{DynamicResource FontWeightMedium}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               VerticalAlignment="Center" />
-                  </StackPanel>
-                </Grid>
-              </Border>
-            </StackPanel>
-
-            <!-- When Lunar is Disabled (FR-LUNAR-6) -->
-            <StackPanel>
-              <StackPanel.Style>
-                <Style TargetType="StackPanel">
-                  <Setter Property="Visibility" Value="Collapsed" />
-                  <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsLunarVisible}" Value="False">
-                      <Setter Property="Visibility" Value="Visible" />
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </StackPanel.Style>
-              <TextBlock Text="{DynamicResource IconGlyphMoon}"
-                         FontFamily="{DynamicResource FontFamilyIcon}"
-                         Foreground="{DynamicResource TextTertiaryBrush}"
-                         FontSize="{DynamicResource IconSizeLarge}"
-                         HorizontalAlignment="Center"
-                         Margin="0,0,0,6" />
-              <TextBlock Text="{loc:Loc day_detail.lunar_disabled}"
-                         FontSize="{DynamicResource FontSizeCaption}"
-                         Foreground="{DynamicResource TextTertiaryBrush}"
-                         HorizontalAlignment="Center"
-                         TextAlignment="Center" />
-            </StackPanel>
-          </Grid>
-        </Border>
-
-        <!-- EVENTS IN DAY SECTION (FR-UI-3) -->
-        <Grid Margin="0,0,0,10">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-
-          <TextBlock Grid.Column="0"
-                     Text="{loc:Loc day_detail.events_title}"
-                     FontSize="{DynamicResource FontSizeSubtitle}"
-                     FontWeight="{DynamicResource FontWeightBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     VerticalAlignment="Center" />
-
-          <!-- Event Count Badge -->
-          <Border Grid.Column="1"
-                  Background="{DynamicResource ControlTrackBrush}"
-                  CornerRadius="{DynamicResource CornerRadiusPill}"
-                  Padding="8,2"
-                  VerticalAlignment="Center">
-            <TextBlock Text="{Binding Events.Count}"
-                       FontSize="{DynamicResource FontSizeCaption}"
-                       FontWeight="{DynamicResource FontWeightSemiBold}"
-                       Foreground="{DynamicResource TextSecondaryBrush}" />
-          </Border>
-        </Grid>
-
-        <!-- Empty State Message when no events -->
-        <Border Padding="16,24"
-                Background="{DynamicResource SurfaceMutedBrush}"
-                CornerRadius="{DynamicResource CornerRadiusMedium}"
-                Margin="0,0,0,12"
-                AutomationProperties.AutomationId="DayEventsEmptyState">
-          <Border.Style>
-            <Style TargetType="Border">
-              <Setter Property="Visibility" Value="Collapsed" />
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding HasEvents}" Value="False">
-                  <Setter Property="Visibility" Value="Visible" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Border.Style>
-          <StackPanel HorizontalAlignment="Center">
-            <TextBlock Text="{DynamicResource IconGlyphCalendar}"
-                       FontFamily="{DynamicResource FontFamilyIcon}"
-                       Foreground="{DynamicResource TextTertiaryBrush}"
-                       FontSize="{DynamicResource IconSizeXLarge}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,8" />
-            <TextBlock Text="{loc:Loc day_detail.no_events}"
-                       FontSize="{DynamicResource FontSizeCaption}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
-        </Border>
-
-        <!-- Event List -->
-        <ItemsControl ItemsSource="{Binding Events}"
-                      AutomationProperties.AutomationId="DayEventsList">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type vm:AgendaEventItemViewModel}">
-              <Border Background="{DynamicResource SurfaceElevatedBackgroundBrush}"
-                      BorderBrush="{DynamicResource BorderBrush}"
-                      BorderThickness="1"
-                      CornerRadius="{DynamicResource CornerRadiusMedium}"
-                      Padding="12,10"
-                      Margin="0,0,0,8">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <!-- Left Color Stripe -->
-                    <ColumnDefinition Width="4" />
-                    <!-- Details (Time, Title, Location) -->
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-
-                  <!-- Calendar Color Stripe -->
-                  <Border Grid.Column="0"
-                          Background="{Binding CalendarColor, Converter={StaticResource ColorToBrush}}"
-                          CornerRadius="{DynamicResource CornerRadiusStripe}"
-                          Margin="0,0,10,0" />
-
-                  <StackPanel Grid.Column="1">
-                    <!-- Top line: Time & Calendar Name Badge -->
-                    <Grid Margin="0,0,0,2">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                      </Grid.ColumnDefinitions>
-                      <TextBlock Grid.Column="0"
-                                 Text="{Binding TimeDisplay}"
-                                 FontSize="{DynamicResource FontSizeCaption}"
-                                 FontWeight="{DynamicResource FontWeightSemiBold}"
-                                 Foreground="{DynamicResource TextSecondaryBrush}" />
-                      <TextBlock Grid.Column="1"
-                                 Text="{Binding CalendarName}"
-                                 FontSize="{DynamicResource FontSizeMini}"
-                                 Foreground="{DynamicResource TextTertiaryBrush}" />
-                    </Grid>
-
-                    <!-- Title -->
-                    <TextBlock Text="{Binding Title}"
-                               FontSize="{DynamicResource FontSizeBodyStrong}"
-                               FontWeight="{DynamicResource FontWeightSemiBold}"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               TextTrimming="CharacterEllipsis" />
-
-                    <!-- Location -->
-                    <TextBlock Text="{Binding Location, StringFormat='📍 {0}'}"
-                               FontSize="{DynamicResource FontSizeMini}"
-                               Foreground="{DynamicResource TextTertiaryBrush}"
-                               Margin="0,2,0,0"
-                               Visibility="{Binding HasLocation, Converter={StaticResource BoolToVis}}"
-                               TextTrimming="CharacterEllipsis" />
-                  </StackPanel>
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-      </StackPanel>
-    </ScrollViewer>
-
-    <!-- ROW 2: BOTTOM ACTION BUTTONS (Figma S09) -->
-    <Border Grid.Row="2"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,1,0,0"
-            Padding="20,14"
-            Background="{DynamicResource SurfaceBackgroundBrush}">
-      <StackPanel Orientation="Vertical">
-        <!-- Add Event Button -->
-        <Button Command="{Binding AddEventCommand}"
+      <!-- Actions (25:43), docked at the bottom, gap 8 -->
+      <StackPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
+        <Button Content="{loc:Loc Key=day_detail.add_event}"
+                Command="{Binding AddEventCommand}"
+                Style="{StaticResource PanelButton}"
                 Background="{DynamicResource AccentPrimaryBrush}"
-                Foreground="{DynamicResource OnAccentBrush}"
-                FontWeight="{DynamicResource FontWeightSemiBold}"
-                FontSize="{DynamicResource FontSizeBody}"
-                Padding="0,8"
                 BorderThickness="0"
-                Cursor="Hand"
-                Margin="0,0,0,8"
-                AutomationProperties.AutomationId="BtnAddEvent">
-          <Button.Template>
-            <ControlTemplate TargetType="Button">
-              <Border Background="{TemplateBinding Background}"
-                      CornerRadius="{DynamicResource CornerRadiusMedium}"
-                      Padding="{TemplateBinding Padding}">
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Button.Template>
-          <TextBlock Text="{loc:Loc day_detail.add_event}" />
-        </Button>
-
-        <!-- Add Lunar Rule Button -->
-        <Button Command="{Binding AddLunarRuleCommand}"
-                Background="{DynamicResource SurfaceBackgroundBrush}"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="1"
-                Foreground="{DynamicResource TextPrimaryBrush}"
-                FontWeight="{DynamicResource FontWeightMedium}"
-                FontSize="{DynamicResource FontSizeCaption}"
-                Padding="0,6"
-                Cursor="Hand"
-                AutomationProperties.AutomationId="BtnAddLunarRule">
-          <Button.Template>
-            <ControlTemplate TargetType="Button">
-              <Border Background="{TemplateBinding Background}"
-                      BorderBrush="{TemplateBinding BorderBrush}"
-                      BorderThickness="{TemplateBinding BorderThickness}"
-                      CornerRadius="{DynamicResource CornerRadiusMedium}"
-                      Padding="{TemplateBinding Padding}">
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-            </ControlTemplate>
-          </Button.Template>
-          <TextBlock Text="{loc:Loc day_detail.add_lunar_rule}" />
-        </Button>
+                Foreground="{DynamicResource OnAccentBrush}"
+                AutomationProperties.AutomationId="BtnAddEvent" />
+        <Button Content="{loc:Loc Key=day_detail.add_lunar_rule}"
+                Command="{Binding AddLunarRuleCommand}"
+                Style="{StaticResource PanelButton}"
+                Margin="0,8,0,0"
+                Visibility="{Binding IsLunarVisible, Converter={StaticResource BoolToVis}}"
+                AutomationProperties.AutomationId="BtnAddLunarRule" />
       </StackPanel>
-    </Border>
 
-  </Grid>
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+          <!-- Lunar block (25:10): #FFF4E5, radius 12, padding 14/16, gap 14 -->
+          <Border Background="{DynamicResource LunarSubtleBrush}"
+                  CornerRadius="{DynamicResource CornerRadiusLarge}"
+                  Padding="16,14"
+                  Margin="0,0,0,20"
+                  Visibility="{Binding HasLunarDate, Converter={StaticResource BoolToVis}}"
+                  AutomationProperties.AutomationId="LunarDetailBlock">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding LunarDayNumberText}"
+                         FontSize="{DynamicResource FontSizeLunarBlock}"
+                         FontWeight="{DynamicResource FontWeightBold}"
+                         Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                         VerticalAlignment="Center"
+                         AutomationProperties.AutomationId="LunarDayNumber" />
+              <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc Key=lunar.label}"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource LunarTextPrimaryBrush}" />
+                <TextBlock Text="{Binding LunarFullText}"
+                           Margin="0,2,0,0"
+                           FontSize="{DynamicResource FontSizeBodyStrong}"
+                           FontWeight="{DynamicResource FontWeightMedium}"
+                           Foreground="{DynamicResource LunarStrongBrush}"
+                           TextWrapping="Wrap" />
+                <TextBlock Text="{Binding LunarMonthInfoText}"
+                           Margin="0,2,0,0"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Can chi & tiết khí table (25:16): white, border, radius 12 -->
+          <Border BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusLarge}"
+                  Margin="0,0,0,20"
+                  Visibility="{Binding HasLunarDate, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+              <Border Style="{StaticResource TableRow}">
+                <DockPanel>
+                  <TextBlock Text="{loc:Loc Key=day_detail.can_chi_day}" Style="{StaticResource TableLabel}" DockPanel.Dock="Left" />
+                  <TextBlock Text="{Binding DayCanChiText}" Style="{StaticResource TableValue}"
+                             AutomationProperties.AutomationId="DayCanChiText" />
+                </DockPanel>
+              </Border>
+              <Border Style="{StaticResource TableRow}">
+                <DockPanel>
+                  <TextBlock Text="{loc:Loc Key=day_detail.can_chi_month}" Style="{StaticResource TableLabel}" DockPanel.Dock="Left" />
+                  <TextBlock Text="{Binding MonthCanChiText}" Style="{StaticResource TableValue}"
+                             AutomationProperties.AutomationId="MonthCanChiText" />
+                </DockPanel>
+              </Border>
+              <Border Style="{StaticResource TableRow}">
+                <DockPanel>
+                  <TextBlock Text="{loc:Loc Key=day_detail.can_chi_year}" Style="{StaticResource TableLabel}" DockPanel.Dock="Left" />
+                  <TextBlock Text="{Binding YearCanChiText}" Style="{StaticResource TableValue}"
+                             AutomationProperties.AutomationId="YearCanChiText" />
+                </DockPanel>
+              </Border>
+              <Border Style="{StaticResource TableRow}" BorderThickness="0">
+                <DockPanel>
+                  <TextBlock Text="{loc:Loc Key=day_detail.solar_term}" Style="{StaticResource TableLabel}" DockPanel.Dock="Left" />
+                  <TextBlock Text="{Binding SolarTermRowText}" Style="{StaticResource TableValue}"
+                             AutomationProperties.AutomationId="SolarTermText" />
+                </DockPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <!-- Events (25:29): header 11 SemiBold tertiary, items gap 8 -->
+          <TextBlock Text="{Binding EventsHeaderText}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
+                     Margin="0,0,0,8" />
+
+          <TextBlock Text="{loc:Loc Key=day_detail.no_events}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
+                     AutomationProperties.AutomationId="DayEventsEmptyState">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding HasEvents}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+
+          <ItemsControl ItemsSource="{Binding Events}" Focusable="False" AutomationProperties.AutomationId="DayEventsList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type vm:AgendaEventItemViewModel}">
+                <!-- Event item (25:32): #F9FAFB, radius 10, padding 10/12, 3×34 stripe, gap 10 -->
+                <Border Background="{DynamicResource SurfaceMutedBrush}"
+                        CornerRadius="{DynamicResource CornerRadiusListItem}"
+                        Padding="12,10"
+                        Margin="0,0,0,8">
+                  <DockPanel>
+                    <Border DockPanel.Dock="Left"
+                            Width="3" Height="34"
+                            Margin="0,0,10,0"
+                            CornerRadius="{DynamicResource CornerRadiusStripe}"
+                            Background="{Binding CalendarColor, Converter={StaticResource ColorToBrush}}"
+                            VerticalAlignment="Top" />
+                    <StackPanel>
+                      <TextBlock Text="{Binding Title}"
+                                 FontSize="{DynamicResource FontSizeBodyStrong}"
+                                 FontWeight="{DynamicResource FontWeightSemiBold}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding MetaText}"
+                                 Margin="0,2,0,0"
+                                 FontSize="{DynamicResource FontSizeCaption}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
 </UserControl>

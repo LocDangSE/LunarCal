@@ -51,6 +51,14 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
     public ObservableCollection<string> HourLabels { get; } = new();
 
     /// <summary>
+    /// Vertical offset the time grid opens at: 07:00, as in Figma S06/S07 (the grid still covers 00:00–24:00).
+    /// </summary>
+    public double InitialScrollOffset { get; } = DayColumnViewModel.HourRowHeight * DayColumnViewModel.FirstVisibleHour;
+
+    /// <summary>Time zone label in the hour gutter (Figma S06 24:5): "GMT+7".</summary>
+    public string TimeZoneLabel => CalendarText.GmtOffset(_localizationService, _preferences.TimeZone, DateTimeOffset.UtcNow);
+
+    /// <summary>
     /// Initializes a new instance of <see cref="WeekViewModel"/>.
     /// </summary>
     public WeekViewModel(
@@ -160,7 +168,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
             var dayName = culture.DateTimeFormat.GetAbbreviatedDayName(colDate.DayOfWeek);
             var isToday = colDate == today;
 
-            var colVm = new DayColumnViewModel(colDate, lunar, dayName, isToday, IsLunarVisible, leapMarker);
+            var colVm = new DayColumnViewModel(colDate, lunar, dayName, isToday, IsLunarVisible, leapMarker, _localizationService);
             columns.Add(colVm);
         }
 
@@ -168,13 +176,16 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(WeekStartDate, WeekEndDate.AddDays(1), timeZone);
 
         IReadOnlyList<CalendarEvent> events;
+        IReadOnlyDictionary<string, CalendarInfo> colors;
         try
         {
             events = await _eventStore.GetEventsAsync(startUtc, endUtc, cancellationToken: cancellationToken);
+            colors = await CalendarColors.LoadAsync(_eventStore, cancellationToken);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             events = Array.Empty<CalendarEvent>();
+            colors = new Dictionary<string, CalendarInfo>();
         }
 
         if (version != _loadVersion)
@@ -185,7 +196,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
         // Distribute events to columns
         foreach (var col in columns)
         {
-            col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture);
+            col.PopulateEvents(events, timeZone, _preferences.TimeFormat, culture, colors);
         }
 
         DayColumns.Clear();

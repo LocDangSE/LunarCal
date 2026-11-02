@@ -37,6 +37,9 @@ public sealed partial class MonthDayViewModel : ObservableObject
     /// <summary>True if this is the first day of a lunar month (mùng 1 âm).</summary>
     public bool IsFirstLunarDay => LunarDay == 1;
 
+    /// <summary>True for mùng 1 and rằm (15th): Figma 01 shows these lunar days in SemiBold.</summary>
+    public bool IsLunarHighlight => LunarDay is 1 or 15;
+
     [ObservableProperty]
     private string _lunarDayText = string.Empty;
 
@@ -123,6 +126,7 @@ public sealed partial class MonthDayViewModel : ObservableObject
         OnPropertyChanged(nameof(LunarMonth));
         OnPropertyChanged(nameof(IsLeapMonth));
         OnPropertyChanged(nameof(IsFirstLunarDay));
+        OnPropertyChanged(nameof(IsLunarHighlight));
         UpdateLunarDayText();
     }
 
@@ -138,15 +142,29 @@ public sealed partial class MonthDayViewModel : ObservableObject
     /// <summary>
     /// Updates the events assigned to this day and computes visible chips.
     /// </summary>
-    public void SetEvents(IReadOnlyList<CalendarEvent> events, string moreEventsFormat)
+    /// <param name="events">Events of the day, all-day first then by start time.</param>
+    /// <param name="moreEventsFormat">Format of the "+N more" counter.</param>
+    /// <param name="labelOf">Chip text, e.g. "09:00 Họp nhóm đồ án" (Figma 01); defaults to the title.</param>
+    /// <param name="colorOf">Calendar colour (hex) of an event; defaults to the accent colour.</param>
+    public void SetEvents(
+        IReadOnlyList<CalendarEvent> events,
+        string moreEventsFormat,
+        Func<CalendarEvent, string>? labelOf = null,
+        Func<CalendarEvent, string?>? colorOf = null)
     {
         Events = events ?? Array.Empty<CalendarEvent>();
         VisibleEvents = Events.Take(MaxVisibleChips).ToList();
         for (var i = 0; i < Chips.Count; i++)
         {
-            var visible = i < VisibleEvents.Count;
-            Chips[i].Title = visible ? VisibleEvents[i].Title : string.Empty;
-            Chips[i].IsVisible = visible;
+            if (i < VisibleEvents.Count)
+            {
+                var ev = VisibleEvents[i];
+                Chips[i].Show(ev, labelOf?.Invoke(ev) ?? ev.Title, colorOf?.Invoke(ev));
+            }
+            else
+            {
+                Chips[i].Hide();
+            }
         }
 
         MoreEventsCount = Math.Max(0, Events.Count - MaxVisibleChips);

@@ -196,13 +196,16 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
         // Query events for the whole 6-week window, bounded by local midnights in the display time zone.
         var (startUtc, endUtc) = CalendarTime.GetUtcRange(startGridDate, endGridDate, timeZone);
         IReadOnlyList<CalendarEvent> events;
+        IReadOnlyList<CalendarInfo>? calendars;
         try
         {
             events = await _eventStore.GetEventsAsync(startUtc, endUtc);
+            calendars = await _eventStore.GetCalendarsAsync();
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             events = Array.Empty<CalendarEvent>();
+            calendars = null;
         }
 
         if (version != _loadVersion)
@@ -234,6 +237,17 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
         var moreEventsFormat = _localizationService.GetString("month.more_events", _localizationService.CurrentCulture);
 
+        // Figma 01 chips: timed events start with the start time ("09:00 Họp nhóm"), colours follow the calendar.
+        var colors = (calendars ?? Array.Empty<CalendarInfo>())
+            .Where(c => c is not null)
+            .ToDictionary(c => c.Id, c => c.Color, StringComparer.Ordinal);
+        var timeFormat = _preferences.TimeFormat;
+        var culture = _localizationService.CurrentCulture;
+        string LabelOf(CalendarEvent ev) => ev.AllDay
+            ? ev.Title
+            : string.Create(culture, $"{TimeFormattingHelper.FormatTime(CalendarTime.ToLocal(ev.StartUtc, timeZone), timeFormat, culture)} {ev.Title}");
+        string? ColorOf(CalendarEvent ev) => colors.TryGetValue(ev.CalendarId, out var c) ? c : null;
+
         // Reuse the existing 42 cells when possible: WPF then only refreshes bindings instead of regenerating
         // every cell container, which dominates the month switch cost (NFR-PERF).
         var reuse = Days.Count == 42;
@@ -263,7 +277,9 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
             cell.SetEvents(
                 eventsByDate.TryGetValue(cellDate, out var dayEvents) ? dayEvents : Array.Empty<CalendarEvent>(),
-                moreEventsFormat);
+                moreEventsFormat,
+                LabelOf,
+                ColorOf);
         }
 
         MonthTitle = monthTitle;

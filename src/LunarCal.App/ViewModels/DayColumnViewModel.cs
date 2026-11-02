@@ -15,9 +15,13 @@ public sealed partial class DayColumnViewModel : ObservableObject
     /// <summary>Height of each 1-hour row in pixels (from design tokens).</summary>
     public const double HourRowHeight = 48.0;
 
+    /// <summary>Hour shown at the top of the time grid when a view opens (Figma S06/S07 start at 07:00).</summary>
+    public const int FirstVisibleHour = 7;
+
     /// <summary>Minimum height of a timed event chip in pixels.</summary>
     public const double MinEventHeight = 24.0;
 
+    private readonly ILocalizationService _localization;
     private readonly string _leapMarker;
     private readonly string _lunarLabelFormat;
 
@@ -69,8 +73,21 @@ public sealed partial class DayColumnViewModel : ObservableObject
     [ObservableProperty]
     private double _nowIndicatorTop = -1;
 
-    /// <summary>Events spanning the whole day (displayed in the top all-day row).</summary>
-    public ObservableCollection<CalendarEvent> AllDayEvents { get; } = new();
+    /// <summary>Events spanning the whole day, as chips for the all-day row (Figma S06 24:48).</summary>
+    public ObservableCollection<EventChipViewModel> AllDayEvents { get; } = new();
+
+    /// <summary>Two-letter weekday for the week column header (Figma S06: "T6").</summary>
+    public string ShortDayName { get; }
+
+    /// <summary>Day view column header (Figma S07): "Thứ Sáu · Hôm nay" for today, else "Thứ Sáu".</summary>
+    public string DayHeaderText { get; }
+
+    /// <summary>Day view lunar line (Figma S07): "Mùng 7 tháng 9 · Quý Hợi".</summary>
+    [ObservableProperty]
+    private string _lunarHeaderText = string.Empty;
+
+    /// <summary>True for mùng 1 and rằm, which Figma sets in SemiBold.</summary>
+    public bool IsLunarHighlight => LunarDay is 1 or 15;
 
     /// <summary>Timed events positioned on the 24-hour vertical grid.</summary>
     public ObservableCollection<TimedEventViewModel> TimedEvents { get; } = new();
@@ -84,10 +101,14 @@ public sealed partial class DayColumnViewModel : ObservableObject
         string dayOfWeekName,
         bool isToday,
         bool isLunarVisible,
-        string? leapMarker = null)
+        string? leapMarker = null,
+        ILocalizationService? localizationService = null)
     {
-        _leapMarker = leapMarker ?? CalendarText.LeapMarker(LocalizationService.Instance);
-        _lunarLabelFormat = LocalizationService.Instance["lunar.day_label"];
+        _localization = localizationService ?? LocalizationService.Instance;
+        _leapMarker = leapMarker ?? CalendarText.LeapMarker(_localization);
+        _lunarLabelFormat = _localization["lunar.day_label"];
+        ShortDayName = CalendarText.WeekdayMin(_localization, date.DayOfWeek);
+        DayHeaderText = isToday ? _localization.Format("day.header_today", dayOfWeekName) : dayOfWeekName;
         Date = date;
         LunarDate = lunarDate;
         DayOfWeekName = dayOfWeekName;
@@ -117,11 +138,16 @@ public sealed partial class DayColumnViewModel : ObservableObject
         {
             LunarDayText = string.Empty;
             LunarLabelText = string.Empty;
+            LunarHeaderText = string.Empty;
             return;
         }
 
         LunarDayText = CalendarText.LunarCell(LunarDate, _leapMarker);
         LunarLabelText = string.Format(CultureInfo.CurrentCulture, _lunarLabelFormat, LunarDayText);
+        LunarHeaderText = _localization.Format(
+            "format.dot_pair",
+            CalendarText.LunarDayMonth(_localization, LunarDate.Value),
+            LunarCalendar.GetDayCanChi(Date));
     }
 
     /// <summary>
@@ -164,7 +190,7 @@ public sealed partial class DayColumnViewModel : ObservableObject
         TimeZoneInfo timeZone,
         string? timeFormat = null,
         CultureInfo? culture = null,
-        IReadOnlyDictionary<string, string>? calendarColors = null)
+        IReadOnlyDictionary<string, CalendarInfo>? calendars = null)
     {
         ArgumentNullException.ThrowIfNull(events);
         ArgumentNullException.ThrowIfNull(timeZone);
@@ -185,9 +211,11 @@ public sealed partial class DayColumnViewModel : ObservableObject
                 continue;
             }
 
+            var calendar = calendars != null && calendars.TryGetValue(ev.CalendarId, out var c) ? c : null;
+            var color = calendar?.Color;
             if (ev.AllDay)
             {
-                AllDayEvents.Add(ev);
+                AllDayEvents.Add(EventChipViewModel.For(ev, ev.Title, color));
                 continue;
             }
 
@@ -221,11 +249,10 @@ public sealed partial class DayColumnViewModel : ObservableObject
                 CalendarTime.ToLocal(ev.EndUtc, timeZone),
                 timeFormat,
                 culture);
-            var color = (calendarColors != null && calendarColors.TryGetValue(ev.CalendarId, out var c))
-                ? c
-                : CalendarColors.DefaultHex;
-
-            timedList.Add(new TimedEventViewModel(ev, evStart, evEnd, top, height, color, timeText));
+            timedList.Add(new TimedEventViewModel(ev, evStart, evEnd, top, height, color ?? CalendarColors.DefaultHex, timeText)
+            {
+                CalendarName = calendar?.Summary ?? string.Empty,
+            });
         }
 
         AssignLanes(timedList);

@@ -88,6 +88,26 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _hasEvents;
 
+    /// <summary>Weekday above the panel title (Figma S09 25:5): "Thứ Sáu".</summary>
+    [ObservableProperty]
+    private string _weekdayName = string.Empty;
+
+    /// <summary>Lunar block line 2 (25:14): "Mùng 7 tháng 9 năm Bính Ngọ".</summary>
+    [ObservableProperty]
+    private string _lunarFullText = string.Empty;
+
+    /// <summary>Lunar block line 3 (25:15): "Tháng 9 đủ (30 ngày) · không nhuận".</summary>
+    [ObservableProperty]
+    private string _lunarMonthInfoText = string.Empty;
+
+    /// <summary>Solar term row value (25:28): "Hàn lộ · từ 08/10".</summary>
+    [ObservableProperty]
+    private string _solarTermRowText = string.Empty;
+
+    /// <summary>Events header (25:31): "SỰ KIỆN (2)".</summary>
+    [ObservableProperty]
+    private string _eventsHeaderText = string.Empty;
+
     /// <summary>List of events occurring on this date, all-day first then ordered by start time.</summary>
     public ObservableCollection<AgendaEventItemViewModel> Events { get; } = new();
 
@@ -155,6 +175,8 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     {
         IsToday = date == CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
 
+        WeekdayName = _localizationService.CurrentCulture.DateTimeFormat.GetDayName(date.DayOfWeek);
+        WeekdayName = WeekdayName.Length > 0 ? char.ToUpper(WeekdayName[0], _localizationService.CurrentCulture) + WeekdayName[1..] : WeekdayName;
         SolarDateTitle = CalendarText.DayFull(_localizationService, date);
         SolarDateShort = CalendarText.DayShort(_localizationService, date);
 
@@ -176,6 +198,9 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
             SolarTermText = string.Empty;
             IsSolarTermStartDay = false;
             SolarTermDegreesText = string.Empty;
+            LunarFullText = string.Empty;
+            LunarMonthInfoText = string.Empty;
+            SolarTermRowText = string.Empty;
             return;
         }
 
@@ -210,6 +235,21 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
         SolarTermText = LunarFormattingHelper.FormatSolarTerm(tietKhi, _localizationService, isEnglish);
         IsSolarTermStartDay = tietKhi.IsStartDay;
         SolarTermDegreesText = $"{tietKhi.LongitudeDegrees}°";
+
+        // Figma S09 lunar block and table (FR-UI-3)
+        LunarFullText = _localizationService.Format(
+            "lunar.full_date", CalendarText.LunarDayMonth(_localizationService, lunar), yearCanChi);
+        var daysInMonth = LunarCalendar.GetDaysInMonth(lunar.Year, lunar.Month, lunar.IsLeapMonth);
+        LunarMonthInfoText = _localizationService.Format(
+            "lunar.month_info",
+            CalendarText.MonthLabel(_localizationService, lunar),
+            _localizationService[daysInMonth == 30 ? "lunar.month_full_long" : "lunar.month_short_long"],
+            _localizationService[lunar.IsLeapMonth ? "lunar.is_leap" : "lunar.not_leap"]);
+        var termName = isEnglish
+            ? LunarFormattingHelper.FormatSolarTerm(tietKhi, _localizationService, isEnglish)
+            : tietKhi.VietnameseName;
+        SolarTermRowText = _localizationService.Format(
+            "day_detail.solar_term_since", termName, SolarTermStart(Date).ToDateTime(TimeOnly.MinValue));
     }
 
     private async Task LoadEventsAsync(DateOnly date, CancellationToken cancellationToken)
@@ -267,6 +307,24 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
         }
 
         HasEvents = Events.Count > 0;
+        EventsHeaderText = _localizationService.Format("day_detail.events_count", Events.Count);
+    }
+
+    /// <summary>First day of the solar term that <paramref name="date"/> belongs to (a term lasts about 15 days).</summary>
+    public static DateOnly SolarTermStart(DateOnly date)
+    {
+        var day = date;
+        for (var i = 0; i < 20 && day > LunarCalendar.MinSolarDate; i++)
+        {
+            if (LunarCalendar.GetTietKhi(day).IsStartDay)
+            {
+                return day;
+            }
+
+            day = day.AddDays(-1);
+        }
+
+        return date;
     }
 
     [RelayCommand]
