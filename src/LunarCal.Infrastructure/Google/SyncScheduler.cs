@@ -8,7 +8,7 @@ namespace LunarCal.Infrastructure.Google;
 
 /// <summary>
 /// Hosted background service that periodically synchronizes Google Calendar events
-/// according to window state (2m active, 10m tray/background) and handles immediate triggers (FR-SYNC-3).
+/// according to window state (2m active, 10m tray/background) and handles immediate triggers (FR-SYNC-3, FR-SYNC-4).
 /// </summary>
 public sealed class SyncScheduler : BackgroundService, ISyncScheduler
 {
@@ -18,6 +18,7 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     private readonly IClock _clock;
     private readonly ILogger _logger;
     private readonly Func<CancellationToken, Task<List<string>>>? _accountIdProvider;
+    private IMutationService? _mutationService;
 
     private readonly SemaphoreSlim _syncLock = new(1, 1);
     private readonly object _stateLock = new();
@@ -28,6 +29,15 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     private CancellationTokenSource? _wakeCts;
 
     /// <summary>
+    /// Optional mutation service to flush pending mutations before each sync pass (FR-SYNC-4).
+    /// </summary>
+    public IMutationService? MutationService
+    {
+        get => _mutationService;
+        set => _mutationService = value;
+    }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="SyncScheduler"/>.
     /// </summary>
     public SyncScheduler(
@@ -36,7 +46,8 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
         SyncOptions? syncOptions = null,
         IClock? clock = null,
         ILogger? logger = null,
-        Func<CancellationToken, Task<List<string>>>? accountIdProvider = null)
+        Func<CancellationToken, Task<List<string>>>? accountIdProvider = null,
+        IMutationService? mutationService = null)
     {
         _syncEngine = syncEngine ?? throw new ArgumentNullException(nameof(syncEngine));
         _connectionFactory = connectionFactory;
@@ -44,6 +55,7 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
         _clock = clock ?? new SystemClock();
         _logger = logger ?? Log.ForContext<SyncScheduler>();
         _accountIdProvider = accountIdProvider;
+        _mutationService = mutationService;
     }
 
     /// <inheritdoc />
@@ -61,6 +73,17 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     /// <inheritdoc />
     public bool IsSyncInProgress => _isSyncInProgress;
 
+    /// <summary>
+    /// Gets the current polling interval based on the active state.
+    /// </summary>
+    public TimeSpan GetCurrentInterval()
+    {
+        var minutes = CurrentState == SyncScheduleState.Active
+            ? _syncOptions.PollingActiveMinutes
+            : _syncOptions.PollingTrayMinutes;
+        return TimeSpan.FromMinutes(Math.Max(1, minutes));
+    }
+
     /// <inheritdoc />
     public DateTimeOffset? LastSyncTime => _lastSyncTime;
 
@@ -73,22 +96,18 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     /// <inheritdoc />
     public void SetState(SyncScheduleState state)
     {
-        bool changed = false;
         lock (_stateLock)
         {
-            if (_currentState != state)
+            if (_currentState == state)
             {
-                _currentState = state;
-                changed = true;
+                return;
             }
-        }
 
-        if (changed)
-        {
-            _logger.Information("SyncScheduler state changed to {State}", state);
+            _logger.Information("SyncScheduler state changed from {OldState} to {NewState} (FR-SYNC-3)", _currentState, state);
+            _currentState = state;
             StateChanged?.Invoke(this, state);
 
-            // If switching to Active mode, wake the scheduler early so user doesn't wait up to 10m
+            // If transitioning to Active, wake immediately to catch up
             if (state == SyncScheduleState.Active)
             {
                 WakeScheduler();
@@ -97,93 +116,27 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     }
 
     /// <inheritdoc />
-    public Task TriggerFocusSyncAsync(CancellationToken cancellationToken = default)
+    public async Task TriggerFocusSyncAsync(CancellationToken cancellationToken = default)
     {
-        _logger.Debug("Sync triggered by window focus.");
-        return RunImmediateSyncAsync("Focus", cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task TriggerPostMutationSyncAsync(CancellationToken cancellationToken = default)
-    {
-        _logger.Debug("Sync triggered after write mutation.");
-        return RunImmediateSyncAsync("PostMutation", cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task TriggerManualSyncAsync(CancellationToken cancellationToken = default)
-    {
-        _logger.Information("Manual sync triggered by user.");
-        return RunImmediateSyncAsync("Manual", cancellationToken);
-    }
-
-    /// <summary>
-    /// Gets the polling interval corresponding to the current schedule state.
-    /// </summary>
-    public TimeSpan GetCurrentInterval()
-    {
-        lock (_stateLock)
-        {
-            return _currentState == SyncScheduleState.Active
-                ? TimeSpan.FromMinutes(_syncOptions.PollingActiveMinutes)
-                : TimeSpan.FromMinutes(_syncOptions.PollingTrayMinutes);
-        }
-    }
-
-    /// <inheritdoc />
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        _logger.Information("SyncScheduler background service started.");
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await ExecuteSyncPassCoreAsync("Polling", stoppingToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning(ex, "Error during scheduled sync pass.");
-            }
-
-            // Wait for next polling interval or wake signal
-            var interval = GetCurrentInterval();
-            try
-            {
-                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-                lock (_stateLock)
-                {
-                    _wakeCts = linkedCts;
-                }
-
-                await _clock.DelayAsync(interval, linkedCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (!stoppingToken.IsCancellationRequested)
-            {
-                _logger.Debug("SyncScheduler delay cancelled early by wake signal.");
-            }
-            finally
-            {
-                lock (_stateLock)
-                {
-                    _wakeCts = null;
-                }
-            }
-        }
-
-        _logger.Information("SyncScheduler background service stopped.");
-    }
-
-    private async Task RunImmediateSyncAsync(string triggerReason, CancellationToken cancellationToken)
-    {
-        // Wake the background delay so polling schedule is reset after this sync
+        _logger.Information("Immediate focus sync triggered (FR-SYNC-3)");
         WakeScheduler();
+        await ExecuteSyncPassCoreAsync("Focus", cancellationToken).ConfigureAwait(false);
+    }
 
-        await ExecuteSyncPassCoreAsync(triggerReason, cancellationToken).ConfigureAwait(false);
+    /// <inheritdoc />
+    public async Task TriggerPostMutationSyncAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.Information("Immediate post-mutation sync triggered (FR-SYNC-3)");
+        WakeScheduler();
+        await ExecuteSyncPassCoreAsync("PostMutation", cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerManualSyncAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.Information("Immediate manual sync triggered (FR-SYNC-3)");
+        WakeScheduler();
+        await ExecuteSyncPassCoreAsync("Manual", cancellationToken).ConfigureAwait(false);
     }
 
     private void WakeScheduler()
@@ -196,9 +149,86 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
             }
             catch (ObjectDisposedException)
             {
-                // Ignored if already disposed
+                // Ignore if already disposed
             }
         }
+    }
+
+    /// <inheritdoc />
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.Information("SyncScheduler background service started (FR-SYNC-3)");
+
+        // Initial sync on startup
+        try
+        {
+            await ExecuteSyncPassCoreAsync("InitialStartup", stoppingToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "Initial sync pass on startup failed; scheduler will continue to poll.");
+        }
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var intervalMinutes = CurrentState == SyncScheduleState.Active
+                ? _syncOptions.PollingActiveMinutes
+                : _syncOptions.PollingTrayMinutes;
+
+            var delayDuration = TimeSpan.FromMinutes(Math.Max(1, intervalMinutes));
+
+            CancellationTokenSource linkedCts;
+            lock (_stateLock)
+            {
+                _wakeCts = new CancellationTokenSource();
+                linkedCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, _wakeCts.Token);
+            }
+
+            try
+            {
+                _logger.Debug("SyncScheduler waiting for next polling interval ({IntervalMinutes}m, state={State})",
+                    intervalMinutes, CurrentState);
+
+                await _clock.DelayAsync(delayDuration, linkedCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.Debug("SyncScheduler woke early due to trigger or state transition.");
+            }
+            finally
+            {
+                linkedCts.Dispose();
+                lock (_stateLock)
+                {
+                    _wakeCts?.Dispose();
+                    _wakeCts = null;
+                }
+            }
+
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            try
+            {
+                await ExecuteSyncPassCoreAsync("PeriodicPolling", stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Error occurred during periodic sync pass; scheduler will retry on next cycle.");
+            }
+        }
+
+        _logger.Information("SyncScheduler background service stopped.");
     }
 
     private async Task ExecuteSyncPassCoreAsync(string reason, CancellationToken cancellationToken)
@@ -214,6 +244,19 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
         {
             _isSyncInProgress = true;
             _logger.Debug("Executing sync pass ({Reason})...", reason);
+
+            // Flush pending mutations before sync pass (FR-SYNC-4)
+            if (_mutationService != null)
+            {
+                try
+                {
+                    await _mutationService.ProcessPendingMutationsAsync(null, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warning(ex, "Failed to process pending mutations during sync pass ({Reason})", reason);
+                }
+            }
 
             var accounts = await GetAccountIdsAsync(cancellationToken).ConfigureAwait(false);
             if (accounts.Count == 0)

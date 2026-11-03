@@ -178,7 +178,29 @@ public static class DependencyInjection
 
         services.AddSingleton<ISyncEngine, SyncEngine>();
 
-        // Phase 3: Background sync scheduler (FR-SYNC-3)
+        // Phase 3: Offline pending mutation store and conflict notification (FR-SYNC-4, NFR-REL)
+        services.AddSingleton<IPendingMutationStore, SqlitePendingMutationStore>();
+        services.AddSingleton<IConflictNotifier, ConflictNotifier>();
+        services.AddSingleton<IMutationService>(sp =>
+        {
+            var connectionFactory = sp.GetRequiredService<ISqliteConnectionFactory>();
+            var mutationStore = sp.GetRequiredService<IPendingMutationStore>();
+            var gateway = sp.GetRequiredService<ICalendarGateway>();
+            var oauthClient = sp.GetRequiredService<IGoogleOAuthClient>();
+            var conflictNotifier = sp.GetRequiredService<IConflictNotifier>();
+            var logger = sp.GetService<ILogger>();
+            return new MutationService(
+                connectionFactory,
+                mutationStore,
+                gateway,
+                oauthClient,
+                conflictNotifier,
+                syncScheduler: null,
+                timeProvider: TimeProvider.System,
+                logger: logger);
+        });
+
+        // Phase 3: Background sync scheduler (FR-SYNC-3, FR-SYNC-4)
         services.AddSingleton<SyncScheduler>(sp =>
         {
             var syncEngine = sp.GetRequiredService<ISyncEngine>();
@@ -186,7 +208,17 @@ public static class DependencyInjection
             var syncOptions = sp.GetRequiredService<SyncOptions>();
             var clock = sp.GetRequiredService<IClock>();
             var logger = sp.GetService<ILogger>();
-            return new SyncScheduler(syncEngine, connectionFactory, syncOptions, clock, logger);
+            var scheduler = new SyncScheduler(syncEngine, connectionFactory, syncOptions, clock, logger);
+            var mutationService = sp.GetService<IMutationService>();
+            if (mutationService is not null)
+            {
+                scheduler.MutationService = mutationService;
+                if (mutationService is MutationService concrete)
+                {
+                    concrete.SyncScheduler = scheduler;
+                }
+            }
+            return scheduler;
         });
         services.AddSingleton<ISyncScheduler>(sp => sp.GetRequiredService<SyncScheduler>());
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<SyncScheduler>());
