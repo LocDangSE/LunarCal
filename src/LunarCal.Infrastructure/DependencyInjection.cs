@@ -1,11 +1,13 @@
 using LunarCal.Core.Abstractions;
 using LunarCal.Infrastructure.Google;
 using LunarCal.Infrastructure.Google.OAuth;
+using LunarCal.Infrastructure.Network;
 using LunarCal.Infrastructure.Security;
 using LunarCal.Infrastructure.Storage;
 using LunarCal.Infrastructure.Storage.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace LunarCal.Infrastructure;
@@ -56,6 +58,37 @@ public static class DependencyInjection
         // Phase 3: Local data wipe service (SEC-DATA-3)
         services.AddSingleton<ILocalDataWipeService, LocalDataWipeService>();
 
+        // Phase 3: Network security and HTTP resilience pipeline (SEC-NET-1, SEC-NET-2)
+        services.AddSingleton(sp =>
+        {
+            var networkOptions = new NetworkOptions();
+            configuration.GetSection(NetworkOptions.SectionName).Bind(networkOptions);
+
+            // Dynamically add data lake ingestion host if configured (SEC-NET-1)
+            var ingestionUrl = configuration["LunarCal:DataLake:IngestionBaseUrl"];
+            if (!string.IsNullOrWhiteSpace(ingestionUrl) && Uri.TryCreate(ingestionUrl, UriKind.Absolute, out var ingestionUri))
+            {
+                if (!NetworkSecurityValidator.IsHostAllowed(ingestionUri.Host, networkOptions.AllowedHosts))
+                {
+                    networkOptions.AllowedHosts.Add(ingestionUri.Host);
+                }
+            }
+
+            return networkOptions;
+        });
+
+        services.AddTransient<NetworkSecurityDelegatingHandler>(sp =>
+        {
+            var networkOptions = sp.GetRequiredService<NetworkOptions>();
+            var logger = sp.GetService<ILogger>();
+            return new NetworkSecurityDelegatingHandler(networkOptions, logger);
+        });
+
+        services.AddHttpClient(ResiliencePipelineExtensions.DefaultClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => ResiliencePipelineExtensions.CreateSecureSocketsHttpHandler())
+            .AddHttpMessageHandler<NetworkSecurityDelegatingHandler>()
+            .AddLunarCalResilienceHandler();
+
         // Phase 3: Google OAuth desktop client (FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, ADR-0017)
         services.AddSingleton<ISystemBrowser, SystemBrowser>();
         services.AddSingleton<ILoopbackHttpListenerFactory, LoopbackHttpListenerFactory>();
@@ -97,6 +130,8 @@ public static class DependencyInjection
             var secretStore = sp.GetRequiredService<ISecretStore>();
             var listenerFactory = sp.GetRequiredService<ILoopbackHttpListenerFactory>();
             var browser = sp.GetRequiredService<ISystemBrowser>();
+            var httpClientFactory = sp.GetService<IHttpClientFactory>();
+            var httpClient = httpClientFactory?.CreateClient(ResiliencePipelineExtensions.DefaultClientName);
             var logger = sp.GetService<ILogger>();
 
             return new GoogleOAuthClient(
@@ -104,8 +139,8 @@ public static class DependencyInjection
                 secretStore,
                 listenerFactory,
                 browser,
-                httpClient: null,
-                logger: logger);
+                httpClient,
+                logger);
         });
 
         // Phase 3: Google account sign-out and cache wipe service (FR-AUTH-4)

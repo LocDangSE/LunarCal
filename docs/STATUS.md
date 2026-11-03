@@ -3,18 +3,18 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-03 11:58 +07:00, Antigravity. Hoàn thành P3-07: Đăng xuất Google account (IGoogleSignOutService, GoogleSignOutService, GoogleSignOutResult, IGoogleOAuthClient.RevokeTokenAsync), gửi request revoke token tới Google endpoint, xoá refresh token DPAPI, purge toàn bộ Account/CalendarInfo/Event/ReminderState/LunarRule khỏi SQLite cache có xác nhận (FR-AUTH-4, SEC-OAUTH-3); 5 test mới, 319/319 tests pass; đã merge vào `phase/3`.
+**Cập nhật lần cuối:** 2026-11-03 12:45 +07:00, Antigravity. Hoàn thành P3-08: Infrastructure HttpClient resilience pipeline (Microsoft.Extensions.Http.Resilience 10.2.0, NetworkSecurityDelegatingHandler, NetworkSecurityValidator, HttpIdempotencyHelper, ResiliencePipelineExtensions), allow-list host (*.googleapis.com, accounts.google.com, oauth2.googleapis.com, generativelanguage.googleapis.com), chỉ HTTPS, không bypass chứng chỉ, retry, circuit breaker, timeout, chặn retry non-idempotent write khi thiếu requestId/ETag (SEC-NET-1, SEC-NET-2); 28 test mới, 354/354 tests pass.
 
-**Trước đó:** 2026-11-03 11:45 +07:00, Antigravity. Hoàn thành P3-06: Tự động refresh token Google OAuth với DPAPI secret store, xoay vòng refresh token, phát hiện invalid_grant xoá token chết và yêu cầu đăng nhập lại, hướng dẫn consent Testing hết hạn sau 7 ngày (FR-AUTH-3, FR-AUTH-6, ADR-0026); 8 test mới, 314/314 tests pass; đã merge vào `phase/3`.
+**Trước đó:** 2026-11-03 11:58 +07:00, Antigravity. Hoàn thành P3-07: Đăng xuất Google account (IGoogleSignOutService, GoogleSignOutService, GoogleSignOutResult, IGoogleOAuthClient.RevokeTokenAsync), gửi request revoke token tới Google endpoint, xoá refresh token DPAPI, purge toàn bộ Account/CalendarInfo/Event/ReminderState/LunarRule khỏi SQLite cache có xác nhận (FR-AUTH-4, SEC-OAUTH-3); 5 test mới, 319/319 tests pass; đã merge vào `phase/3`.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9 và P2-R10..P2-R15). P3-00a, P3-00b, P3-01, P3-02, P3-03, P3-04, P3-05, P3-06, P3-07 xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
+- **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9 và P2-R10..P2-R15). P3-00a, P3-00b, P3-01, P3-02, P3-03, P3-04, P3-05, P3-06, P3-07, P3-08 xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** không giữ task nào. Vừa hoàn thành P3-07 trên branch `task/P3-07` (đã merge vào `phase/3`). File đang sửa dở: không có. Bước tiếp theo: nhận task P3-08 (Allow-list host, chỉ HTTPS, retry, circuit breaker, timeout, không retry POST ghi thiếu requestId/ETag; SEC-NET-1, SEC-NET-2) trên branch `task/P3-08` tách từ `phase/3`.
+  - **Antigravity:** không giữ task nào. Vừa hoàn thành P3-08 trên branch `task/P3-08` (đang merge vào `phase/3`). File đang sửa dở: không có. Bước tiếp theo: nhận task P3-09 (CalendarGateway, SyncEngine, Calendar API v3 calendar list và events, singleEvents=true, lưu etag, updated, extendedProperties.private; FR-SYNC-1, FR-SYNC-6) trên branch `task/P3-09` tách từ `phase/3`.
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: nhận task P3-08 (SEC-NET-1, SEC-NET-2) trên branch `task/P3-08` tách từ `phase/3`.
+  1. Antigravity: nhận task P3-09 (FR-SYNC-1, FR-SYNC-6) trên branch `task/P3-09` tách từ `phase/3`.
   2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.
 
 ## Đã hoàn thành (đối chiếu spec §13)
@@ -35,8 +35,8 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 319 test: 319 pass, 0 fail, 0 skip (P3-07). Test NFR-PERF MonthView: pass trên luồng STA |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 89.43% (ngưỡng 95% và 85%; đo 2026-11-03) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 354 test: 354 pass, 0 fail, 0 skip (P3-08). Test NFR-PERF MonthView: pass trên luồng STA |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 95.46% (ngưỡng 95% và 85%; đo 2026-11-03) |
 | UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 5/5 lần liên tiếp ở máy local (P2-R8) |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
