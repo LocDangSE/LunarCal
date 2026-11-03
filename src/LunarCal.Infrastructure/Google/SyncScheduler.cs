@@ -122,7 +122,6 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     public async Task TriggerFocusSyncAsync(CancellationToken cancellationToken = default)
     {
         _logger.Information("Immediate focus sync triggered (FR-SYNC-3)");
-        WakeScheduler();
         await ExecuteSyncPassCoreAsync("Focus", cancellationToken).ConfigureAwait(false);
     }
 
@@ -130,7 +129,6 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     public async Task TriggerPostMutationSyncAsync(CancellationToken cancellationToken = default)
     {
         _logger.Information("Immediate post-mutation sync triggered (FR-SYNC-3)");
-        WakeScheduler();
         await ExecuteSyncPassCoreAsync("PostMutation", cancellationToken).ConfigureAwait(false);
     }
 
@@ -138,7 +136,6 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     public async Task TriggerManualSyncAsync(CancellationToken cancellationToken = default)
     {
         _logger.Information("Immediate manual sync triggered (FR-SYNC-3)");
-        WakeScheduler();
         await ExecuteSyncPassCoreAsync("Manual", cancellationToken).ConfigureAwait(false);
     }
 

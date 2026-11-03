@@ -99,6 +99,6 @@ public class InMemorySettingsStoreTests
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ISettingsStore));
         descriptor.Should().NotBeNull();
         descriptor!.Lifetime.Should().Be(ServiceLifetime.Singleton);
-        descriptor.ImplementationType.Should().Be<InMemorySettingsStore>();
+        descriptor.ImplementationType.Should().Be<SqliteSettingsStore>();
     }
 }
