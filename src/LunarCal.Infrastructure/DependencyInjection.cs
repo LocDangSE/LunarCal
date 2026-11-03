@@ -23,7 +23,7 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(configuration);
 
         // Phase 2: In-memory settings and event stores; Phase 3 transitions to SQLCipher SQLite
-        services.AddSingleton<ISettingsStore, InMemorySettingsStore>();
+        services.AddSingleton<ISettingsStore, SqliteSettingsStore>();
         services.AddSingleton<IEventStore, InMemoryEventStore>();
 
         // Phase 3: DPAPI secret store with app-specific entropy (SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018)
