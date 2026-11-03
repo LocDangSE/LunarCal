@@ -9,13 +9,13 @@
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Mọi task P3-00a..P3-16 đã hoàn thành. Cổng P3-REVIEW chuẩn bị chuyển sang `[r]` để bàn giao toàn bộ Phase 3 cho Claude Code review.
+- **Phase hiện tại:** Phase 3. Mọi task P3-00a..P3-16 đã hoàn thành 100%. Cổng P3-REVIEW đã chuyển sang `[r]`.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** vừa hoàn thành task **P3-16** (kết thúc Phase 3: chuyển settings P2-04 sang SQLite `AppSetting`, TRACEABILITY, full suite, gates) trên branch `task/P3-16`. Chuẩn bị merge vào `phase/3` và chuyển cổng `P3-REVIEW` sang `[r]`.
+  - **Claude Code:** không giữ task nào. Bước tiếp theo: nhận cổng `P3-REVIEW` (`[r]` → `[f]`), review toàn bộ Phase 3 (`git diff main...phase/3`), sửa bug kèm test tái hiện nếu có, ghi `docs/reviews/PHASE3.md`, chuyển `P3-REVIEW` sang `[x]` và merge `phase/3` vào `main`.
+  - **Antigravity:** đã hoàn thành toàn bộ Phase 3 (P3-00a..P3-16), cổng `P3-REVIEW` ở trạng thái `[r]`. Theo quy tắc bắt buộc (ADR-0027, progress-sync.md), Antigravity dừng lại và chờ Claude Code review Phase 3; không bắt đầu bất kỳ task nào của Phase 4 cho đến khi `P3-REVIEW` chuyển sang `[x]` trên `main`.
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: merge `task/P3-16` vào `phase/3`, chuyển cổng `P3-REVIEW` sang `[r]` (log `READY`).
-  2. Claude Code: nhận cổng `P3-REVIEW` (`[r]` → `[f]`), tiến hành review toàn bộ Phase 3 (`git diff main...phase/3`).
+  1. Claude Code: nhận cổng review `P3-REVIEW` (`[r]` → `[f]`) và thực hiện phase review cho Phase 3.
+  2. Antigravity: chờ kết quả review từ Claude Code (hoặc sửa nếu có issue được trả lại).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
