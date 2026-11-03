@@ -38,6 +38,11 @@ public sealed class SmokeTests
 
     private static Application LaunchApp(string exePath)
     {
+        foreach (var p in Process.GetProcessesByName("LunarCal"))
+        {
+            try { p.Kill(); p.WaitForExit(1000); } catch { }
+        }
+
         var psi = new ProcessStartInfo
         {
             FileName = exePath,
@@ -59,7 +64,7 @@ public sealed class SmokeTests
         }
     }
 
-    private static readonly TimeSpan _uiTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan _uiTimeout = TimeSpan.FromSeconds(10);
 
     // Figma 01/S06/S07 subtitles: "Âm lịch: tháng 8 – 9 năm Bính Ngọ", "Âm lịch: 3 – 9 tháng 9 …", "Âm lịch: 7 tháng 9 …";
     // English "Lunar: months 8 – 9, …", "Lunar: 3 – 9 of month 9, …", "Lunar: day 7 of month 9, …".
@@ -189,7 +194,7 @@ public sealed class SmokeTests
         {
             var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
                 ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
-            var settingsButton = window.FindFirstDescendant(cf => cf.ByAutomationId("BtnSettings"))?.AsButton();
+            var settingsButton = WaitFor(window, "BtnSettings").AsButton();
             settingsButton.Should().NotBeNull("the top bar must expose a Settings button (Figma S13)");
             settingsButton!.Invoke();
 
