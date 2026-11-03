@@ -12,7 +12,7 @@
 - **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9 và P2-R10..P2-R15). P3-00a, P3-00b, P3-01, P3-02, P3-03, P3-04 xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** không giữ task nào. Vừa hoàn thành P3-04 trên branch `task/P3-04` (đã merge vào `phase/3`). File đang sửa dở: không có. Bước tiếp theo: nhận task P3-05 (Google OAuth desktop PKCE S256, loopback 127.0.0.1 cổng ngẫu nhiên, timeout 5 phút, scope tối thiểu, FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2) trên branch `task/P3-05` tách từ `phase/3`.
+  - **Antigravity:** đang giữ task **P3-05** trên branch `task/P3-05`. File đang sửa dở: `src/LunarCal.Infrastructure/Google/OAuth/`, `docs/adr/0017-oauth-desktop-client-secret.md`. Bước tiếp theo: đọc tài liệu Google OAuth desktop (RFC 7636, loopback 127.0.0.1, state, timeout 5 phút, scope tối thiểu), hiện thực Google OAuth loopback flow & token exchange, hoàn thiện ADR-0017, viết unit tests.
 - **Task tiếp theo đề xuất:**
   1. Antigravity: nhận task P3-05 (Google OAuth desktop PKCE S256, loopback 127.0.0.1, FR-AUTH-1, SEC-OAUTH-1) trên branch `task/P3-05` tách từ `phase/3`.
   2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.

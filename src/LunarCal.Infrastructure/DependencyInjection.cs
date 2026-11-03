@@ -1,9 +1,11 @@
 using LunarCal.Core.Abstractions;
+using LunarCal.Infrastructure.Google.OAuth;
 using LunarCal.Infrastructure.Security;
 using LunarCal.Infrastructure.Storage;
 using LunarCal.Infrastructure.Storage.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace LunarCal.Infrastructure;
 
@@ -52,6 +54,58 @@ public static class DependencyInjection
 
         // Phase 3: Local data wipe service (SEC-DATA-3)
         services.AddSingleton<ILocalDataWipeService, LocalDataWipeService>();
+
+        // Phase 3: Google OAuth desktop client (FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, ADR-0017)
+        services.AddSingleton<ISystemBrowser, SystemBrowser>();
+        services.AddSingleton<ILoopbackHttpListenerFactory, LoopbackHttpListenerFactory>();
+        services.AddSingleton(sp =>
+        {
+            var options = new GoogleOAuthOptions();
+
+            // Client ID fallback: LunarCal:Google:OAuthClientId -> Google:ClientId -> LunarCal:Google:ClientId
+            var clientId = configuration["LunarCal:Google:OAuthClientId"]
+                ?? configuration["Google:ClientId"]
+                ?? configuration["LunarCal:Google:ClientId"];
+
+            if (!string.IsNullOrWhiteSpace(clientId))
+            {
+                options.ClientId = clientId;
+            }
+
+            // Client Secret fallback: LunarCal:Google:OAuthClientSecret -> Google:ClientSecret -> LunarCal:Google:ClientSecret
+            var clientSecret = configuration["LunarCal:Google:OAuthClientSecret"]
+                ?? configuration["Google:ClientSecret"]
+                ?? configuration["LunarCal:Google:ClientSecret"];
+
+            if (!string.IsNullOrWhiteSpace(clientSecret))
+            {
+                options.ClientSecret = clientSecret;
+            }
+
+            if (int.TryParse(configuration["LunarCal:Google:LoopbackTimeoutSeconds"], out var timeoutSec) && timeoutSec > 0)
+            {
+                options.LoopbackTimeoutSeconds = timeoutSec;
+            }
+
+            return options;
+        });
+
+        services.AddSingleton<IGoogleOAuthClient>(sp =>
+        {
+            var options = sp.GetRequiredService<GoogleOAuthOptions>();
+            var secretStore = sp.GetRequiredService<ISecretStore>();
+            var listenerFactory = sp.GetRequiredService<ILoopbackHttpListenerFactory>();
+            var browser = sp.GetRequiredService<ISystemBrowser>();
+            var logger = sp.GetService<ILogger>();
+
+            return new GoogleOAuthClient(
+                options,
+                secretStore,
+                listenerFactory,
+                browser,
+                httpClient: null,
+                logger: logger);
+        });
 
         return services;
     }
