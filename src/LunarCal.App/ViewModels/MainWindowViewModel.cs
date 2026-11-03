@@ -26,6 +26,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly IAccountStore? _accountStore;
     private readonly IGoogleOAuthClient? _oauthClient;
 
+    // Sync events arrive on a thread-pool thread; view state (collections bound to the UI) must change on the
+    // thread that created this view model (the WPF dispatcher at runtime).
+    private readonly SynchronizationContext? _uiContext = SynchronizationContext.Current;
+    private bool _lastSyncFailed;
+
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
 
@@ -59,6 +64,18 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     /// <summary>Second line of the sidebar sync card (Figma 1:195): "2 phút trước · Hàng chờ AI: 0".</summary>
     public string SyncDetailText => _localizationService.Format("format.dot_pair", SyncStatusText, PendingAiCommandsText);
+
+    /// <summary>Title of the sidebar sync card: connected, not connected or failed (FR-UI-10, Figma 1:191, S18).</summary>
+    [ObservableProperty]
+    private string _syncTitleText = string.Empty;
+
+    /// <summary>Whether a Google account is signed in (drives the sync card and the avatar).</summary>
+    [ObservableProperty]
+    private bool _isSignedIn;
+
+    /// <summary>Whether the last sync pass failed (sync card dot turns red).</summary>
+    [ObservableProperty]
+    private bool _isSyncError;
 
     /// <summary>Initials shown in the avatar (Figma 1:227).</summary>
     [ObservableProperty]
@@ -173,12 +190,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             _syncScheduler.SyncStarted += OnSyncSchedulerStarted;
             _syncScheduler.SyncCompleted += OnSyncSchedulerCompleted;
-            UpdateSyncStatusText(_syncScheduler.LastSyncTime);
         }
-        else
-        {
-            _syncStatusText = _localizationService["sidebar.sync_status_now"];
-        }
+
+        UpdateSyncStatusText(_syncScheduler?.LastSyncTime);
 
         _localizationService.PropertyChanged += OnLocalizationChanged;
         _preferences.PropertyChanged += OnPreferencesChanged;
@@ -199,32 +213,65 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IsOfflineBannerVisible = !isOnline;
     }
 
-    private void OnSyncSchedulerStarted(object? sender, EventArgs e)
+    private void OnSyncSchedulerStarted(object? sender, EventArgs e) => RunOnUi(() =>
     {
         IsSyncing = true;
         SyncStatusText = _localizationService["sidebar.sync_status_syncing"];
-    }
+    });
 
-    private void OnSyncSchedulerCompleted(object? sender, SyncResult result)
+    private void OnSyncSchedulerCompleted(object? sender, SyncResult result) => RunOnUi(() => _ = ApplySyncResultAsync(result));
+
+    /// <summary>
+    /// Applies a finished sync pass to the shell: status card, re-authentication banner (FR-AUTH-3, S14) and a reload
+    /// of the sidebar calendars and the visible view from the cache (FR-SYNC-1).
+    /// </summary>
+    public async Task ApplySyncResultAsync(SyncResult result, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(result);
         IsSyncing = false;
-        UpdateSyncStatusText(_syncScheduler?.LastSyncTime);
+        _lastSyncFailed = !result.Success;
+        if (result.RequiresReauthentication)
+        {
+            IsReauthBannerVisible = true;
+        }
 
+        UpdateSyncStatusText(_syncScheduler?.LastSyncTime);
         if (result.Success)
         {
-            _ = ReloadActiveViewAsync();
+            IsReauthBannerVisible = false;
+            await LoadCalendarsAsync(cancellationToken).ConfigureAwait(true);
+            await ReloadActiveViewAsync(cancellationToken).ConfigureAwait(true);
+        }
+    }
+
+    private void RunOnUi(Action action)
+    {
+        if (_uiContext is null || SynchronizationContext.Current == _uiContext)
+        {
+            action();
         }
         else
         {
-            SyncStatusText = _localizationService["sidebar.sync_status_failed"];
+            _uiContext.Post(_ => action(), null);
         }
     }
 
     private void UpdateSyncStatusText(DateTimeOffset? lastSync)
     {
+        IsSyncError = IsSignedIn && _lastSyncFailed;
+        SyncTitleText = !IsSignedIn
+            ? _localizationService["sidebar.sync_title_signed_out"]
+            : _lastSyncFailed ? _localizationService["sidebar.sync_title_failed"] : _localizationService["sidebar.sync_title"];
+
+        if (_lastSyncFailed && IsSignedIn)
+        {
+            SyncStatusText = _localizationService["sidebar.sync_status_failed"];
+            return;
+        }
+
         if (lastSync is null)
         {
-            SyncStatusText = _localizationService["sidebar.sync_status_now"];
+            SyncStatusText = _localizationService[IsSignedIn ? "settings.account.never_synced" : "sidebar.sync_status_signed_out"];
             return;
         }
 
@@ -256,17 +303,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         try
         {
             var account = await _accountStore.GetPrimaryAccountAsync(cancellationToken).ConfigureAwait(true);
-            if (account is not null)
-            {
-                AccountEmail = account.Email;
-                AccountDisplayName = account.DisplayName ?? account.Email;
-                UserInitials = InitialsOf(AccountDisplayName);
-            }
+            IsSignedIn = account is not null;
+            AccountEmail = account?.Email ?? string.Empty;
+            AccountDisplayName = account is null ? string.Empty : account.DisplayName ?? account.Email;
+            UserInitials = account is null ? InitialsOf(Environment.UserName) : InitialsOf(AccountDisplayName);
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            // Fallback gracefully
+            IsSignedIn = false;
         }
+
+        UpdateSyncStatusText(_syncScheduler?.LastSyncTime);
     }
 
     private void OnChildEventEditorRequested(object? sender, EventEditorRequest req)
@@ -400,41 +447,83 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public void ToggleCalendar(CalendarItemViewModel? item)
     {
-        if (item == null)
+        if (item is null || !Calendars.Contains(item))
         {
             return;
         }
 
+        // Persisting and reloading happen in OnCalendarItemPropertyChanged, same as for the checkbox.
         item.IsSelected = !item.IsSelected;
-        OnPropertyChanged(nameof(Calendars));
+    }
+
+    // Sidebar checkbox (FR-UI-1): persist the choice, refresh the views, and sync a calendar that was just switched on
+    // (switched-off calendars are not fetched, so it may have no events cached yet).
+    private async void OnCalendarItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Event handler: async void is allowed here (AGENTS.md §7); failures are caught below.
+        if (e.PropertyName != nameof(CalendarItemViewModel.IsSelected) || sender is not CalendarItemViewModel item)
+        {
+            return;
+        }
+
+        try
+        {
+            var calendar = await _eventStore.GetCalendarByIdAsync(item.Id).ConfigureAwait(true);
+            if (calendar is not null && calendar.IsSelected != item.IsSelected)
+            {
+                await _eventStore.UpsertCalendarAsync(calendar with { IsSelected = item.IsSelected }).ConfigureAwait(true);
+            }
+
+            await ReloadAllViewsAsync().ConfigureAwait(true);
+            if (item.IsSelected && IsSignedIn && _syncScheduler is not null)
+            {
+                _ = _syncScheduler.TriggerManualSyncAsync();
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            SyncStatusText = _localizationService["sidebar.sync_status_failed"];
+        }
     }
 
     /// <summary>
-    /// Triggers an immediate calendar synchronization cycle (FR-UI-10, FR-SYNC-3).
+    /// Triggers an immediate calendar synchronization cycle (FR-UI-10, FR-SYNC-3). Without an account it opens
+    /// Settings > Google account instead, since there is nothing to sync.
     /// </summary>
     [RelayCommand]
     public async Task SyncNowAsync(CancellationToken cancellationToken = default)
     {
+        if (!IsSignedIn)
+        {
+            OpenSettings();
+            return;
+        }
+
         if (_syncScheduler is not null)
         {
-            IsSyncing = true;
-            SyncStatusText = _localizationService["sidebar.sync_status_syncing"];
-            try
-            {
-                await _syncScheduler.TriggerManualSyncAsync(cancellationToken).ConfigureAwait(true);
-            }
-            finally
-            {
-                IsSyncing = false;
-            }
-            await ReloadActiveViewAsync(cancellationToken).ConfigureAwait(true);
-        }
-        else
-        {
-            SyncStatusText = _localizationService["sidebar.sync_status_now"];
-            UpdatePendingAiCommandsText();
+            // The scheduler raises SyncStarted/SyncCompleted, which update the card and reload the views.
+            await _syncScheduler.TriggerManualSyncAsync(cancellationToken).ConfigureAwait(true);
         }
     }
+
+    /// <summary>Main window got focus: sync now and poll at the active interval (FR-SYNC-3).</summary>
+    public void OnWindowActivated()
+    {
+        if (_syncScheduler is null)
+        {
+            return;
+        }
+
+        _syncScheduler.SetState(SyncScheduleState.Active);
+        if (IsSignedIn)
+        {
+            _ = _syncScheduler.TriggerFocusSyncAsync();
+        }
+    }
+
+    /// <summary>Main window minimized or restored: poll every 10 minutes while hidden, 2 minutes otherwise (FR-SYNC-3).</summary>
+    public void OnWindowMinimizedChanged(bool isMinimized) =>
+        _syncScheduler?.SetState(isMinimized ? SyncScheduleState.TrayOrBackground : SyncScheduleState.Active);
 
     /// <summary>Dismisses the offline warning banner.</summary>
     [RelayCommand]
@@ -490,6 +579,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Create, Date: date, Time: time));
     }
 
+    /// <summary>Reloads every view (the hidden ones too), e.g. after a calendar was switched on or off.</summary>
+    public async Task ReloadAllViewsAsync(CancellationToken cancellationToken = default)
+    {
+        var date = DateOnly.FromDateTime(SelectedDate);
+        await MonthView.PopulateMonthAsync(date).ConfigureAwait(true);
+        await WeekView.PopulateWeekAsync(date, cancellationToken).ConfigureAwait(true);
+        await DayView.PopulateDayAsync(date, cancellationToken).ConfigureAwait(true);
+        await AgendaView.LoadDataAsync(cancellationToken).ConfigureAwait(true);
+    }
+
     /// <summary>
     /// Reloads events across the active view after a mutation occurs.
     /// </summary>
@@ -535,10 +634,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         try
         {
             var list = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken).ConfigureAwait(true);
+            foreach (var old in Calendars)
+            {
+                old.PropertyChanged -= OnCalendarItemPropertyChanged;
+            }
+
             Calendars.Clear();
             foreach (var cal in list)
             {
-                Calendars.Add(new CalendarItemViewModel
+                var item = new CalendarItemViewModel
                 {
                     Id = cal.Id,
                     Summary = cal.Summary,
@@ -546,7 +650,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     IsSelected = cal.IsSelected,
                     IsPrimary = cal.IsPrimary,
                     AccountId = cal.AccountId
-                });
+                };
+                item.PropertyChanged += OnCalendarItemPropertyChanged;
+                Calendars.Add(item);
             }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
@@ -675,6 +781,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
 
         _preferences.PropertyChanged -= OnPreferencesChanged;
+        foreach (var item in Calendars)
+        {
+            item.PropertyChanged -= OnCalendarItemPropertyChanged;
+        }
+
         MiniCalendar.DateSelected -= OnMiniCalendarDateSelected;
         MonthView.DaySelected -= OnMonthViewDaySelected;
         MonthView.EventEditorRequested -= OnChildEventEditorRequested;

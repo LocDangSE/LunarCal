@@ -986,4 +986,13 @@
   <data name="time.days_ago" xml:space="preserve">
     <value>{0} ngày trước</value>
   </data>
+  <data name="sidebar.sync_title_signed_out" xml:space="preserve">
+    <value>Chưa kết nối Google Calendar</value>
+  </data>
+  <data name="sidebar.sync_title_failed" xml:space="preserve">
+    <value>Đồng bộ Google Calendar thất bại</value>
+  </data>
+  <data name="sidebar.sync_status_signed_out" xml:space="preserve">
+    <value>Bấm để đăng nhập</value>
+  </data>
 </root>

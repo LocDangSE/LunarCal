@@ -1,4 +1,3 @@
-using System.IO;
 using System.Windows;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
@@ -81,21 +80,33 @@ public partial class App : Application
             // so the first render already uses the user's settings (FR-UI-7).
             await _host.Services.GetRequiredService<IDisplayPreferences>().LoadAsync().ConfigureAwait(true);
 
-            // Apply the saved theme (FR-UI-7); defaults to "System".
+            // Apply the saved theme and UI language (FR-UI-7, FR-I18N-1); both persist in AppSetting (P3-16).
             var settingsStore = _host.Services.GetRequiredService<ISettingsStore>();
             var themeService = _host.Services.GetRequiredService<IThemeService>();
             themeService.ApplyTheme(await settingsStore.GetThemeAsync().ConfigureAwait(true));
+            var uiLanguage = await settingsStore.GetUiLanguageAsync().ConfigureAwait(true);
+            LocalizationService.Instance.SetCulture(uiLanguage);
 
-            // Launch first-run wizard if requested via arguments
-            if (e.Args.Contains("--first-run"))
+            // First run (S14, FR-AUTH-1): shown until the wizard is finished or skipped once, and on demand.
+            var firstRunDone = string.Equals(
+                await settingsStore.GetStringAsync(SettingKeys.FirstRunCompleted).ConfigureAwait(true), "true", StringComparison.Ordinal);
+            // "--skip-first-run" lets the out-of-process UI smoke tests reach the main window on a clean profile.
+            if ((!firstRunDone && !e.Args.Contains("--skip-first-run")) || e.Args.Contains("--first-run"))
             {
+                // The wizard is the first window; without this, closing it would end the app (OnMainWindowClose).
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
                 var firstRun = _host.Services.GetRequiredService<FirstRunWindow>();
                 firstRun.ShowDialog();
             }
 
             var window = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = window;
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
             window.Show();
+
+            // Start hosted services after the window exists: the sync scheduler runs its startup sync and then polls
+            // (FR-SYNC-3). Before P3-R1 the host was never started, so nothing synced in the background.
+            await _host.StartAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {

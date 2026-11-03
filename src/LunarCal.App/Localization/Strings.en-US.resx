@@ -986,4 +986,13 @@
   <data name="time.days_ago" xml:space="preserve">
     <value>{0} days ago</value>
   </data>
+  <data name="sidebar.sync_title_signed_out" xml:space="preserve">
+    <value>Not connected to Google Calendar</value>
+  </data>
+  <data name="sidebar.sync_title_failed" xml:space="preserve">
+    <value>Google Calendar sync failed</value>
+  </data>
+  <data name="sidebar.sync_status_signed_out" xml:space="preserve">
+    <value>Click to sign in</value>
+  </data>
 </root>

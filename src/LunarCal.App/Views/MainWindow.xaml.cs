@@ -22,6 +22,10 @@ public partial class MainWindow : Window
         DataContext = viewModel;
         viewModel.SettingsRequested += OnSettingsRequested;
         viewModel.EventEditorRequested += OnEventEditorRequested;
+
+        // FR-SYNC-3: sync on focus; poll less often while minimized.
+        Activated += (_, _) => viewModel.OnWindowActivated();
+        StateChanged += (_, _) => viewModel.OnWindowMinimizedChanged(WindowState == WindowState.Minimized);
     }
 
     // Opens Settings Window (Figma 04, S13, S20) as a modal window owned by the shell.
@@ -30,6 +34,19 @@ public partial class MainWindow : Window
         var settingsWindow = _services.GetRequiredService<SettingsWindow>();
         settingsWindow.Owner = this;
         settingsWindow.ShowDialog();
+
+        // Sign-in, sign-out or a data wipe may have happened in Settings: refresh account, calendars and views.
+        if (DataContext is MainWindowViewModel vm)
+        {
+            _ = RefreshAfterSettingsAsync(vm);
+        }
+    }
+
+    private static async Task RefreshAfterSettingsAsync(MainWindowViewModel vm)
+    {
+        await vm.LoadAccountAsync().ConfigureAwait(true);
+        await vm.LoadCalendarsAsync().ConfigureAwait(true);
+        await vm.ReloadAllViewsAsync().ConfigureAwait(true);
     }
 
     // Opens Event Editor Dialog (Figma S10) as a modal dialog owned by the shell.

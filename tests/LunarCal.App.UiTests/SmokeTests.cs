@@ -50,6 +50,7 @@ public sealed class SmokeTests
         {
             FileName = exePath,
             WorkingDirectory = Path.GetDirectoryName(exePath)!,
+            Arguments = "--skip-first-run",
         };
         return Application.Launch(psi);
     }
