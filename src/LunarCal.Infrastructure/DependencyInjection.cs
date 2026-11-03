@@ -84,9 +84,28 @@ public static class DependencyInjection
             return new NetworkSecurityDelegatingHandler(networkOptions, logger);
         });
 
+        // Phase 3: Sync options and clock abstraction for throttling and polling (FR-SYNC-3, FR-SYNC-5)
+        services.AddSingleton(sp =>
+        {
+            var syncOptions = new SyncOptions();
+            configuration.GetSection(SyncOptions.SectionName).Bind(syncOptions);
+            return syncOptions;
+        });
+
+        services.AddSingleton<IClock, SystemClock>();
+
+        services.AddTransient<ThrottlingDelegatingHandler>(sp =>
+        {
+            var syncOptions = sp.GetRequiredService<SyncOptions>();
+            var clock = sp.GetRequiredService<IClock>();
+            var logger = sp.GetService<ILogger>();
+            return new ThrottlingDelegatingHandler(syncOptions.MaxRequestsPerSecond, clock, logger);
+        });
+
         services.AddHttpClient(ResiliencePipelineExtensions.DefaultClientName)
             .ConfigurePrimaryHttpMessageHandler(() => ResiliencePipelineExtensions.CreateSecureSocketsHttpHandler())
             .AddHttpMessageHandler<NetworkSecurityDelegatingHandler>()
+            .AddHttpMessageHandler<ThrottlingDelegatingHandler>()
             .AddLunarCalResilienceHandler();
 
         // Phase 3: Google OAuth desktop client (FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, ADR-0017)

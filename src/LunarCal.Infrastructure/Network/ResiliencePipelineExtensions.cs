@@ -7,14 +7,15 @@ using Polly.Retry;
 namespace LunarCal.Infrastructure.Network;
 
 /// <summary>
-/// Extension methods for configuring resilient and secure HTTP pipelines (SEC-NET-1, SEC-NET-2).
+/// Extension methods for configuring resilient and secure HTTP pipelines (SEC-NET-1, SEC-NET-2, FR-SYNC-5).
 /// </summary>
 public static class ResiliencePipelineExtensions
 {
     public const string DefaultClientName = "LunarCal";
 
     /// <summary>
-    /// Configures standard HTTP resilience with custom idempotency-aware retry filtering (SEC-NET-2).
+    /// Configures standard HTTP resilience with custom idempotency-aware retry filtering (SEC-NET-2)
+    /// and automatic exponential backoff with jitter for HTTP 429 and HTTP 403 rateLimitExceeded (FR-SYNC-5).
     /// Prevents retries on write requests that lack a requestId or ETag.
     /// </summary>
     public static IHttpClientBuilder AddLunarCalResilienceHandler(
@@ -28,7 +29,7 @@ public static class ResiliencePipelineExtensions
 
         builder.AddStandardResilienceHandler(resilienceOptions =>
         {
-            // SEC-NET-2: Bounded retry, exponential backoff, jitter
+            // SEC-NET-2, FR-SYNC-5: Bounded retry, exponential backoff, jitter
             resilienceOptions.Retry.MaxRetryAttempts = options.MaxRetryAttempts;
             resilienceOptions.Retry.Delay = options.InitialRetryDelay;
             resilienceOptions.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -47,22 +48,64 @@ public static class ResiliencePipelineExtensions
             // Allow caller customizations (e.g. In tests for short timeouts/delays)
             configureOptions?.Invoke(resilienceOptions);
 
-            // SEC-NET-2: Idempotency filter wrapper - write requests without requestId or ETag are NEVER retried
+            // SEC-NET-2, FR-SYNC-5: Idempotency filter wrapper with Google quota/rate limit retry support (429, 403 rateLimitExceeded)
             var previousShouldHandle = resilienceOptions.Retry.ShouldHandle;
             resilienceOptions.Retry.ShouldHandle = async args =>
             {
+                var outcome = args.Outcome;
+                if (outcome.Result is HttpResponseMessage response)
+                {
+                    // FR-SYNC-5: 429 Too Many Requests -> retry with exponential backoff & jitter if safe/idempotent
+                    if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        var request = args.Context.GetRequestMessage() ?? response.RequestMessage;
+                        return HttpIdempotencyHelper.IsIdempotentOrSafeToRetry(request);
+                    }
+
+                    // FR-SYNC-5: 403 Forbidden with rateLimitExceeded -> retry with exponential backoff & jitter if safe/idempotent
+                    if (response.StatusCode == HttpStatusCode.Forbidden && await IsRateLimitExceeded403Async(response).ConfigureAwait(false))
+                    {
+                        var request = args.Context.GetRequestMessage() ?? response.RequestMessage;
+                        return HttpIdempotencyHelper.IsIdempotentOrSafeToRetry(request);
+                    }
+                }
+
                 var shouldRetry = await previousShouldHandle(args).ConfigureAwait(false);
                 if (!shouldRetry)
                 {
                     return false;
                 }
 
-                var request = args.Context.GetRequestMessage() ?? args.Outcome.Result?.RequestMessage;
-                return HttpIdempotencyHelper.IsIdempotentOrSafeToRetry(request);
+                var req = args.Context.GetRequestMessage() ?? args.Outcome.Result?.RequestMessage;
+                return HttpIdempotencyHelper.IsIdempotentOrSafeToRetry(req);
             };
         });
 
         return builder;
+    }
+
+    /// <summary>
+    /// Checks whether an HTTP 403 Forbidden response contains a Google rate limit error code (FR-SYNC-5).
+    /// </summary>
+    public static async ValueTask<bool> IsRateLimitExceeded403Async(HttpResponseMessage response)
+    {
+        if (response.StatusCode != HttpStatusCode.Forbidden || response.Content == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            await response.Content.LoadIntoBufferAsync().ConfigureAwait(false);
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return content.Contains("rateLimitExceeded", StringComparison.OrdinalIgnoreCase) ||
+                   content.Contains("userRateLimitExceeded", StringComparison.OrdinalIgnoreCase) ||
+                   content.Contains("quotaExceeded", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>
