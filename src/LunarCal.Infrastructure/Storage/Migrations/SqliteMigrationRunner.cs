@@ -13,8 +13,11 @@ public sealed class SqliteMigrationRunner
 
     public SqliteMigrationRunner(IEnumerable<ISqliteMigration>? migrations = null)
     {
-        _migrations = migrations is not null
-            ? migrations.OrderBy(m => m.Version).ToList()
+        var list = migrations?.OrderBy(m => m.Version).ToList();
+
+        // An empty list is never what a caller wants (the schema would never be created); use the built-in set.
+        _migrations = list is { Count: > 0 }
+            ? list
             : [new Migration001InitialSchema(), new Migration002EventDetails()];
     }
 

@@ -242,6 +242,15 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
 
         try
         {
+            // No account (signed out): nothing to sync. Return before SyncStarted, otherwise the UI shows
+            // "Syncing..." with no SyncCompleted to follow.
+            var accounts = await GetAccountIdsAsync(cancellationToken).ConfigureAwait(false);
+            if (accounts.Count == 0)
+            {
+                _logger.Debug("No accounts configured in local database; skipping sync.");
+                return;
+            }
+
             _isSyncInProgress = true;
             SyncStarted?.Invoke(this, EventArgs.Empty);
             _logger.Debug("Executing sync pass ({Reason})...", reason);
@@ -257,13 +266,6 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
                 {
                     _logger.Warning(ex, "Failed to process pending mutations during sync pass ({Reason})", reason);
                 }
-            }
-
-            var accounts = await GetAccountIdsAsync(cancellationToken).ConfigureAwait(false);
-            if (accounts.Count == 0)
-            {
-                _logger.Debug("No accounts configured in local database; skipping sync.");
-                return;
             }
 
             foreach (var accountId in accounts)

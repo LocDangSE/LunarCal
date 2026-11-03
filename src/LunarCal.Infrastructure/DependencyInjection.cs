@@ -40,7 +40,9 @@ public static class DependencyInjection
         });
 
         // Phase 3: SQLCipher encrypted local database & migration runner (SEC-DATA-1, spec §6, ADR-0013)
-        services.AddSingleton<SqliteMigrationRunner>();
+        // Explicit factory: letting DI pick the constructor resolved IEnumerable<ISqliteMigration> as an empty list,
+        // so no migration ever ran in the real app (P3-REVIEW).
+        services.AddSingleton(_ => new SqliteMigrationRunner());
         services.AddSingleton<ISqliteConnectionFactory>(sp =>
         {
             var secretStore = sp.GetRequiredService<ISecretStore>();

@@ -80,4 +80,21 @@ public sealed class SqliteAccountStoreTests : IDisposable
 
         await engine.Received(1).SyncIncrementalAsync("acc-1", Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task FR_UI_10_Scheduler_without_accounts_does_not_report_a_sync_start()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var factory = await CreateFactoryAsync(ct);
+        var engine = Substitute.For<ISyncEngine>();
+        var scheduler = new SyncScheduler(engine, connectionFactory: factory);
+        var started = false;
+        scheduler.SyncStarted += (_, _) => started = true;
+
+        await scheduler.TriggerManualSyncAsync(ct);
+
+        started.Should().BeFalse("a start without a matching completion leaves the sidebar on 'Syncing...'");
+        scheduler.IsSyncInProgress.Should().BeFalse();
+        await engine.DidNotReceive().SyncIncrementalAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
 }
