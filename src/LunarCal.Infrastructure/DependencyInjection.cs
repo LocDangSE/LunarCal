@@ -7,6 +7,7 @@ using LunarCal.Infrastructure.Storage;
 using LunarCal.Infrastructure.Storage.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
 
@@ -176,6 +177,19 @@ public static class DependencyInjection
         });
 
         services.AddSingleton<ISyncEngine, SyncEngine>();
+
+        // Phase 3: Background sync scheduler (FR-SYNC-3)
+        services.AddSingleton<SyncScheduler>(sp =>
+        {
+            var syncEngine = sp.GetRequiredService<ISyncEngine>();
+            var connectionFactory = sp.GetService<ISqliteConnectionFactory>();
+            var syncOptions = sp.GetRequiredService<SyncOptions>();
+            var clock = sp.GetRequiredService<IClock>();
+            var logger = sp.GetService<ILogger>();
+            return new SyncScheduler(syncEngine, connectionFactory, syncOptions, clock, logger);
+        });
+        services.AddSingleton<ISyncScheduler>(sp => sp.GetRequiredService<SyncScheduler>());
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<SyncScheduler>());
 
         return services;
     }
