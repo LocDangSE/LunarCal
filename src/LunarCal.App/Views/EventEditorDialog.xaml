@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
         xmlns:conv="clr-namespace:LunarCal.App.Converters"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         xmlns:loc="clr-namespace:LunarCal.App.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:EventEditorViewModel}"
@@ -25,6 +26,13 @@
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <conv:ColorToBrushConverter x:Key="ColorToBrush" />
+    <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
+    <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTimeConverter" />
+    <conv:TimeOnlyToStringConverter x:Key="TimeOnlyToStringConverter" />
+    <sys:Int32 x:Key="Reminder10">10</sys:Int32>
+    <sys:Int32 x:Key="Reminder30">30</sys:Int32>
+    <sys:Int32 x:Key="Reminder60">60</sys:Int32>
+    <sys:Int32 x:Key="Reminder1440">1440</sys:Int32>
 
     <!-- Form label style -->
     <Style x:Key="FormLabel" TargetType="TextBlock">
@@ -356,22 +364,22 @@
         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
           <Button Content="+ 10m"
                   Command="{Binding AddReminderCommand}"
-                  CommandParameter="10"
+                  CommandParameter="{StaticResource Reminder10}"
                   Style="{StaticResource ChipButton}"
                   Margin="0,0,6,0" />
           <Button Content="+ 30m"
                   Command="{Binding AddReminderCommand}"
-                  CommandParameter="30"
+                  CommandParameter="{StaticResource Reminder30}"
                   Style="{StaticResource ChipButton}"
                   Margin="0,0,6,0" />
           <Button Content="+ 1h"
                   Command="{Binding AddReminderCommand}"
-                  CommandParameter="60"
+                  CommandParameter="{StaticResource Reminder60}"
                   Style="{StaticResource ChipButton}"
                   Margin="0,0,6,0" />
           <Button Content="+ 1d"
                   Command="{Binding AddReminderCommand}"
-                  CommandParameter="1440"
+                  CommandParameter="{StaticResource Reminder1440}"
                   Style="{StaticResource ChipButton}" />
         </StackPanel>
 
