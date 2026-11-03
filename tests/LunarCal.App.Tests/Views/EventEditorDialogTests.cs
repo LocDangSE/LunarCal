@@ -13,6 +13,7 @@ namespace LunarCal.App.Tests.Views;
 /// FR-UI-4 (P3-REVIEW): the event editor dialog (Figma S10) must be constructible with the app resources. Before the
 /// review fix, the XAML referenced converters that did not exist and the dialog threw a XamlParseException on open.
 /// </summary>
+[Collection(nameof(EventEditorDialogTests))]
 public sealed class EventEditorDialogTests
 {
     [Fact]
@@ -22,12 +23,16 @@ public sealed class EventEditorDialogTests
         DateTime? startPicker = null;
         string? startTimeText = null;
         Exception? error = null;
+        Application? app = null;
 
         var thread = new Thread(() =>
         {
             try
             {
-                var app = Application.Current ?? new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                // The dialog resolves StaticResource tokens through Application resources (App.xaml), as at runtime.
+                // This test runs in a non-parallel collection and removes the dictionaries afterwards so other STA
+                // view tests, which merge tokens per view, are unaffected.
+                app = Application.Current ?? new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
                 app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/LunarCal;component/Resources/Tokens.xaml", UriKind.Relative) });
                 app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/LunarCal;component/Themes/Light.xaml", UriKind.Relative) });
 
@@ -51,6 +56,10 @@ public sealed class EventEditorDialogTests
             catch (Exception ex)
             {
                 error = ex;
+            }
+            finally
+            {
+                app?.Resources.MergedDictionaries.Clear();
             }
         });
         thread.SetApartmentState(ApartmentState.STA);
@@ -96,3 +105,7 @@ public sealed class EventEditorDialogTests
         }
     }
 }
+
+/// <summary>Runs <see cref="EventEditorDialogTests"/> alone: it touches the process-wide <see cref="Application"/> resources.</summary>
+[CollectionDefinition(nameof(EventEditorDialogTests), DisableParallelization = true)]
+public sealed class EventEditorDialogSerialGroup;
