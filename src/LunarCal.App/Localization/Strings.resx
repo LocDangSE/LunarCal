@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -58,7 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-
   <!-- Spec §4.11 (FR-I18N-7) Settings -->
   <data name="settings.language.title" xml:space="preserve">
     <value>Ngôn ngữ giao diện</value>
@@ -102,7 +101,6 @@
   <data name="settings.gemini.desc" xml:space="preserve">
     <value>Chỉ gửi nội dung câu lệnh, không gửi toàn bộ lịch của bạn</value>
   </data>
-
   <!-- Spec §4.11 (FR-I18N-7) Confirm & Consent Dialogs -->
   <data name="confirm.privacy.off" xml:space="preserve">
     <value>Opt-in đang tắt: không gửi dữ liệu huấn luyện khi bạn xác nhận.</value>
@@ -122,12 +120,10 @@
   <data name="consent.decline" xml:space="preserve">
     <value>Không, cảm ơn</value>
   </data>
-
   <!-- Spec §4.11 (FR-I18N-7) Lunar Title Range -->
   <data name="lunar.title.range" xml:space="preserve">
     <value>Âm lịch: tháng 8 – 9 năm Bính Ngọ</value>
   </data>
-
   <!-- Spec §4.11 Toast Notifications (FR-NOTIFY) -->
   <data name="Toast_Header_Reminder" xml:space="preserve">
     <value>{0} · Nhắc nhở</value>
@@ -171,7 +167,6 @@
   <data name="Toast_Hidden_Content" xml:space="preserve">
     <value>Bạn có sự kiện lúc {0}</value>
   </data>
-
   <!-- Views & Navigation (FR-I18N-4) -->
   <data name="view.day" xml:space="preserve">
     <value>Ngày</value>
@@ -188,7 +183,6 @@
   <data name="topbar.today" xml:space="preserve">
     <value>Hôm nay</value>
   </data>
-
   <!-- Common UI actions -->
   <data name="common.close" xml:space="preserve">
     <value>Đóng</value>
@@ -214,7 +208,6 @@
   <data name="lunar.leap" xml:space="preserve">
     <value>nhuận</value>
   </data>
-
   <!-- Heavenly Stems (Can) -->
   <data name="can.giap" xml:space="preserve">
     <value>Giáp</value>
@@ -246,7 +239,6 @@
   <data name="can.quy" xml:space="preserve">
     <value>Quý</value>
   </data>
-
   <!-- Earthly Branches (Chi) -->
   <data name="chi.ty" xml:space="preserve">
     <value>Tý</value>
@@ -284,7 +276,6 @@
   <data name="chi.hoi" xml:space="preserve">
     <value>Hợi</value>
   </data>
-
   <!-- 24 Solar Terms (Tiết khí) -->
   <data name="solarterm.xuan_phan" xml:space="preserve">
     <value>Xuân phân</value>
@@ -448,7 +439,6 @@
   <data name="day_detail.lunar_disabled" xml:space="preserve">
     <value>Lịch âm đang tắt trong Cài đặt</value>
   </data>
-
   <!-- Spec §4.3 (FR-UI-7), §4.11 (FR-I18N-4) Appearance Settings (Figma S13) -->
   <data name="settings.appearance.title" xml:space="preserve">
     <value>Giao diện</value>
@@ -701,5 +691,11 @@
   </data>
   <data name="day_detail.close" xml:space="preserve">
     <value>Đóng</value>
+  </data>
+  <data name="auth.reauth.required" xml:space="preserve">
+    <value>Phiên đăng nhập Google đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.</value>
+  </data>
+  <data name="auth.reauth.testing_notice" xml:space="preserve">
+    <value>Màn hình đồng ý OAuth đang ở chế độ Thử nghiệm (Testing), vì vậy phiên đăng nhập tự hết hạn sau 7 ngày. Khi chuyển sang trạng thái Phát hành (In production), phiên đăng nhập sẽ duy trì liên tục.</value>
   </data>
 </root>

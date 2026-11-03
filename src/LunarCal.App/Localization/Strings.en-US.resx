@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -58,7 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-
   <!-- Spec §4.11 (FR-I18N-7) Settings -->
   <data name="settings.language.title" xml:space="preserve">
     <value>Interface language</value>
@@ -102,7 +101,6 @@
   <data name="settings.gemini.desc" xml:space="preserve">
     <value>Only the command text is sent, never your calendar</value>
   </data>
-
   <!-- Spec §4.11 (FR-I18N-7) Confirm & Consent Dialogs -->
   <data name="confirm.privacy.off" xml:space="preserve">
     <value>Opt-in is off: no training data is sent when you confirm.</value>
@@ -122,12 +120,10 @@
   <data name="consent.decline" xml:space="preserve">
     <value>No thanks</value>
   </data>
-
   <!-- Spec §4.11 (FR-I18N-7) Lunar Title Range -->
   <data name="lunar.title.range" xml:space="preserve">
     <value>Lunar: months 8 – 9, year of Bính Ngọ (Fire Horse)</value>
   </data>
-
   <!-- Spec §4.11 Toast Notifications (FR-NOTIFY) -->
   <data name="Toast_Header_Reminder" xml:space="preserve">
     <value>{0} · Reminder</value>
@@ -171,7 +167,6 @@
   <data name="Toast_Hidden_Content" xml:space="preserve">
     <value>You have an event at {0}</value>
   </data>
-
   <!-- Views & Navigation (FR-I18N-4) -->
   <data name="view.day" xml:space="preserve">
     <value>Day</value>
@@ -188,7 +183,6 @@
   <data name="topbar.today" xml:space="preserve">
     <value>Today</value>
   </data>
-
   <!-- Common UI actions -->
   <data name="common.close" xml:space="preserve">
     <value>Close</value>
@@ -214,7 +208,6 @@
   <data name="lunar.leap" xml:space="preserve">
     <value>leap</value>
   </data>
-
   <!-- Heavenly Stems (Can) -->
   <data name="can.giap" xml:space="preserve">
     <value>Yang Wood</value>
@@ -246,7 +239,6 @@
   <data name="can.quy" xml:space="preserve">
     <value>Yin Water</value>
   </data>
-
   <!-- Earthly Branches (Chi) -->
   <data name="chi.ty" xml:space="preserve">
     <value>Rat</value>
@@ -284,7 +276,6 @@
   <data name="chi.hoi" xml:space="preserve">
     <value>Pig</value>
   </data>
-
   <!-- 24 Solar Terms (Tiết khí) -->
   <data name="solarterm.xuan_phan" xml:space="preserve">
     <value>Spring Equinox</value>
@@ -448,7 +439,6 @@
   <data name="day_detail.lunar_disabled" xml:space="preserve">
     <value>Lunar calendar is disabled in Settings</value>
   </data>
-
   <!-- Spec §4.3 (FR-UI-7), §4.11 (FR-I18N-4) Appearance Settings (Figma S13) -->
   <data name="settings.appearance.title" xml:space="preserve">
     <value>Appearance</value>
@@ -701,5 +691,11 @@
   </data>
   <data name="day_detail.close" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="auth.reauth.required" xml:space="preserve">
+    <value>Your Google session has expired or was revoked. Please sign in again.</value>
+  </data>
+  <data name="auth.reauth.testing_notice" xml:space="preserve">
+    <value>The OAuth consent screen is in Testing mode, so refresh tokens expire automatically after 7 days. When published to In production, sessions remain valid indefinitely.</value>
   </data>
 </root>

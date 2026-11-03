@@ -7,8 +7,8 @@ using Serilog;
 namespace LunarCal.Infrastructure.Google.OAuth;
 
 /// <summary>
-/// Google OAuth 2.0 client implementing the desktop authorization code flow with PKCE S256 and loopback redirect
-/// (FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, SEC-OAUTH-3, ADR-0017).
+/// Google OAuth 2.0 client implementing desktop authorization code flow and automatic token refresh
+/// (FR-AUTH-1, FR-AUTH-2, FR-AUTH-3, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, SEC-OAUTH-3, ADR-0017, ADR-0026).
 /// </summary>
 public sealed class GoogleOAuthClient : IGoogleOAuthClient
 {
@@ -132,6 +132,82 @@ public sealed class GoogleOAuthClient : IGoogleOAuthClient
         return GoogleAuthResult.Succeeded(userInfo, tokens);
     }
 
+    /// <inheritdoc />
+    public async Task<GoogleOAuthTokens> RefreshAccessTokenAsync(string accountId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+
+        var clientId = _options.ClientId;
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            _logger.Error("Google OAuth Client ID is not configured (FR-AUTH-6).");
+            throw new InvalidOperationException("Google OAuth Client ID is not configured (FR-AUTH-6).");
+        }
+
+        var secretKey = KnownSecretKeys.GoogleRefreshToken(accountId);
+        var storedRefreshToken = await _secretStore.GetSecretAsync(secretKey, cancellationToken).ConfigureAwait(false);
+
+        if (string.IsNullOrWhiteSpace(storedRefreshToken))
+        {
+            _logger.Warning("No refresh token found in secret store for account {AccountId} (FR-AUTH-3).", accountId);
+            throw new GoogleInvalidGrantException(
+                accountId,
+                $"No refresh token found for account '{accountId}'. Re-authentication is required.",
+                _options.IsTestingConsentMode);
+        }
+
+        return await ExchangeRefreshTokenAsync(accountId, storedRefreshToken, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<GoogleTokenRefreshResult> TryRefreshAccessTokenAsync(string accountId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return GoogleTokenRefreshResult.Failed("invalid_account_id", "Account ID cannot be empty.", requiresReauthentication: false);
+        }
+
+        if (string.IsNullOrWhiteSpace(_options.ClientId))
+        {
+            return GoogleTokenRefreshResult.Failed("missing_client_id", "Google OAuth Client ID is not configured (FR-AUTH-6).", requiresReauthentication: true);
+        }
+
+        try
+        {
+            var tokens = await RefreshAccessTokenAsync(accountId, cancellationToken).ConfigureAwait(false);
+            return GoogleTokenRefreshResult.Succeeded(tokens);
+        }
+        catch (GoogleInvalidGrantException ex)
+        {
+            return GoogleTokenRefreshResult.Failed(
+                error: "invalid_grant",
+                description: ex.Message,
+                requiresReauthentication: true,
+                isInvalidGrant: true,
+                guidanceMessage: ex.GuidanceMessage);
+        }
+        catch (HttpRequestException ex)
+        {
+            return GoogleTokenRefreshResult.Failed(
+                error: "network_error",
+                description: ex.Message,
+                requiresReauthentication: false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return GoogleTokenRefreshResult.Failed(
+                error: "canceled",
+                description: "Token refresh was canceled.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Unexpected error refreshing Google access token for account {AccountId}.", accountId);
+            return GoogleTokenRefreshResult.Failed(
+                error: "unexpected_error",
+                description: ex.Message);
+        }
+    }
+
     /// <summary>
     /// Builds the authorization URI with PKCE parameters, state, and minimal requested scopes (FR-AUTH-1, FR-AUTH-2, SEC-OAUTH-1).
     /// </summary>
@@ -201,6 +277,95 @@ public sealed class GoogleOAuthClient : IGoogleOAuthClient
         {
             _logger.Error(ex, "HTTP exception during token exchange with Google.");
             return TokenExchangeResult.Failed("network_error", ex.Message);
+        }
+    }
+
+    private async Task<GoogleOAuthTokens> ExchangeRefreshTokenAsync(
+        string accountId,
+        string refreshToken,
+        CancellationToken cancellationToken)
+    {
+        var parameters = new Dictionary<string, string>
+        {
+            ["client_id"] = _options.ClientId,
+            ["grant_type"] = "refresh_token",
+            ["refresh_token"] = refreshToken
+        };
+
+        if (!string.IsNullOrWhiteSpace(_options.ClientSecret))
+        {
+            parameters["client_secret"] = _options.ClientSecret;
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, _options.TokenEndpoint)
+        {
+            Content = new FormUrlEncodedContent(parameters)
+        };
+
+        HttpResponseMessage response;
+        string content;
+        try
+        {
+            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.Error(ex, "HTTP exception during token refresh with Google for account {AccountId}.", accountId);
+            throw new HttpRequestException($"Network error refreshing Google access token: {ex.Message}", ex);
+        }
+
+        using (response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorResult = ParseTokenError(content, (int)response.StatusCode);
+
+                if (string.Equals(errorResult.Error, "invalid_grant", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.Warning(
+                        "Google OAuth token refresh returned 'invalid_grant' for account {AccountId}. Token expired or revoked (FR-AUTH-3, FR-AUTH-6).",
+                        accountId);
+
+                    // FR-AUTH-3: Token is dead; remove from secret store to prevent repeated failed refreshes
+                    var secretKey = KnownSecretKeys.GoogleRefreshToken(accountId);
+                    await _secretStore.DeleteSecretAsync(secretKey, cancellationToken).ConfigureAwait(false);
+
+                    throw new GoogleInvalidGrantException(
+                        accountId,
+                        $"Google OAuth token refresh failed for account '{accountId}': invalid_grant ({errorResult.ErrorDescription}). Re-authentication required.",
+                        _options.IsTestingConsentMode);
+                }
+
+                _logger.Warning(
+                    "Token refresh failed with HTTP status {StatusCode}, error '{Error}': {Description}.",
+                    (int)response.StatusCode,
+                    errorResult.Error,
+                    errorResult.ErrorDescription);
+
+                throw new HttpRequestException(
+                    $"Token refresh failed with HTTP {(int)response.StatusCode}: {errorResult.Error} - {errorResult.ErrorDescription}");
+            }
+
+            var parsed = ParseTokenSuccess(content);
+            if (parsed.Tokens is null)
+            {
+                throw new InvalidOperationException("Failed to parse refreshed tokens from Google response.");
+            }
+
+            var newTokens = parsed.Tokens;
+            var effectiveRefreshToken = refreshToken;
+
+            // If Google rotated/issued a new refresh token, securely persist it
+            if (!string.IsNullOrWhiteSpace(newTokens.RefreshToken))
+            {
+                effectiveRefreshToken = newTokens.RefreshToken;
+                var secretKey = KnownSecretKeys.GoogleRefreshToken(accountId);
+                await _secretStore.SetSecretAsync(secretKey, newTokens.RefreshToken, cancellationToken).ConfigureAwait(false);
+                _logger.Information("Saved updated Google refresh token in DPAPI secret store for account {AccountId}.", accountId);
+            }
+
+            return newTokens with { RefreshToken = effectiveRefreshToken };
         }
     }
 

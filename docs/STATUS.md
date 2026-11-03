@@ -3,18 +3,18 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-03 11:15 +07:00, Antigravity. Hoàn thành P3-05: Google OAuth desktop PKCE S256, CSRF state verification, loopback listener 127.0.0.1 cổng ngẫu nhiên timeout 5 phút, scope tối thiểu (FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2), ADR-0017 Accepted, 15 unit tests mới, 306/306 tests pass; đã merge vào `phase/3`.
+**Cập nhật lần cuối:** 2026-11-03 11:45 +07:00, Antigravity. Hoàn thành P3-06: Tự động refresh token Google OAuth với DPAPI secret store, xoay vòng refresh token, phát hiện invalid_grant xoá token chết và yêu cầu đăng nhập lại, hướng dẫn consent Testing hết hạn sau 7 ngày (FR-AUTH-3, FR-AUTH-6, ADR-0026); 8 test mới, 314/314 tests pass; đã merge vào `phase/3`.
 
-**Trước đó:** 2026-11-02 23:55 +07:00, Antigravity. Hoàn thành P3-04: ACL thư mục %LOCALAPPDATA%/LunarCal/ chỉ cho user hiện tại (SEC-DATA-2) và service LocalDataWipeService xoá toàn bộ dữ liệu cục bộ (SEC-DATA-3), 278/278 tests pass; đã merge vào `phase/3`.
+**Trước đó:** 2026-11-03 11:15 +07:00, Antigravity. Hoàn thành P3-05: Google OAuth desktop PKCE S256, CSRF state verification, loopback listener 127.0.0.1 cổng ngẫu nhiên timeout 5 phút, scope tối thiểu (FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2), ADR-0017 Accepted, 15 unit tests mới, 306/306 tests pass; đã merge vào `phase/3`.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9 và P2-R10..P2-R15). P3-00a, P3-00b, P3-01, P3-02, P3-03, P3-04, P3-05 xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
+- **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9 và P2-R10..P2-R15). P3-00a, P3-00b, P3-01, P3-02, P3-03, P3-04, P3-05, P3-06 xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** không giữ task nào. Vừa hoàn thành P3-05 trên branch `task/P3-05` (đã merge vào `phase/3`). File đang sửa dở: không có. Bước tiếp theo: nhận task P3-06 (Refresh tự động; `invalid_grant` → đăng nhập lại; hướng dẫn khi consent ở chế độ Testing, FR-AUTH-3, FR-AUTH-6) trên branch `task/P3-06` tách từ `phase/3`.
+  - **Antigravity:** không giữ task nào. Vừa hoàn thành P3-06 trên branch `task/P3-06` (đã merge vào `phase/3`). File đang sửa dở: không có. Bước tiếp theo: nhận task P3-07 (Đăng xuất: revoke, xoá token và cache của account, FR-AUTH-4) trên branch `task/P3-07` tách từ `phase/3`.
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: nhận task P3-06 (Refresh tự động; `invalid_grant` → đăng nhập lại; hướng dẫn khi consent ở chế độ Testing, FR-AUTH-3, FR-AUTH-6) trên branch `task/P3-06` tách từ `phase/3`.
+  1. Antigravity: nhận task P3-07 (Đăng xuất: revoke, xoá token và cache của account, FR-AUTH-4) trên branch `task/P3-07` tách từ `phase/3`.
   2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.
 
 ## Đã hoàn thành (đối chiếu spec §13)
@@ -24,7 +24,7 @@
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
 | 2 | Hoàn thành 100%: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms), P2-08 (WeekView, DayView, timed event grid, now line, lane clustering), P2-09 (AgendaView, date grouping, calendar filters), P2-10 (DayDetailPanel, Can Chi, solar terms, glosses), P2-11 (AppearancePage, week start, 12h/24h, timezone), P2-12 (FlaUI UI smoke tests out-of-process), P2-13 (kết thúc Phase 2, cập nhật tài liệu, kiểm tra gates) | `tests/LunarCal.App.UiTests/SmokeTests.cs`, `src/LunarCal.App/Views/Settings/AppearancePage.xaml`, `DayDetailPanel.xaml`, `AgendaView.xaml`, `WeekView.xaml`, `DayView.xaml`, `MonthView.xaml`, `MainWindow.xaml`, `tests/`, `docs/TRACEABILITY.md`, `CHANGELOG.md` |
-| 3 | Đang làm: P3-00a xong (Client ID trong user-secrets, consent Testing); P3-00b xong (Figma S10, S14, S18, S20, chờ duyệt); P3-01 xong (Serilog file sink xoay vòng 14 ngày, LogRedactor che bí mật, SEC-LOG-1, SEC-LOG-2); P3-02 xong (ISecretStore, DpapiSecretStore, SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018); P3-03 xong (SQLCipher encrypted storage, migration runner V1, 9 bảng spec §6, index, SEC-DATA-1, ADR-0013); P3-04 xong (ACL thư mục SEC-DATA-2, LocalDataWipeService SEC-DATA-3); P3-05 xong (Google OAuth desktop PKCE S256, loopback 127.0.0.1, state, timeout 5 phút, scope tối thiểu, ADR-0017 Accepted, FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2) | ADR-0013, ADR-0017, ADR-0018, ADR-0019, ADR-0026, `src/LunarCal.Infrastructure/Google/OAuth/`, `tests/LunarCal.Infrastructure.Tests/Google/`, `docs/TASKS.md` |
+| 3 | Đang làm: P3-00a xong (Client ID trong user-secrets, consent Testing); P3-00b xong (Figma S10, S14, S18, S20, chờ duyệt); P3-01 xong (Serilog file sink xoay vòng 14 ngày, LogRedactor che bí mật, SEC-LOG-1, SEC-LOG-2); P3-02 xong (ISecretStore, DpapiSecretStore, SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018); P3-03 xong (SQLCipher encrypted storage, migration runner V1, 9 bảng spec §6, index, SEC-DATA-1, ADR-0013); P3-04 xong (ACL thư mục SEC-DATA-2, LocalDataWipeService SEC-DATA-3); P3-05 xong (Google OAuth desktop PKCE S256, loopback 127.0.0.1, state, timeout 5 phút, scope tối thiểu, ADR-0017 Accepted, FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2); P3-06 xong (Tự động refresh token, invalid_grant đăng nhập lại, hướng dẫn consent Testing hết hạn sau 7 ngày, FR-AUTH-3, FR-AUTH-6) | ADR-0013, ADR-0017, ADR-0018, ADR-0019, ADR-0026, `src/LunarCal.Infrastructure/Google/OAuth/`, `tests/LunarCal.Infrastructure.Tests/Google/`, `docs/TASKS.md` |
 | 4–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
@@ -35,8 +35,8 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 306 test: 306 pass, 0 fail, 0 skip (P3-05). Test NFR-PERF MonthView: pass trên luồng STA |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 98.73% (ngưỡng 95% và 85%; đo 2026-11-03) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 314 test: 314 pass, 0 fail, 0 skip (P3-06). Test NFR-PERF MonthView: pass trên luồng STA |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 93.06% (ngưỡng 95% và 85%; đo 2026-11-03) |
 | UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 5/5 lần liên tiếp ở máy local (P2-R8) |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 

@@ -40,4 +40,11 @@ public sealed class GoogleOAuthOptions
 
     /// <summary>Google OpenID Connect userinfo endpoint (fallback for profile discovery).</summary>
     public string UserInfoEndpoint { get; set; } = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+    /// <summary>
+    /// Whether the Google OAuth consent screen is configured in 'Testing' mode (ADR-0026, FR-AUTH-6).
+    /// In Testing mode, refresh tokens expire automatically after 7 days, requiring re-authentication.
+    /// Defaults to true per ADR-0026.
+    /// </summary>
+    public bool IsTestingConsentMode { get; set; } = true;
 }

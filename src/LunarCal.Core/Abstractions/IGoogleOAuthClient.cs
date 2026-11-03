@@ -92,7 +92,7 @@ public sealed record GoogleAuthResult
 }
 
 /// <summary>
-/// Client port for Google OAuth 2.0 authentication flows (FR-AUTH-1, FR-AUTH-3, SEC-OAUTH-1).
+/// Client port for Google OAuth 2.0 authentication flows (FR-AUTH-1, FR-AUTH-3, FR-AUTH-6, SEC-OAUTH-1).
 /// </summary>
 public interface IGoogleOAuthClient
 {
@@ -100,4 +100,26 @@ public interface IGoogleOAuthClient
     /// Executes the interactive OAuth authorization code flow with PKCE S256 and loopback redirect (FR-AUTH-1, SEC-OAUTH-1).
     /// </summary>
     Task<GoogleAuthResult> AuthorizeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Refreshes the Google OAuth access token for the specified account using the stored refresh token (FR-AUTH-3).
+    /// If Google returns 'invalid_grant' (e.g. expired after 7 days in Testing mode or revoked),
+    /// throws <see cref="GoogleInvalidGrantException"/> indicating re-authentication is required (FR-AUTH-3, FR-AUTH-6).
+    /// </summary>
+    /// <param name="accountId">Account ID whose refresh token will be used.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Refreshed OAuth tokens.</returns>
+    /// <exception cref="GoogleInvalidGrantException">Thrown when Google returns 'invalid_grant' or refresh token is missing.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when client ID is not configured.</exception>
+    /// <exception cref="HttpRequestException">Thrown on network or HTTP errors.</exception>
+    Task<GoogleOAuthTokens> RefreshAccessTokenAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Attempts to refresh the Google OAuth access token for the specified account, returning a structured result (FR-AUTH-3, FR-AUTH-6).
+    /// Does not throw on 'invalid_grant' or network failures.
+    /// </summary>
+    /// <param name="accountId">Account ID whose refresh token will be used.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A <see cref="GoogleTokenRefreshResult"/> describing success or failure with guidance.</returns>
+    Task<GoogleTokenRefreshResult> TryRefreshAccessTokenAsync(string accountId, CancellationToken cancellationToken = default);
 }
