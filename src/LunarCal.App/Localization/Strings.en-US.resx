@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -706,5 +706,120 @@
   </data>
   <data name="auth.signout.confirm_action" xml:space="preserve">
     <value>Sign out &amp; delete data</value>
+  </data>
+  <!-- Event Editor & Context Menu (FR-UI-4, Figma S10) -->
+  <data name="event.dialog.create_title" xml:space="preserve">
+    <value>New event</value>
+  </data>
+  <data name="event.dialog.edit_title" xml:space="preserve">
+    <value>Edit event</value>
+  </data>
+  <data name="event.title.placeholder" xml:space="preserve">
+    <value>Add title</value>
+  </data>
+  <data name="event.location.placeholder" xml:space="preserve">
+    <value>Add location</value>
+  </data>
+  <data name="event.description.placeholder" xml:space="preserve">
+    <value>Add description</value>
+  </data>
+  <data name="event.calendar" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="event.start_time" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="event.end_time" xml:space="preserve">
+    <value>Ends</value>
+  </data>
+  <data name="event.recurrence" xml:space="preserve">
+    <value>Repeat</value>
+  </data>
+  <data name="recurrence.none" xml:space="preserve">
+    <value>Does not repeat</value>
+  </data>
+  <data name="recurrence.daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="recurrence.weekly" xml:space="preserve">
+    <value>Weekly</value>
+  </data>
+  <data name="recurrence.monthly" xml:space="preserve">
+    <value>Monthly</value>
+  </data>
+  <data name="recurrence.yearly" xml:space="preserve">
+    <value>Yearly</value>
+  </data>
+  <data name="recurrence.lunar" xml:space="preserve">
+    <value>Lunar recurrence</value>
+  </data>
+  <data name="lunar_rule.day" xml:space="preserve">
+    <value>Lunar day</value>
+  </data>
+  <data name="lunar_rule.month" xml:space="preserve">
+    <value>Lunar month</value>
+  </data>
+  <data name="lunar_rule.leap_policy" xml:space="preserve">
+    <value>Include leap month</value>
+  </data>
+  <data name="lunar_rule.sync_google" xml:space="preserve">
+    <value>Sync to Google Calendar</value>
+  </data>
+  <data name="lunar_rule.years_ahead" xml:space="preserve">
+    <value>Years ahead</value>
+  </data>
+  <data name="reminder.title" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="reminder.minutes_before" xml:space="preserve">
+    <value>{0} minutes before</value>
+  </data>
+  <data name="reminder.hours_before" xml:space="preserve">
+    <value>{0} hours before</value>
+  </data>
+  <data name="reminder.days_before" xml:space="preserve">
+    <value>{0} days before</value>
+  </data>
+  <data name="reminder.at_start" xml:space="preserve">
+    <value>At start time</value>
+  </data>
+  <data name="reminder.add" xml:space="preserve">
+    <value>Add reminder</value>
+  </data>
+  <data name="menu.event.open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="menu.event.edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="menu.event.duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="menu.event.move_calendar" xml:space="preserve">
+    <value>Move to calendar</value>
+  </data>
+  <data name="menu.event.convert_lunar" xml:space="preserve">
+    <value>Convert to lunar recurrence</value>
+  </data>
+  <data name="menu.event.delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="menu.slot.create_at" xml:space="preserve">
+    <value>Create at {0}</value>
+  </data>
+  <data name="menu.slot.create_all_day" xml:space="preserve">
+    <value>Create all-day</value>
+  </data>
+  <data name="menu.slot.create_lunar" xml:space="preserve">
+    <value>Create lunar rule</value>
+  </data>
+  <data name="menu.slot.paste" xml:space="preserve">
+    <value>Paste event</value>
+  </data>
+  <data name="event.validation.title_required" xml:space="preserve">
+    <value>Please enter an event title.</value>
+  </data>
+  <data name="event.validation.invalid_time" xml:space="preserve">
+    <value>End time must be after start time.</value>
   </data>
 </root>

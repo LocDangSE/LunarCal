@@ -19,6 +19,7 @@ public sealed class MutationService : IMutationService
     private readonly ICalendarGateway _gateway;
     private readonly IGoogleOAuthClient _oauthClient;
     private readonly IConflictNotifier _conflictNotifier;
+    private readonly IEventStore? _eventStore;
     private ISyncScheduler? _syncScheduler;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger _logger;
@@ -40,13 +41,15 @@ public sealed class MutationService : IMutationService
         IConflictNotifier conflictNotifier,
         ISyncScheduler? syncScheduler = null,
         TimeProvider? timeProvider = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        IEventStore? eventStore = null)
     {
         _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
         _mutationStore = mutationStore ?? throw new ArgumentNullException(nameof(mutationStore));
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _conflictNotifier = conflictNotifier ?? throw new ArgumentNullException(nameof(conflictNotifier));
+        _eventStore = eventStore;
         _syncScheduler = syncScheduler;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _logger = logger ?? Log.ForContext<MutationService>();
@@ -100,6 +103,10 @@ public sealed class MutationService : IMutationService
             await UpsertEventAsync(connection, transaction, localEvent, cancellationToken).ConfigureAwait(false);
             await EnqueueMutationInTransactionAsync(connection, transaction, mutation, cancellationToken).ConfigureAwait(false);
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            if (_eventStore is not null)
+            {
+                await _eventStore.UpsertEventAsync(localEvent, cancellationToken).ConfigureAwait(false);
+            }
             _logger.Information("Optimistically created event {EventId} in calendar {CalendarId} (FR-SYNC-4)", eventId, calendarId);
         }
         catch (Exception ex)
@@ -167,6 +174,10 @@ public sealed class MutationService : IMutationService
             await UpsertEventAsync(connection, transaction, calendarEvent, cancellationToken).ConfigureAwait(false);
             await EnqueueMutationInTransactionAsync(connection, transaction, mutation, cancellationToken).ConfigureAwait(false);
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            if (_eventStore is not null)
+            {
+                await _eventStore.UpsertEventAsync(calendarEvent, cancellationToken).ConfigureAwait(false);
+            }
             _logger.Information("Optimistically updated event {EventId} in calendar {CalendarId} (FR-SYNC-4)", calendarEvent.Id, calendarId);
         }
         catch (Exception ex)
@@ -233,6 +244,10 @@ public sealed class MutationService : IMutationService
             await DeleteEventFromDbAsync(connection, transaction, eventId, cancellationToken).ConfigureAwait(false);
             await EnqueueMutationInTransactionAsync(connection, transaction, mutation, cancellationToken).ConfigureAwait(false);
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            if (_eventStore is not null)
+            {
+                await _eventStore.DeleteEventAsync(eventId, cancellationToken).ConfigureAwait(false);
+            }
             _logger.Information("Optimistically deleted event {EventId} from calendar {CalendarId} (FR-SYNC-4)", eventId, calendarId);
         }
         catch (Exception ex)
@@ -516,6 +531,17 @@ public sealed class MutationService : IMutationService
             }
 
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            if (_eventStore is not null)
+            {
+                if (serverEvent is not null && !string.Equals(serverEvent.Status, "cancelled", StringComparison.OrdinalIgnoreCase))
+                {
+                    await _eventStore.UpsertEventAsync(serverEvent, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _eventStore.DeleteEventAsync(payload.EventId, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
         catch (Exception ex)
         {

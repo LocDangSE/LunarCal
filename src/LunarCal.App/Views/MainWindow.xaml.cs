@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Automation;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views.Settings;
+using LunarCal.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LunarCal.App.Views;
@@ -21,6 +23,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
         viewModel.SettingsRequested += OnSettingsRequested;
+        viewModel.EventEditorRequested += OnEventEditorRequested;
     }
 
     // Opens Settings > Appearance (Figma S13) as a modal window owned by the shell.
@@ -40,5 +43,28 @@ public partial class MainWindow : Window
         window.SetResourceReference(BackgroundProperty, "WindowBackgroundBrush");
         AutomationProperties.SetAutomationId(window, "SettingsWindow");
         window.ShowDialog();
+    }
+
+    // Opens Event Editor Dialog (Figma S10) as a modal dialog owned by the shell.
+    private void OnEventEditorRequested(object? sender, EventEditorRequest request)
+    {
+        var eventStore = _services.GetRequiredService<IEventStore>();
+        var localization = _services.GetRequiredService<ILocalizationService>();
+        var preferences = _services.GetRequiredService<IDisplayPreferences>();
+        var mutationService = _services.GetService<IMutationService>();
+
+        var editorVm = new EventEditorViewModel(eventStore, localization, preferences, mutationService);
+        editorVm.Initialize(request);
+
+        var dialog = new EventEditorDialog(editorVm)
+        {
+            Owner = this,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        };
+
+        if (dialog.ShowDialog() == true && DataContext is MainWindowViewModel mwVm)
+        {
+            _ = mwVm.ReloadActiveViewAsync();
+        }
     }
 }

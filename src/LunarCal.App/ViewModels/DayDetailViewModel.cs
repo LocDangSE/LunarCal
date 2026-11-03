@@ -120,6 +120,9 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     /// <summary>Event raised when the user closes the day detail panel.</summary>
     public event EventHandler? CloseRequested;
 
+    /// <summary>Event raised when an event is selected from the event list.</summary>
+    public event EventHandler<CalendarEvent>? EventSelected;
+
     /// <summary>
     /// Initializes a new instance of <see cref="DayDetailViewModel"/>.
     /// </summary>
@@ -343,6 +346,16 @@ public sealed partial class DayDetailViewModel : ObservableObject, IDisposable
     private void Close()
     {
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Opens the selected event in the event editor.</summary>
+    [RelayCommand]
+    public void SelectEvent(AgendaEventItemViewModel? item)
+    {
+        if (item?.Event is not null)
+        {
+            EventSelected?.Invoke(this, item.Event);
+        }
     }
 
     private void OnLocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
