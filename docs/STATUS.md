@@ -3,19 +3,19 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-03 20:55 +07:00, Antigravity. Hoàn thành P3-14: EventEditorDialog (Figma S10), EventEditorViewModel, context menus cho sự kiện và ô trống với Shift+F10, kéo thả/điều chỉnh thời gian lưới 15 phút trong Tuần/Ngày, clipboard copy/paste, CRUD tích hợp PendingMutation và optimistic UI (FR-UI-4); 12 test mới, 424/424 tests pass (Core 99, Infra 189, App 133, UiTests 3), Core coverage 96.83%, Lunar coverage 100%.
+**Cập nhật lần cuối:** 2026-11-03 22:45 +07:00, Antigravity. Hoàn thành P3-15: Settings > Tài khoản Google (Figma 04 4:2, S13/S20), chip Online/Offline, banner offline, khối trạng thái đồng bộ và nút "Đồng bộ ngay", format thời gian đồng bộ tương đối, banner cảnh báo hết hạn token/re-auth, nâng cao (custom OAuth client ID/secret, wipe data cục bộ), onboarding wizard lần đầu (S14); 10 test mới, 434/434 tests pass (Core 99, Infra 189, App 143, UiTests 3), Core coverage 96.83%, Lunar coverage 100%.
 
-**Trước đó:** 2026-11-03 20:00 +07:00, Antigravity. Hoàn thành P3-13: Optimistic UI, hàng đợi PendingMutation, retry khi offline, ETag/If-Match concurrency control, server-wins conflict resolution khi gặp HTTP 412 và thông báo cho người dùng qua IConflictNotifier (FR-SYNC-4, NFR-REL); 13 test mới, 412/412 tests pass; đã merge vào `phase/3`.
+**Trước đó:** 2026-11-03 20:55 +07:00, Antigravity. Hoàn thành P3-14: EventEditorDialog (Figma S10), EventEditorViewModel, context menus cho sự kiện và ô trống với Shift+F10, kéo thả/điều chỉnh thời gian lưới 15 phút trong Tuần/Ngày, clipboard copy/paste, CRUD tích hợp PendingMutation và optimistic UI (FR-UI-4); 12 test mới, 424/424 tests pass; đã merge vào `phase/3`.
 
 ## Phase và task
 
 - **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9 và P2-R10..P2-R15). P3-00a, P3-00b, P3-01, P3-02, P3-03, P3-04, P3-05, P3-06, P3-07, P3-08, P3-09, P3-10, P3-11, P3-12, P3-13, P3-14 xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** vừa hoàn thành task **P3-14** (`FR-UI-4`), chuẩn bị nhận task **P3-15** (`FR-UI-9`, `FR-UI-10`, `FR-AUTH-1`: Settings > Tài khoản Google, chip Online/Offline, khối trạng thái đồng bộ, "Đồng bộ ngay", đăng nhập lần đầu S14) trên branch `task/P3-15`. File đang sửa dở: không có. Bước tiếp theo: tạo branch `task/P3-15` từ `phase/3`, triển khai Google Account settings UI, network/sync status chips, trigger sync, đăng nhập lần đầu S14.
+  - **Antigravity:** vừa hoàn thành task **P3-15** (`FR-UI-9`, `FR-UI-10`, `FR-AUTH-1`: Settings > Tài khoản Google, chip Online/Offline, banner offline, khối trạng thái đồng bộ, "Đồng bộ ngay", relative time format, banner hết hạn token, custom OAuth overrides, local data wipe, onboarding wizard S14), chuẩn bị nhận task **P3-16** (kết thúc Phase 3: chuyển settings P2-04 sang SQLite `AppSetting`, TRACEABILITY, full suite, gates). File đang sửa dở: không có. Bước tiếp theo: nhận task P3-16 trên branch `task/P3-16`, hoàn thiện Phase 3.
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: nhận task P3-14 (FR-UI-4: EventEditorDialog, view model, context menu, kéo thả trong Week/Day view) trên branch `task/P3-14`.
-  2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.
+  1. Antigravity: nhận task P3-16 (kết thúc Phase 3, chuyển settings sang bảng `AppSetting`, verify toàn bộ gates) trên branch `task/P3-16`.
+  2. Sau khi P3-16 hoàn thành: chuyển cổng P3-REVIEW sang `[r]` để bàn giao Phase 3 cho Claude Code review.
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -35,7 +35,7 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 424 test: 424 pass, 0 fail, 0 skip (P3-14). Test NFR-PERF MonthView: pass trên luồng STA |
+| `dotnet test --solution LunarCal.slnx -c Release` | 434 test: 434 pass, 0 fail, 0 skip (P3-15). Test NFR-PERF MonthView: pass trên luồng STA |
 | Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 96.83% (ngưỡng 95% và 85%; đo 2026-11-03) |
 | UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 test out-of-process |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |

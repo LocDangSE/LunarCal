@@ -88,6 +88,9 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     public DateTimeOffset? LastSyncTime => _lastSyncTime;
 
     /// <inheritdoc />
+    public event EventHandler? SyncStarted;
+
+    /// <inheritdoc />
     public event EventHandler<SyncResult>? SyncCompleted;
 
     /// <inheritdoc />
@@ -243,6 +246,7 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
         try
         {
             _isSyncInProgress = true;
+            SyncStarted?.Invoke(this, EventArgs.Empty);
             _logger.Debug("Executing sync pass ({Reason})...", reason);
 
             // Flush pending mutations before sync pass (FR-SYNC-4)

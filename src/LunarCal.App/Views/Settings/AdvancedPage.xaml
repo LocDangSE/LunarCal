@@ -1,0 +1,244 @@
+<UserControl x:Class="LunarCal.App.Views.Settings.AdvancedPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AdvancedSettingsViewModel}"
+             Background="{DynamicResource WindowBackgroundBrush}"
+             AutomationProperties.AutomationId="AdvancedSettingsPage"
+             AutomationProperties.Name="{loc:Loc Key=settings.advanced.title}">
+
+  <UserControl.Resources>
+    <x:Static x:Key="Loc" Member="loc:LocalizationService.Instance" />
+    <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
+
+    <Style x:Key="PrimaryBtnStyle" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="16,8" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{DynamicResource AccentPrimaryBrush}"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                TextElement.Foreground="{DynamicResource OnAccentBrush}"
+                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
+                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="DangerBtnStyle" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="16,8" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="Transparent"
+                    BorderBrush="{DynamicResource DangerBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                TextElement.Foreground="{DynamicResource DangerTextBrush}"
+                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
+                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="SecondaryBtnStyle" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="16,8" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{DynamicResource SurfaceMutedBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                TextElement.Foreground="{DynamicResource TextPrimaryBrush}"
+                                TextElement.FontWeight="{DynamicResource FontWeightMedium}"
+                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32,24,32,32" MaxWidth="720" HorizontalAlignment="Left">
+
+      <!-- Header Section -->
+      <TextBlock Text="{Binding [settings.advanced.title], Source={StaticResource Loc}}"
+                 FontSize="{DynamicResource FontSizeDisplay}"
+                 FontWeight="{DynamicResource FontWeightBold}"
+                 Foreground="{DynamicResource TextPrimaryBrush}"
+                 Margin="0,0,0,4" />
+
+      <TextBlock Text="{Binding [settings.advanced.desc], Source={StaticResource Loc}}"
+                 FontSize="{DynamicResource FontSizeBody}"
+                 Foreground="{DynamicResource TextSecondaryBrush}"
+                 Margin="0,0,0,24" />
+
+      <!-- Status Banner -->
+      <Border Background="{DynamicResource SuccessSubtleBrush}"
+              BorderBrush="{DynamicResource SuccessBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusMedium}"
+              Padding="14,10"
+              Margin="0,0,0,16"
+              Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}}">
+        <TextBlock Text="{Binding StatusMessage}"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource SuccessTextBrush}" />
+      </Border>
+
+      <!-- Error Banner -->
+      <Border Background="{DynamicResource DangerSubtleBrush}"
+              BorderBrush="{DynamicResource DangerBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusMedium}"
+              Padding="14,10"
+              Margin="0,0,0,16"
+              Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}">
+        <TextBlock Text="{Binding ErrorMessage}"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource DangerTextBrush}" />
+      </Border>
+
+      <!-- Section 1: Custom OAuth Client ID (FR-AUTH-6) -->
+      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusLarge}"
+              Padding="24,20"
+              Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="{Binding [settings.advanced.oauth_title], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeSection}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,4" />
+          <TextBlock Text="{Binding [settings.advanced.oauth_desc], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     Margin="0,0,0,16" />
+
+          <!-- Client ID Field -->
+          <TextBlock Text="{Binding [settings.advanced.client_id], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,6" />
+          <TextBox Text="{Binding ClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   Background="{DynamicResource SurfaceBackgroundBrush}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   BorderBrush="{DynamicResource BorderBrush}"
+                   BorderThickness="1"
+                   Padding="10,8"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Margin="0,0,0,14"
+                   AutomationProperties.AutomationId="InputOAuthClientId" />
+
+          <!-- Client Secret Field -->
+          <TextBlock Text="{Binding [settings.advanced.client_secret], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,6" />
+          <TextBox Text="{Binding ClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   Background="{DynamicResource SurfaceBackgroundBrush}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   BorderBrush="{DynamicResource BorderBrush}"
+                   BorderThickness="1"
+                   Padding="10,8"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Margin="0,0,0,16"
+                   AutomationProperties.AutomationId="InputOAuthClientSecret" />
+
+          <Button Style="{StaticResource PrimaryBtnStyle}"
+                  Content="{Binding [settings.advanced.save_oauth], Source={StaticResource Loc}}"
+                  Command="{Binding SaveOAuthCommand}"
+                  HorizontalAlignment="Left"
+                  AutomationProperties.AutomationId="BtnSaveOAuth" />
+        </StackPanel>
+      </Border>
+
+      <!-- Section 2: Storage & Local Wipe (SEC-DATA-3, P3-04) -->
+      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusLarge}"
+              Padding="24,20"
+              Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="{Binding [settings.advanced.wipe_title], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeSection}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,4" />
+          <TextBlock Text="{Binding [settings.advanced.wipe_desc], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     TextWrapping="Wrap"
+                     Margin="0,0,0,16" />
+
+          <Border Background="{DynamicResource SurfaceMutedBrush}"
+                  CornerRadius="{DynamicResource CornerRadiusMedium}"
+                  Padding="12,8"
+                  Margin="0,0,0,16">
+            <TextBlock Text="{Binding DatabasePath}"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
+          </Border>
+
+          <Button Style="{StaticResource DangerBtnStyle}"
+                  Content="{Binding [settings.advanced.wipe_button], Source={StaticResource Loc}}"
+                  Command="{Binding WipeAllDataCommand}"
+                  HorizontalAlignment="Left"
+                  AutomationProperties.AutomationId="BtnWipeLocalData" />
+        </StackPanel>
+      </Border>
+
+      <!-- Section 3: Logs (SEC-LOG-1, P3-01) -->
+      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusLarge}"
+              Padding="24,20"
+              Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="{Binding [settings.advanced.logs_title], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeSection}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,4" />
+          <TextBlock Text="{Binding [settings.advanced.logs_desc], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     Margin="0,0,0,16" />
+
+          <Button Style="{StaticResource SecondaryBtnStyle}"
+                  Content="{Binding [settings.advanced.open_logs], Source={StaticResource Loc}}"
+                  Command="{Binding OpenLogsFolderCommand}"
+                  HorizontalAlignment="Left"
+                  AutomationProperties.AutomationId="BtnOpenLogsFolder" />
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -822,4 +822,168 @@
   <data name="event.validation.invalid_time" xml:space="preserve">
     <value>End time must be after start time.</value>
   </data>
+  <!-- Settings Navigation & Tabs (Figma 04, S13, S20) -->
+  <data name="settings.nav.appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="settings.nav.account" xml:space="preserve">
+    <value>Google Account</value>
+  </data>
+  <data name="settings.nav.advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <!-- Google Account Settings (Figma 04, S14) -->
+  <data name="settings.account.title" xml:space="preserve">
+    <value>Google Account</value>
+  </data>
+  <data name="settings.account.desc" xml:space="preserve">
+    <value>Manage your Google Calendar account and two-way sync state</value>
+  </data>
+  <data name="settings.account.status_connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="settings.account.status_disconnected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="settings.account.signin_button" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+  <data name="settings.account.signout_button" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="settings.account.sync_now" xml:space="preserve">
+    <value>Sync now</value>
+  </data>
+  <data name="settings.account.syncing" xml:space="preserve">
+    <value>Syncing...</value>
+  </data>
+  <data name="settings.account.last_synced" xml:space="preserve">
+    <value>Last synced: {0}</value>
+  </data>
+  <data name="settings.account.never_synced" xml:space="preserve">
+    <value>Never synced</value>
+  </data>
+  <data name="settings.account.authorizing" xml:space="preserve">
+    <value>Opening browser for sign-in... (up to 5 min)</value>
+  </data>
+  <data name="settings.account.auth_cancelled" xml:space="preserve">
+    <value>Sign-in was cancelled.</value>
+  </data>
+  <data name="settings.account.auth_failed" xml:space="preserve">
+    <value>Sign-in failed: {0}</value>
+  </data>
+  <data name="settings.account.testing_warning" xml:space="preserve">
+    <value>OAuth consent screen is in Testing mode: session automatically expires after 7 days.</value>
+  </data>
+  <!-- Advanced Settings (Figma S20) -->
+  <data name="settings.advanced.title" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="settings.advanced.desc" xml:space="preserve">
+    <value>Advanced configuration for developers, storage, and diagnostics</value>
+  </data>
+  <data name="settings.advanced.oauth_title" xml:space="preserve">
+    <value>Custom OAuth Client ID (FR-AUTH-6)</value>
+  </data>
+  <data name="settings.advanced.oauth_desc" xml:space="preserve">
+    <value>Use your own Google Cloud project Client ID and Client Secret</value>
+  </data>
+  <data name="settings.advanced.client_id" xml:space="preserve">
+    <value>OAuth Client ID</value>
+  </data>
+  <data name="settings.advanced.client_secret" xml:space="preserve">
+    <value>OAuth Client Secret (optional)</value>
+  </data>
+  <data name="settings.advanced.save_oauth" xml:space="preserve">
+    <value>Save configuration</value>
+  </data>
+  <data name="settings.advanced.oauth_saved" xml:space="preserve">
+    <value>OAuth configuration saved. Changes will take effect on next sign-in.</value>
+  </data>
+  <data name="settings.advanced.wipe_title" xml:space="preserve">
+    <value>Wipe all local data (SEC-DATA-3)</value>
+  </data>
+  <data name="settings.advanced.wipe_desc" xml:space="preserve">
+    <value>Clears all account metadata, event caches, DPAPI keys, and local SQLite database files on this device</value>
+  </data>
+  <data name="settings.advanced.wipe_button" xml:space="preserve">
+    <value>Wipe all data</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_title" xml:space="preserve">
+    <value>Wipe all local data?</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_message" xml:space="preserve">
+    <value>All local data including Google account, calendars, and events will be permanently deleted from this machine. The application will reset to its initial state.</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_action" xml:space="preserve">
+    <value>Wipe all data</value>
+  </data>
+  <data name="settings.advanced.logs_title" xml:space="preserve">
+    <value>Activity logs (SEC-LOG-1)</value>
+  </data>
+  <data name="settings.advanced.logs_desc" xml:space="preserve">
+    <value>Application logs are retained for 14 days and sanitized of sensitive details</value>
+  </data>
+  <data name="settings.advanced.open_logs" xml:space="preserve">
+    <value>Open logs folder</value>
+  </data>
+  <!-- First Run Wizard (Figma S14) -->
+  <data name="firstrun.title" xml:space="preserve">
+    <value>Welcome to LunarCal</value>
+  </data>
+  <data name="firstrun.subtitle" xml:space="preserve">
+    <value>Perpetual lunar calendar and smart Google Calendar for Windows</value>
+  </data>
+  <data name="firstrun.step1_title" xml:space="preserve">
+    <value>1. Language &amp; Lunar Calendar</value>
+  </data>
+  <data name="firstrun.step1_desc" xml:space="preserve">
+    <value>Choose your display language and configure Vietnamese lunar calendar features</value>
+  </data>
+  <data name="firstrun.step2_title" xml:space="preserve">
+    <value>2. Connect Google Calendar</value>
+  </data>
+  <data name="firstrun.step2_desc" xml:space="preserve">
+    <value>Two-way synchronization with Google Calendar to manage events seamlessly</value>
+  </data>
+  <data name="firstrun.btn_continue" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="firstrun.btn_skip" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="firstrun.btn_finish" xml:space="preserve">
+    <value>Get Started</value>
+  </data>
+  <!-- Status Banners & Relative Time (Figma S18, FR-UI-9, FR-UI-10) -->
+  <data name="banner.offline" xml:space="preserve">
+    <value>You are currently offline. New data will be saved locally and automatically synchronized once connected.</value>
+  </data>
+  <data name="banner.reauth" xml:space="preserve">
+    <value>Google session has expired (7-day Testing mode). Please sign in again to resume synchronization.</value>
+  </data>
+  <data name="banner.btn_reauth" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="banner.btn_dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="sidebar.sync_status_syncing" xml:space="preserve">
+    <value>Syncing...</value>
+  </data>
+  <data name="sidebar.sync_status_failed" xml:space="preserve">
+    <value>Sync error</value>
+  </data>
+  <data name="time.just_now" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="time.minutes_ago" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="time.hours_ago" xml:space="preserve">
+    <value>{0} hr ago</value>
+  </data>
+  <data name="time.days_ago" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
 </root>
