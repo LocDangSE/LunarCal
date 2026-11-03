@@ -11,13 +11,15 @@ public sealed record SyncResult
     public string? ErrorMessage { get; init; }
     public bool RequiresReauthentication { get; init; }
     public bool NeedsFullResync { get; init; }
+    public bool FullResyncTriggered { get; init; }
 
-    public static SyncResult Succeeded(int calendarsSynced, int eventsSynced) =>
+    public static SyncResult Succeeded(int calendarsSynced, int eventsSynced, bool fullResyncTriggered = false) =>
         new()
         {
             Success = true,
             CalendarsSynced = calendarsSynced,
-            EventsSynced = eventsSynced
+            EventsSynced = eventsSynced,
+            FullResyncTriggered = fullResyncTriggered
         };
 
     public static SyncResult Failed(string errorMessage, bool requiresReauth = false, bool needsFullResync = false) =>
