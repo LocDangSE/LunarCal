@@ -698,4 +698,13 @@
   <data name="auth.reauth.testing_notice" xml:space="preserve">
     <value>Màn hình đồng ý OAuth đang ở chế độ Thử nghiệm (Testing), vì vậy phiên đăng nhập tự hết hạn sau 7 ngày. Khi chuyển sang trạng thái Phát hành (In production), phiên đăng nhập sẽ duy trì liên tục.</value>
   </data>
+  <data name="auth.signout.confirm_title" xml:space="preserve">
+    <value>Đăng xuất tài khoản Google?</value>
+  </data>
+  <data name="auth.signout.confirm_message" xml:space="preserve">
+    <value>Toàn bộ dữ liệu lịch và sự kiện đã lưu trên máy này của tài khoản {0} sẽ bị xóa khỏi bộ nhớ đệm.</value>
+  </data>
+  <data name="auth.signout.confirm_action" xml:space="preserve">
+    <value>Đăng xuất &amp; Xóa dữ liệu</value>
+  </data>
 </root>

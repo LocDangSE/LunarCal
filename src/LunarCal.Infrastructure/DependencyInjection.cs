@@ -1,4 +1,5 @@
 using LunarCal.Core.Abstractions;
+using LunarCal.Infrastructure.Google;
 using LunarCal.Infrastructure.Google.OAuth;
 using LunarCal.Infrastructure.Security;
 using LunarCal.Infrastructure.Storage;
@@ -106,6 +107,9 @@ public static class DependencyInjection
                 httpClient: null,
                 logger: logger);
         });
+
+        // Phase 3: Google account sign-out and cache wipe service (FR-AUTH-4)
+        services.AddSingleton<IGoogleSignOutService, GoogleSignOutService>();
 
         return services;
     }

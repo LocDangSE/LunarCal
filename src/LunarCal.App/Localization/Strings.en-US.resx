@@ -698,4 +698,13 @@
   <data name="auth.reauth.testing_notice" xml:space="preserve">
     <value>The OAuth consent screen is in Testing mode, so refresh tokens expire automatically after 7 days. When published to In production, sessions remain valid indefinitely.</value>
   </data>
+  <data name="auth.signout.confirm_title" xml:space="preserve">
+    <value>Sign out of Google account?</value>
+  </data>
+  <data name="auth.signout.confirm_message" xml:space="preserve">
+    <value>All cached calendar data and events on this device for account {0} will be deleted.</value>
+  </data>
+  <data name="auth.signout.confirm_action" xml:space="preserve">
+    <value>Sign out &amp; delete data</value>
+  </data>
 </root>

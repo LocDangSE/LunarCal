@@ -92,7 +92,7 @@ public sealed record GoogleAuthResult
 }
 
 /// <summary>
-/// Client port for Google OAuth 2.0 authentication flows (FR-AUTH-1, FR-AUTH-3, FR-AUTH-6, SEC-OAUTH-1).
+/// Client port for Google OAuth 2.0 authentication flows (FR-AUTH-1, FR-AUTH-3, FR-AUTH-4, FR-AUTH-6, SEC-OAUTH-1).
 /// </summary>
 public interface IGoogleOAuthClient
 {
@@ -122,4 +122,12 @@ public interface IGoogleOAuthClient
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A <see cref="GoogleTokenRefreshResult"/> describing success or failure with guidance.</returns>
     Task<GoogleTokenRefreshResult> TryRefreshAccessTokenAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revokes an OAuth token (access token or refresh token) with Google's revocation endpoint (FR-AUTH-4).
+    /// </summary>
+    /// <param name="token">Token to revoke.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if revoked or already invalid; false on connection failure.</returns>
+    Task<bool> RevokeTokenAsync(string token, CancellationToken cancellationToken = default);
 }

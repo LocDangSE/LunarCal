@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -7,8 +8,8 @@ using Serilog;
 namespace LunarCal.Infrastructure.Google.OAuth;
 
 /// <summary>
-/// Google OAuth 2.0 client implementing desktop authorization code flow and automatic token refresh
-/// (FR-AUTH-1, FR-AUTH-2, FR-AUTH-3, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, SEC-OAUTH-3, ADR-0017, ADR-0026).
+/// Google OAuth 2.0 client implementing desktop authorization code flow, automatic token refresh, and token revocation
+/// (FR-AUTH-1, FR-AUTH-2, FR-AUTH-3, FR-AUTH-4, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2, SEC-OAUTH-3, ADR-0017, ADR-0026).
 /// </summary>
 public sealed class GoogleOAuthClient : IGoogleOAuthClient
 {
@@ -205,6 +206,46 @@ public sealed class GoogleOAuthClient : IGoogleOAuthClient
             return GoogleTokenRefreshResult.Failed(
                 error: "unexpected_error",
                 description: ex.Message);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RevokeTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return true;
+        }
+
+        var parameters = new Dictionary<string, string>
+        {
+            ["token"] = token
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, _options.RevokeEndpoint)
+        {
+            Content = new FormUrlEncodedContent(parameters)
+        };
+
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.Information("Successfully revoked Google OAuth token on revoke endpoint.");
+                return true;
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            _logger.Warning("Google token revocation returned status {StatusCode}: {Content}.", (int)response.StatusCode, content);
+
+            // Google returns HTTP 400 if token is already expired or revoked; treat as effectively revoked
+            return response.StatusCode == HttpStatusCode.BadRequest;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.Warning(ex, "Failed to communicate with Google token revocation endpoint (possibly offline).");
+            return false;
         }
     }
 
