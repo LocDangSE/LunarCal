@@ -36,6 +36,7 @@ public sealed class SqliteAccountStore : IAccountStore
         try
         {
             using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken).ConfigureAwait(false);
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             using var command = connection.CreateCommand();
             command.CommandText = "SELECT id, email, display_name FROM Account LIMIT 1;";
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -72,6 +73,7 @@ public sealed class SqliteAccountStore : IAccountStore
         try
         {
             using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken).ConfigureAwait(false);
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             using var command = connection.CreateCommand();
             command.CommandText = "SELECT id, email, display_name FROM Account;";
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -112,6 +114,7 @@ public sealed class SqliteAccountStore : IAccountStore
         try
         {
             using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken).ConfigureAwait(false);
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             using var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO Account (id, email, display_name)
@@ -152,6 +155,7 @@ public sealed class SqliteAccountStore : IAccountStore
         try
         {
             using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken).ConfigureAwait(false);
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             using var command = connection.CreateCommand();
             command.CommandText = "DELETE FROM Account WHERE id = @id;";
             command.Parameters.Add(new SqliteParameter("@id", accountId));

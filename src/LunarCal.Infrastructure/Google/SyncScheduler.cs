@@ -308,6 +308,7 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
         try
         {
             using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken).ConfigureAwait(false);
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             using var command = connection.CreateCommand();
             command.CommandText = "SELECT id FROM Account;";
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
