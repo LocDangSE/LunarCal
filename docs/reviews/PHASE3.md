@@ -1,6 +1,6 @@
 # Review Phase 3: Google OAuth, SyncEngine, SQLCipher cache, CRUD
 
-Reviewer: Claude Code (Opus 5.5), 2026-11-04 01:05 +07:00 · Branch: phase/3 · Task: P3-00a..P3-16 · Kết luận: Trả lại
+Reviewer: Claude Code (Opus 5.5), 2026-11-04 00:34 +07:00 · Branch: phase/3 · Task: P3-00a..P3-16 · Kết luận: Trả lại
 
 Cách kiểm: chạy lại build Release, format, test và cổng coverage trên `phase/3`; chạy `LunarCal.exe` thật; render offscreen S10, Figma 04, S14, S20 rồi đặt cạnh frame Figma (`35:774`, `4:2`, `39:280`, `34:191`). 439 test xanh không chứng minh được DoD: app thật chưa nối OAuth → sync → hiển thị, và S10 crash khi mở.
 

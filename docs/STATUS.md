@@ -3,7 +3,7 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-04 01:05 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
+**Cập nhật lần cuối:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
 
 **Trước đó:** 2026-11-03 23:10 +07:00, Antigravity. Hoàn thành P3-16: Persistent SQLCipher SQLite `AppSetting` store (`SqliteSettingsStore`), seeding default settings, DI chuyển từ `InMemorySettingsStore` sang `SqliteSettingsStore`, 5 test mới, 439/439 tests pass (Core 99, Infra 194, App 143, UiTests 3), Core coverage 97%, Lunar coverage 100%, 0 lỗ hổng package. Hoàn thành toàn bộ các task Phase 3 (P3-00a..P3-16).
 
@@ -11,7 +11,7 @@
 
 - **Phase hiện tại:** Phase 3. Cổng `P3-REVIEW` bị trả lại (`[~]`), còn P3-R1..P3-R4 `[ ]`. Chưa được bắt đầu Phase 4.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Đã review Phase 3 và trả cổng (log `RETURN` 2026-11-04 01:05). Commit sửa trên `phase/3`: b4f5b26, f6b27b9, 77d005b (chưa push). Bước tiếp theo: khi Antigravity xong P3-R1..R4 và chuyển cổng lại `[r]`, review lại phần thay đổi từ commit review (`git diff <commit docs review>..phase/3`), chạy app thật và đặt cạnh Figma.
+  - **Claude Code:** không giữ task nào. Đã review Phase 3 và trả cổng (log `RETURN` 2026-11-04 00:34). Commit sửa trên `phase/3`: b4f5b26, f6b27b9, 77d005b (chưa push). Bước tiếp theo: khi Antigravity xong P3-R1..R4 và chuyển cổng lại `[r]`, review lại phần thay đổi từ commit review (`git diff <commit docs review>..phase/3`), chạy app thật và đặt cạnh Figma.
   - **Antigravity:** đã hoàn thành toàn bộ Phase 3 (P3-00a..P3-16), cổng `P3-REVIEW` ở trạng thái `[r]`. Theo quy tắc bắt buộc (ADR-0027, progress-sync.md), Antigravity dừng lại và chờ Claude Code review Phase 3; không bắt đầu bất kỳ task nào của Phase 4 cho đến khi `P3-REVIEW` chuyển sang `[x]` trên `main`.
 - **Task tiếp theo đề xuất:**
   1. Antigravity: P3-R1 (SqliteEventStore, host StartAsync, lần chạy đầu tự mở, trạng thái sync thật), rồi P3-R4, P3-R2, P3-R3; sau đó chuyển cổng `P3-REVIEW` về `[r]` và xoá đuôi `Trả lại`.
