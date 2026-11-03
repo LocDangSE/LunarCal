@@ -146,6 +146,18 @@ public static class DependencyInjection
         // Phase 3: Google account sign-out and cache wipe service (FR-AUTH-4)
         services.AddSingleton<IGoogleSignOutService, GoogleSignOutService>();
 
+        // Phase 3: Google Calendar API v3 Gateway and Sync Engine (FR-SYNC-1, FR-SYNC-6, ADR-0028)
+        services.AddSingleton<ICalendarGateway>(sp =>
+        {
+            var httpClientFactory = sp.GetService<IHttpClientFactory>();
+            var httpClient = httpClientFactory?.CreateClient(ResiliencePipelineExtensions.DefaultClientName)
+                ?? new HttpClient();
+            var logger = sp.GetService<ILogger>();
+            return new CalendarGateway(httpClient, logger);
+        });
+
+        services.AddSingleton<ISyncEngine, SyncEngine>();
+
         return services;
     }
 }

@@ -8,12 +8,15 @@ using FlaUI.Core.Tools;
 using FlaUI.UIA3;
 using Xunit;
 
+
+
 namespace LunarCal.App.UiTests;
 
 /// <summary>
 /// UI smoke tests driving LunarCal.exe out-of-process via FlaUI and UI Automation (spec §9, P2-12).
 /// Verifies application startup, main window appearance, view switching, and lunar date display.
 /// </summary>
+[Collection("UiSmokeTests")]
 public sealed class SmokeTests
 {
     private static string FindAppPath()
@@ -97,6 +100,10 @@ public sealed class SmokeTests
         try
         {
             app.Close();
+            if (!app.HasExited)
+            {
+                try { app.Kill(); } catch { }
+            }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
