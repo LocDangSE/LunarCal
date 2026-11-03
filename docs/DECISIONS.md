@@ -22,7 +22,7 @@ Trạng thái: Proposed / Accepted / Superseded.
 | [0014](adr/0014-tray-and-toast-libraries.md) | Thư viện tray và toast | Accepted (AUMID: Proposed) |
 | [0015](adr/0015-data-lake-outbox-and-cloud.md) | Data lake: outbox cục bộ và cloud | Accepted (nhà cung cấp cloud: Proposed) |
 | [0016](adr/0016-gemini-model-and-endpoint.md) | Model và endpoint Gemini | Proposed |
-| [0017](adr/0017-oauth-desktop-client-secret.md) | OAuth desktop client secret | Proposed |
+| [0017](adr/0017-oauth-desktop-client-secret.md) | OAuth desktop client secret | Accepted |
 | [0018](adr/0018-secret-storage-dpapi.md) | Lưu bí mật bằng DPAPI | Accepted |
 | [0019](adr/0019-logging-serilog.md) | Logging Serilog có redaction | Accepted |
 | [0020](adr/0020-agent-handoff-docs.md) | Hồ sơ bàn giao cho nhiều agent | Accepted |
