@@ -84,7 +84,7 @@ public sealed class CalendarGatewayMutationTests
     }
 
     [Fact]
-    public async Task FR_SYNC_4_UpdateEventAsync_sends_put_with_if_match_and_x_request_id()
+    public async Task FR_SYNC_4_UpdateEventAsync_sends_patch_with_if_match_and_x_request_id()
     {
         var ct = TestContext.Current.CancellationToken;
         HttpRequestMessage? capturedRequest = null;
@@ -124,7 +124,7 @@ public sealed class CalendarGatewayMutationTests
         var result = await gateway.UpdateEventAsync("token-123", "primary", updateEvent, "\"v1-etag\"", "client-req-999", ct);
 
         capturedRequest.Should().NotBeNull();
-        capturedRequest!.Method.Should().Be(HttpMethod.Put);
+        capturedRequest!.Method.Should().Be(HttpMethod.Patch, "PUT would erase fields the cache does not hold");
         capturedRequest.RequestUri!.ToString().Should().Be("https://www.googleapis.com/calendar/v3/calendars/primary/events/google-evt-789");
         capturedRequest.Headers.GetValues("If-Match").Should().Contain("\"v1-etag\"");
         capturedRequest.Headers.GetValues("X-Request-Id").Should().Contain("client-req-999");

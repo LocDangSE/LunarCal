@@ -53,10 +53,9 @@ public sealed class SqlcipherStorageTests : IDisposable
         using var connection = await factory.CreateConnectionAsync(ct);
         await connection.OpenAsync(ct);
 
-        // Verify version in __schema_version table is 1
-        var runner = new SqliteMigrationRunner();
+        // Verify the latest schema version (V2, P3-R1) is recorded in __schema_version
         int version = await SqliteMigrationRunner.GetCurrentVersionAsync(connection, ct);
-        version.Should().Be(1);
+        version.Should().Be(2);
 
         // Verify all 9 tables from spec §6 are created
         var expectedTables = new[]
@@ -98,7 +97,7 @@ public sealed class SqlcipherStorageTests : IDisposable
         }
 
         // Running migrations again should be idempotent (0 newly applied)
-        int reapplyCount = await runner.MigrateAsync(connection, ct);
+        int reapplyCount = await new SqliteMigrationRunner().MigrateAsync(connection, ct);
         reapplyCount.Should().Be(0);
     }
 
@@ -203,8 +202,8 @@ public sealed class SqlcipherStorageTests : IDisposable
         using var secretStore = new DpapiSecretStore(_secretsDirectory);
         var options = new SqliteStorageOptions { DatabasePath = _dbPath };
 
-        // 1. Initialize V1 schema
-        using (var factory = new SqliteConnectionFactory(secretStore, options))
+        // 1. Initialize V1 schema only
+        using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner([new Migration001InitialSchema()])))
         {
             await factory.EnsureInitializedAsync(ct);
 
@@ -223,11 +222,8 @@ public sealed class SqlcipherStorageTests : IDisposable
 
         SqliteConnection.ClearAllPools();
 
-        // 2. Define custom mock V2 migration
-        var mockMigration2 = new MockMigration002();
-        var customRunner = new SqliteMigrationRunner([new Migration001InitialSchema(), mockMigration2]);
-
-        using (var factory = new SqliteConnectionFactory(secretStore, options, customRunner))
+        // 2. Upgrade with the production runner (V1 + V2, P3-R1/P3-R2)
+        using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
         {
             await factory.EnsureInitializedAsync(ct);
 
@@ -244,25 +240,12 @@ public sealed class SqlcipherStorageTests : IDisposable
             object? title = await queryCmd.ExecuteScalarAsync(ct);
             title?.ToString().Should().Be("Quarterly Meeting");
 
-            // Verify V2 column was added
+            // Verify the V2 columns exist and start empty for upgraded rows
             using var checkV2Cmd = conn.CreateCommand();
-            checkV2Cmd.CommandText = "SELECT new_v2_column FROM Account WHERE id = 'acc-1';";
-            object? v2Val = await checkV2Cmd.ExecuteScalarAsync(ct);
-            v2Val?.ToString().Should().Be("DefaultV2");
-        }
-    }
-
-    private sealed class MockMigration002 : ISqliteMigration
-    {
-        public int Version => 2;
-        public string Description => "Test incremental migration V2";
-
-        public async Task UpAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellationToken = default)
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.Transaction = transaction;
-            cmd.CommandText = "ALTER TABLE Account ADD COLUMN new_v2_column TEXT DEFAULT 'DefaultV2';";
-            await cmd.ExecuteNonQueryAsync(cancellationToken);
+            checkV2Cmd.CommandText = "SELECT reminders_json IS NULL AND recurrence_json IS NULL FROM Event WHERE id = 'evt-1';";
+            Convert.ToInt32(await checkV2Cmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture).Should().Be(1);
+            checkV2Cmd.CommandText = "SELECT access_role IS NULL AND time_zone IS NULL FROM CalendarInfo WHERE id = 'cal-1';";
+            Convert.ToInt32(await checkV2Cmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture).Should().Be(1);
         }
     }
 }

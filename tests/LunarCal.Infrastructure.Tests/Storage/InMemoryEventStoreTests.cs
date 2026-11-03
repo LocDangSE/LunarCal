@@ -188,7 +188,7 @@ public sealed class InMemoryEventStoreTests
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IEventStore));
         descriptor.Should().NotBeNull();
         descriptor!.Lifetime.Should().Be(ServiceLifetime.Singleton);
-        descriptor.ImplementationType.Should().Be<InMemoryEventStore>();
+        descriptor.ImplementationType.Should().Be<SqliteEventStore>("the UI reads the SQLCipher cache since P3-R1");
     }
 
     private static CalendarEvent CreateEvent(string id, DateTimeOffset start, DateTimeOffset end, string calendarId = "cal-test")

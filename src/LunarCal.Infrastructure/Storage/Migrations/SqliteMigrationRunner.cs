@@ -15,7 +15,7 @@ public sealed class SqliteMigrationRunner
     {
         _migrations = migrations is not null
             ? migrations.OrderBy(m => m.Version).ToList()
-            : [new Migration001InitialSchema()];
+            : [new Migration001InitialSchema(), new Migration002EventDetails()];
     }
 
     /// <summary>Gets the list of registered migrations.</summary>

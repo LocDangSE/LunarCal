@@ -22,9 +22,9 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        // Phase 2: In-memory settings and event stores; Phase 3 transitions to SQLCipher SQLite
+        // Settings and the calendar cache both live in the SQLCipher database (spec §6, P3-16, P3-R1).
         services.AddSingleton<ISettingsStore, SqliteSettingsStore>();
-        services.AddSingleton<IEventStore, InMemoryEventStore>();
+        services.AddSingleton<IEventStore, SqliteEventStore>();
 
         // Phase 3: DPAPI secret store with app-specific entropy (SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018)
         services.AddSingleton<ISecretStore>(sp =>
@@ -189,7 +189,8 @@ public static class DependencyInjection
             var oauthClient = sp.GetRequiredService<IGoogleOAuthClient>();
             var conflictNotifier = sp.GetRequiredService<IConflictNotifier>();
             var logger = sp.GetService<ILogger>();
-            var eventStore = sp.GetService<IEventStore>();
+            // The optimistic write already lands in the same SQLite database the UI reads (SqliteEventStore),
+            // so no second in-memory copy is needed.
             return new MutationService(
                 connectionFactory,
                 mutationStore,
@@ -199,7 +200,7 @@ public static class DependencyInjection
                 syncScheduler: null,
                 timeProvider: TimeProvider.System,
                 logger: logger,
-                eventStore: eventStore);
+                eventStore: null);
         });
 
         // Phase 3: Background sync scheduler (FR-SYNC-3, FR-SYNC-4)

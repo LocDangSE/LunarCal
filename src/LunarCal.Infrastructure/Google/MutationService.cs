@@ -73,8 +73,12 @@ public sealed class MutationService : IMutationService
         ArgumentException.ThrowIfNullOrWhiteSpace(calendarId);
         ArgumentNullException.ThrowIfNull(calendarEvent);
 
-        var eventId = string.IsNullOrWhiteSpace(calendarEvent.Id) ? Guid.NewGuid().ToString("D") : calendarEvent.Id;
-        var localEvent = calendarEvent with { Id = eventId, CalendarId = calendarId };
+        // The local id is also the Google event id (sent in the insert body). Google accepts client ids made of
+        // base32hex characters (a-v, 0-9), 5-1024 long; a "N"-format GUID qualifies. Using one id everywhere means
+        // the next sync updates this row instead of adding a duplicate, and a retried insert cannot create two
+        // events (409 is treated as success) (FR-SYNC-4, SEC-NET-2).
+        var eventId = IsValidGoogleEventId(calendarEvent.Id) ? calendarEvent.Id : NewGoogleEventId();
+        var localEvent = calendarEvent with { Id = eventId, GoogleId = eventId, CalendarId = calendarId };
 
         var payload = new EventMutationPayload
         {
@@ -422,6 +426,17 @@ public sealed class MutationService : IMutationService
         command.Parameters.AddWithValue("@local_id", payload.EventId);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        // The cache holds expanded instances (singleEvents=true). A recurring master would show up next to its own
+        // first instance after the post-mutation sync, so drop the optimistic master row now.
+        if (payload.Event.Recurrence is { Count: > 0 })
+        {
+            using var cleanup = connection.CreateCommand();
+            cleanup.CommandText = "DELETE FROM Event WHERE id = @local_id;";
+            cleanup.Parameters.AddWithValue("@local_id", payload.EventId);
+            await cleanup.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         _logger.Information("Successfully created remote event {GoogleId} for local event {LocalId}", remoteEvent.GoogleId, payload.EventId);
     }
 
@@ -559,61 +574,12 @@ public sealed class MutationService : IMutationService
             _timeProvider.GetUtcNow()));
     }
 
-    private static async Task UpsertEventAsync(
+    private static Task UpsertEventAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         CalendarEvent evt,
-        CancellationToken cancellationToken)
-    {
-        const string sql = @"
-            INSERT INTO Event (
-                id, calendar_id, google_id, recurring_event_id, title, description, location,
-                start_utc, end_utc, all_day, timezone, etag, updated, status, extended_json
-            ) VALUES (
-                @id, @calendar_id, @google_id, @recurring_event_id, @title, @description, @location,
-                @start_utc, @end_utc, @all_day, @timezone, @etag, @updated, @status, @extended_json
-            )
-            ON CONFLICT(id) DO UPDATE SET
-                calendar_id = excluded.calendar_id,
-                google_id = excluded.google_id,
-                recurring_event_id = excluded.recurring_event_id,
-                title = excluded.title,
-                description = excluded.description,
-                location = excluded.location,
-                start_utc = excluded.start_utc,
-                end_utc = excluded.end_utc,
-                all_day = excluded.all_day,
-                timezone = excluded.timezone,
-                etag = excluded.etag,
-                updated = excluded.updated,
-                status = excluded.status,
-                extended_json = excluded.extended_json;";
-
-        string? extendedJson = evt.ExtendedProperties.Count > 0
-            ? JsonSerializer.Serialize(evt.ExtendedProperties)
-            : null;
-
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = sql;
-        cmd.Parameters.AddWithValue("@id", evt.Id);
-        cmd.Parameters.AddWithValue("@calendar_id", evt.CalendarId);
-        cmd.Parameters.AddWithValue("@google_id", (object?)evt.GoogleId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@recurring_event_id", (object?)evt.RecurringEventId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@title", evt.Title);
-        cmd.Parameters.AddWithValue("@description", (object?)evt.Description ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@location", (object?)evt.Location ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@start_utc", evt.StartUtc.ToString("o", CultureInfo.InvariantCulture));
-        cmd.Parameters.AddWithValue("@end_utc", evt.EndUtc.ToString("o", CultureInfo.InvariantCulture));
-        cmd.Parameters.AddWithValue("@all_day", evt.AllDay ? 1 : 0);
-        cmd.Parameters.AddWithValue("@timezone", (object?)evt.TimeZone ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@etag", (object?)evt.Etag ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@updated", evt.Updated.HasValue ? evt.Updated.Value.ToString("o", CultureInfo.InvariantCulture) : DBNull.Value);
-        cmd.Parameters.AddWithValue("@status", (object?)evt.Status ?? "confirmed");
-        cmd.Parameters.AddWithValue("@extended_json", (object?)extendedJson ?? DBNull.Value);
-
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
+        CancellationToken cancellationToken) =>
+        EventRows.UpsertEventAsync(connection, transaction, evt, cancellationToken);
 
     private static async Task DeleteEventFromDbAsync(
         SqliteConnection connection,
@@ -651,6 +617,13 @@ public sealed class MutationService : IMutationService
 
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>Generates an event id Google accepts as a client-supplied id (lowercase hex, 32 characters).</summary>
+    public static string NewGoogleEventId() => Guid.NewGuid().ToString("N");
+
+    /// <summary>True when <paramref name="id"/> is a valid client-supplied Google event id (base32hex, 5-1024 chars).</summary>
+    public static bool IsValidGoogleEventId(string? id) =>
+        id is { Length: >= 5 and <= 1024 } && id.All(c => c is (>= '0' and <= '9') or (>= 'a' and <= 'v'));
 
     private static bool IsNetworkOrOfflineError(HttpRequestException ex)
     {

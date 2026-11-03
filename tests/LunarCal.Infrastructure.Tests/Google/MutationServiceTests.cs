@@ -108,7 +108,7 @@ public sealed class MutationServiceTests : IDisposable
 
         var newEvent = new CalendarEvent
         {
-            Id = "local-evt-001",
+            Id = "localevt001",
             CalendarId = "cal-1",
             Title = "Team Standup",
             StartUtc = new DateTimeOffset(2026, 11, 4, 9, 0, 0, TimeSpan.Zero),
@@ -116,13 +116,13 @@ public sealed class MutationServiceTests : IDisposable
         };
 
         var created = await _service.CreateEventOptimisticAsync("acc-1", "cal-1", newEvent, ct);
-        created.Id.Should().Be("local-evt-001");
+        created.Id.Should().Be("localevt001");
 
         // Verify local Event table has the event
         using var connection = await _connectionFactory.CreateConnectionAsync(ct);
         await connection.OpenAsync(ct);
         using var checkCmd = connection.CreateCommand();
-        checkCmd.CommandText = "SELECT title FROM Event WHERE id = 'local-evt-001';";
+        checkCmd.CommandText = "SELECT title FROM Event WHERE id = 'localevt001';";
         var titleInDb = await checkCmd.ExecuteScalarAsync(ct);
         titleInDb.Should().Be("Team Standup");
 
@@ -222,7 +222,7 @@ public sealed class MutationServiceTests : IDisposable
 
         var newEvent = new CalendarEvent
         {
-            Id = "evt-offline-1",
+            Id = "evtoffline1",
             CalendarId = "cal-1",
             Title = "Offline Event",
             StartUtc = new DateTimeOffset(2026, 11, 4, 16, 0, 0, TimeSpan.Zero),
@@ -251,7 +251,7 @@ public sealed class MutationServiceTests : IDisposable
         using var connection = await _connectionFactory.CreateConnectionAsync(ct);
         await connection.OpenAsync(ct);
         using var checkCmd = connection.CreateCommand();
-        checkCmd.CommandText = "SELECT title FROM Event WHERE id = 'evt-offline-1';";
+        checkCmd.CommandText = "SELECT title FROM Event WHERE id = 'evtoffline1';";
         var titleInDb = await checkCmd.ExecuteScalarAsync(ct);
         titleInDb.Should().Be("Offline Event");
     }
@@ -264,7 +264,7 @@ public sealed class MutationServiceTests : IDisposable
 
         var newEvent = new CalendarEvent
         {
-            Id = "local-evt-99",
+            Id = "localevt99",
             CalendarId = "cal-1",
             Title = "Created Online Event",
             StartUtc = new DateTimeOffset(2026, 11, 4, 11, 0, 0, TimeSpan.Zero),
@@ -296,7 +296,7 @@ public sealed class MutationServiceTests : IDisposable
         using var connection = await _connectionFactory.CreateConnectionAsync(ct);
         await connection.OpenAsync(ct);
         using var checkCmd = connection.CreateCommand();
-        checkCmd.CommandText = "SELECT google_id, etag FROM Event WHERE id = 'local-evt-99';";
+        checkCmd.CommandText = "SELECT google_id, etag FROM Event WHERE id = 'localevt99';";
         using var reader = await checkCmd.ExecuteReaderAsync(ct);
         (await reader.ReadAsync(ct)).Should().BeTrue();
         reader.GetString(0).Should().Be("google-assigned-id-99");

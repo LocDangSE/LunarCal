@@ -229,9 +229,20 @@ public sealed class CalendarGateway : ICalendarGateway
         {
             request.Headers.TryAddWithoutValidation("X-Request-Id", clientRequestId);
         }
-        request.Content = BuildEventJsonContent(calendarEvent);
+        request.Content = BuildEventJsonContent(calendarEvent, includeId: true);
 
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        // 409: an event with this client-supplied id already exists, i.e. an earlier attempt of the same insert
+        // reached Google. Return the stored event instead of failing or creating a duplicate (SEC-NET-2).
+        if (response.StatusCode == HttpStatusCode.Conflict && !string.IsNullOrWhiteSpace(calendarEvent.Id))
+        {
+            var existing = await GetEventAsync(accessToken, calendarId, calendarEvent.Id, cancellationToken).ConfigureAwait(false);
+            if (existing is not null)
+            {
+                return existing;
+            }
+        }
 
         if (!response.IsSuccessStatusCode)
         {
@@ -268,7 +279,9 @@ public sealed class CalendarGateway : ICalendarGateway
         var encodedEventId = Uri.EscapeDataString(eventId);
         var url = $"{BaseUrl}/calendars/{encodedCalId}/events/{encodedEventId}";
 
-        using var request = new HttpRequestMessage(HttpMethod.Put, url);
+        // PATCH, not PUT: the cache does not hold every Google field (attendees, conference data, attachments, ...).
+        // A PUT with only the fields LunarCal knows would erase the rest on the server (FR-SYNC-4).
+        using var request = new HttpRequestMessage(HttpMethod.Patch, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         if (!string.IsNullOrWhiteSpace(expectedEtag))
         {
@@ -279,7 +292,7 @@ public sealed class CalendarGateway : ICalendarGateway
         {
             request.Headers.TryAddWithoutValidation("X-Request-Id", clientRequestId);
         }
-        request.Content = BuildEventJsonContent(calendarEvent);
+        request.Content = BuildEventJsonContent(calendarEvent, includeId: false);
 
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -394,57 +407,56 @@ public sealed class CalendarGateway : ICalendarGateway
         return ParseCalendarEvent(document.RootElement, calendarId);
     }
 
-    private static StringContent BuildEventJsonContent(CalendarEvent @event)
+    internal static StringContent BuildEventJsonContent(CalendarEvent @event, bool includeId)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
         {
             writer.WriteStartObject();
+            if (includeId && !string.IsNullOrWhiteSpace(@event.Id))
+            {
+                writer.WriteString("id", @event.Id);
+            }
+
             writer.WriteString("summary", @event.Title);
-            if (!string.IsNullOrWhiteSpace(@event.Description))
-            {
-                writer.WriteString("description", @event.Description);
-            }
-            if (!string.IsNullOrWhiteSpace(@event.Location))
-            {
-                writer.WriteString("location", @event.Location);
-            }
+            writer.WriteString("description", @event.Description ?? string.Empty);
+            writer.WriteString("location", @event.Location ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(@event.Status))
             {
                 writer.WriteString("status", @event.Status);
             }
 
-            // Start
-            writer.WriteStartObject("start");
-            if (@event.AllDay)
-            {
-                writer.WriteString("date", @event.StartUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-            }
-            else
-            {
-                writer.WriteString("dateTime", @event.StartUtc.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
-            }
-            if (!string.IsNullOrWhiteSpace(@event.TimeZone))
-            {
-                writer.WriteString("timeZone", @event.TimeZone);
-            }
-            writer.WriteEndObject();
+            WriteEventTime(writer, "start", @event, @event.StartUtc);
+            WriteEventTime(writer, "end", @event, @event.EndUtc);
 
-            // End
-            writer.WriteStartObject("end");
-            if (@event.AllDay)
+            // Popup reminders only (FR-UI-4, FR-NOTIFY-1); null keeps the calendar defaults.
+            if (@event.ReminderMinutes is not null)
             {
-                writer.WriteString("date", @event.EndUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                writer.WriteStartObject("reminders");
+                writer.WriteBoolean("useDefault", false);
+                writer.WriteStartArray("overrides");
+                foreach (var minutes in @event.ReminderMinutes.Distinct().Order())
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("method", "popup");
+                    writer.WriteNumber("minutes", minutes);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
             }
-            else
+
+            if (@event.Recurrence is { Count: > 0 })
             {
-                writer.WriteString("dateTime", @event.EndUtc.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
+                writer.WriteStartArray("recurrence");
+                foreach (var line in @event.Recurrence)
+                {
+                    writer.WriteStringValue(line);
+                }
+
+                writer.WriteEndArray();
             }
-            if (!string.IsNullOrWhiteSpace(@event.TimeZone))
-            {
-                writer.WriteString("timeZone", @event.TimeZone);
-            }
-            writer.WriteEndObject();
 
             // Extended properties (FR-SYNC-6 private extendedProperties)
             if (@event.ExtendedProperties.Count > 0)
@@ -455,6 +467,7 @@ public sealed class CalendarGateway : ICalendarGateway
                 {
                     writer.WriteString(kvp.Key, kvp.Value);
                 }
+
                 writer.WriteEndObject();
                 writer.WriteEndObject();
             }
@@ -463,6 +476,40 @@ public sealed class CalendarGateway : ICalendarGateway
         }
 
         return new StringContent(Encoding.UTF8.GetString(stream.ToArray()), Encoding.UTF8, "application/json");
+    }
+
+    // All-day events carry a calendar date: take it in the event's own zone (StartUtc is that day's local midnight),
+    // never from the UTC instant, or an event created at UTC+7 moves one day back. Timed events send the UTC instant
+    // plus the IANA zone name, which Google requires for recurring events (Windows zone ids are rejected).
+    private static void WriteEventTime(Utf8JsonWriter writer, string name, CalendarEvent @event, DateTimeOffset instant)
+    {
+        writer.WriteStartObject(name);
+        var zone = CalendarTime.ResolveTimeZone(@event.TimeZone, TimeZoneInfo.Utc);
+        if (@event.AllDay)
+        {
+            writer.WriteString("date", CalendarTime.ToLocalDate(instant, zone).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            writer.WriteString("dateTime", instant.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
+            if (ToIanaId(zone) is { } iana)
+            {
+                writer.WriteString("timeZone", iana);
+            }
+        }
+
+        writer.WriteEndObject();
+    }
+
+    /// <summary>Returns the IANA name of <paramref name="zone"/> (Google rejects Windows ids), or null if unknown.</summary>
+    internal static string? ToIanaId(TimeZoneInfo zone)
+    {
+        if (zone.HasIanaId)
+        {
+            return zone.Id;
+        }
+
+        return TimeZoneInfo.TryConvertWindowsIdToIanaId(zone.Id, out var iana) ? iana : null;
     }
 
     private static CalendarEvent? ParseCalendarEvent(JsonElement item, string calendarId)
@@ -507,6 +554,8 @@ public sealed class CalendarGateway : ICalendarGateway
             {
                 if (DateOnly.TryParseExact(sDStr, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dOnly))
                 {
+                    // Stored as UTC midnight with zone "UTC" (set below), so every viewer zone shows the same date:
+                    // CalendarTime.GetCoveredDates uses the event's own zone for all-day events.
                     startUtc = new DateTimeOffset(dOnly.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
                     allDay = true;
                 }
@@ -546,6 +595,37 @@ public sealed class CalendarGateway : ICalendarGateway
             endUtc = startUtc.AddHours(1);
         }
 
+        if (allDay)
+        {
+            timeZone = "UTC";
+        }
+
+        // Reminders: useDefault -> null (calendar default); popup overrides only (email ignored, FR-NOTIFY-1).
+        List<int>? reminderMinutes = null;
+        if (item.TryGetProperty("reminders", out var remProp) && remProp.ValueKind == JsonValueKind.Object &&
+            !(remProp.TryGetProperty("useDefault", out var useDefProp) && useDefProp.ValueKind == JsonValueKind.True))
+        {
+            reminderMinutes = [];
+            if (remProp.TryGetProperty("overrides", out var ovProp) && ovProp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var ov in ovProp.EnumerateArray())
+                {
+                    var method = ov.TryGetProperty("method", out var mProp) ? mProp.GetString() : null;
+                    if (string.Equals(method, "popup", StringComparison.Ordinal) &&
+                        ov.TryGetProperty("minutes", out var minProp) && minProp.TryGetInt32(out var minutes))
+                    {
+                        reminderMinutes.Add(minutes);
+                    }
+                }
+            }
+        }
+
+        List<string>? recurrence = null;
+        if (item.TryGetProperty("recurrence", out var recProp) && recProp.ValueKind == JsonValueKind.Array)
+        {
+            recurrence = recProp.EnumerateArray().Select(e => e.GetString()).OfType<string>().ToList();
+        }
+
         // Extended properties (FR-SYNC-6 private extendedProperties)
         var extDict = new Dictionary<string, string>(StringComparer.Ordinal);
         if (item.TryGetProperty("extendedProperties", out var extProp) &&
@@ -577,7 +657,9 @@ public sealed class CalendarGateway : ICalendarGateway
             Etag = itemEtag,
             Updated = updated,
             Status = status,
-            ExtendedProperties = extDict
+            ExtendedProperties = extDict,
+            ReminderMinutes = reminderMinutes,
+            Recurrence = recurrence,
         };
     }
 }

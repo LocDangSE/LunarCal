@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text.Json;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Infrastructure.Storage;
@@ -196,8 +194,17 @@ public sealed class SyncEngine : ISyncEngine
             if (string.IsNullOrWhiteSpace(cal.SyncToken))
             {
                 _logger.Information("Calendar {CalendarId} has no sync token. Performing full events fetch.", cal.Id);
-                var (fullEvents, nextSync) = await FetchFullCalendarEventsAsync(accessToken, cal.Id, cancellationToken).ConfigureAwait(false);
-                calendarDeltas.Add(new CalendarIncrementalData(cal with { SyncToken = nextSync }, fullEvents, IsFullResync: true));
+                try
+                {
+                    var (fullEvents, nextSync) = await FetchFullCalendarEventsAsync(accessToken, cal.Id, cancellationToken).ConfigureAwait(false);
+                    calendarDeltas.Add(new CalendarIncrementalData(cal with { SyncToken = nextSync }, fullEvents, IsFullResync: true));
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.Error(ex, "Failed to fetch events for calendar {CalendarId}", cal.Id);
+                    return SyncResult.Failed($"Sync failed for calendar {cal.Id}: {ex.Message}");
+                }
+
                 continue;
             }
 
@@ -239,11 +246,19 @@ public sealed class SyncEngine : ISyncEngine
                 _logger.Warning("Sync token expired (HTTP 410) for calendar {CalendarId}. Resetting sync token and triggering full resync (FR-SYNC-2).", cal.Id);
                 fullResyncTriggered = true;
 
-                var (freshEvents, freshSyncToken) = await FetchFullCalendarEventsAsync(accessToken, cal.Id, cancellationToken).ConfigureAwait(false);
-                calendarDeltas.Add(new CalendarIncrementalData(
-                    cal with { SyncToken = freshSyncToken },
-                    freshEvents,
-                    IsFullResync: true));
+                try
+                {
+                    var (freshEvents, freshSyncToken) = await FetchFullCalendarEventsAsync(accessToken, cal.Id, cancellationToken).ConfigureAwait(false);
+                    calendarDeltas.Add(new CalendarIncrementalData(
+                        cal with { SyncToken = freshSyncToken },
+                        freshEvents,
+                        IsFullResync: true));
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.Error(ex, "Full resync after HTTP 410 failed for calendar {CalendarId}", cal.Id);
+                    return SyncResult.Failed($"Full resync failed for calendar {cal.Id}: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
@@ -349,28 +364,15 @@ public sealed class SyncEngine : ISyncEngine
         string accountId,
         CancellationToken cancellationToken)
     {
-        const string sql = @"
-            SELECT id, account_id, summary, color, selected, sync_token
-            FROM CalendarInfo
-            WHERE account_id = @account_id;";
-
         await using var cmd = connection.CreateCommand();
-        cmd.CommandText = sql;
+        cmd.CommandText = $"SELECT {EventRows.CalendarColumns} FROM CalendarInfo c WHERE c.account_id = @account_id;";
         cmd.Parameters.AddWithValue("@account_id", accountId);
 
         var list = new List<CalendarInfo>();
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            list.Add(new CalendarInfo
-            {
-                Id = reader.GetString(0),
-                AccountId = reader.GetString(1),
-                Summary = reader.GetString(2),
-                Color = reader.IsDBNull(3) ? null : reader.GetString(3),
-                IsSelected = reader.GetInt32(4) == 1,
-                SyncToken = reader.IsDBNull(5) ? null : reader.GetString(5)
-            });
+            list.Add(EventRows.ReadCalendar(reader));
         }
 
         return list;
@@ -431,88 +433,19 @@ public sealed class SyncEngine : ISyncEngine
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task UpsertCalendarInfoAsync(
+    // A sync never overwrites the sidebar toggle (selected) of a calendar that already exists locally (FR-UI-1).
+    private static Task UpsertCalendarInfoAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         CalendarInfo calendar,
-        CancellationToken cancellationToken)
-    {
-        const string sql = @"
-            INSERT INTO CalendarInfo (id, account_id, summary, color, selected, sync_token)
-            VALUES (@id, @account_id, @summary, @color, @selected, @sync_token)
-            ON CONFLICT(id) DO UPDATE SET
-                account_id = excluded.account_id,
-                summary = excluded.summary,
-                color = excluded.color,
-                selected = excluded.selected,
-                sync_token = COALESCE(excluded.sync_token, CalendarInfo.sync_token);";
+        CancellationToken cancellationToken) =>
+        EventRows.UpsertCalendarAsync(connection, transaction, calendar, overwriteSelected: false, cancellationToken);
 
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = sql;
-        cmd.Parameters.AddWithValue("@id", calendar.Id);
-        cmd.Parameters.AddWithValue("@account_id", calendar.AccountId);
-        cmd.Parameters.AddWithValue("@summary", calendar.Summary);
-        cmd.Parameters.AddWithValue("@color", (object?)calendar.Color ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@selected", calendar.IsSelected ? 1 : 0);
-        cmd.Parameters.AddWithValue("@sync_token", (object?)calendar.SyncToken ?? DBNull.Value);
-
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task UpsertEventAsync(
+    private static Task UpsertEventAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         CalendarEvent evt,
-        CancellationToken cancellationToken)
-    {
-        const string sql = @"
-            INSERT INTO Event (
-                id, calendar_id, google_id, recurring_event_id, title, description, location,
-                start_utc, end_utc, all_day, timezone, etag, updated, status, extended_json
-            ) VALUES (
-                @id, @calendar_id, @google_id, @recurring_event_id, @title, @description, @location,
-                @start_utc, @end_utc, @all_day, @timezone, @etag, @updated, @status, @extended_json
-            )
-            ON CONFLICT(id) DO UPDATE SET
-                calendar_id = excluded.calendar_id,
-                google_id = excluded.google_id,
-                recurring_event_id = excluded.recurring_event_id,
-                title = excluded.title,
-                description = excluded.description,
-                location = excluded.location,
-                start_utc = excluded.start_utc,
-                end_utc = excluded.end_utc,
-                all_day = excluded.all_day,
-                timezone = excluded.timezone,
-                etag = excluded.etag,
-                updated = excluded.updated,
-                status = excluded.status,
-                extended_json = excluded.extended_json;";
+        CancellationToken cancellationToken) =>
+        EventRows.UpsertEventAsync(connection, transaction, evt, cancellationToken);
 
-        string? extendedJson = evt.ExtendedProperties.Count > 0
-            ? JsonSerializer.Serialize(evt.ExtendedProperties)
-            : null;
-
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = sql;
-        cmd.Parameters.AddWithValue("@id", evt.Id);
-        cmd.Parameters.AddWithValue("@calendar_id", evt.CalendarId);
-        cmd.Parameters.AddWithValue("@google_id", (object?)evt.GoogleId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@recurring_event_id", (object?)evt.RecurringEventId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@title", evt.Title);
-        cmd.Parameters.AddWithValue("@description", (object?)evt.Description ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@location", (object?)evt.Location ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@start_utc", evt.StartUtc.ToString("o", CultureInfo.InvariantCulture));
-        cmd.Parameters.AddWithValue("@end_utc", evt.EndUtc.ToString("o", CultureInfo.InvariantCulture));
-        cmd.Parameters.AddWithValue("@all_day", evt.AllDay ? 1 : 0);
-        cmd.Parameters.AddWithValue("@timezone", (object?)evt.TimeZone ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@etag", (object?)evt.Etag ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@updated", evt.Updated.HasValue ? evt.Updated.Value.ToString("o", CultureInfo.InvariantCulture) : DBNull.Value);
-        cmd.Parameters.AddWithValue("@status", (object?)evt.Status ?? "confirmed");
-        cmd.Parameters.AddWithValue("@extended_json", (object?)extendedJson ?? DBNull.Value);
-
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
 }
