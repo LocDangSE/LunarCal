@@ -18,6 +18,22 @@
     <conv:LaneMarginConverter x:Key="LaneMarginConverter" />
     <conv:LaneWidthConverter x:Key="LaneWidthConverter" />
     <conv:ColorToBrushConverter x:Key="ColorToBrush" />
+
+    <ContextMenu x:Key="EventContextMenu">
+      <MenuItem Header="{loc:Loc menu.event.edit}" Click="OnEditEventClick" />
+      <MenuItem Header="{loc:Loc menu.event.duplicate}" Click="OnDuplicateEventClick" />
+      <MenuItem Header="{loc:Loc menu.event.convert_lunar}" Click="OnConvertLunarClick" />
+      <Separator />
+      <MenuItem Header="{loc:Loc menu.event.delete}" Click="OnDeleteEventClick" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="SlotContextMenu">
+      <MenuItem Header="{loc:Loc menu.slot.create_at}" Click="OnCreateEventAtClick" />
+      <MenuItem Header="{loc:Loc menu.slot.create_all_day}" Click="OnCreateAllDayClick" />
+      <MenuItem Header="{loc:Loc menu.slot.create_lunar}" Click="OnCreateLunarClick" />
+      <Separator />
+      <MenuItem Header="{loc:Loc menu.slot.paste}" Click="OnPasteClick" />
+    </ContextMenu>
   </UserControl.Resources>
 
   <Grid Background="{DynamicResource SurfaceBackgroundBrush}">
@@ -133,6 +149,10 @@
                           CornerRadius="{DynamicResource CornerRadiusSmall}"
                           Background="{Binding Background, Converter={StaticResource ColorToBrush}}"
                           ToolTip="{Binding Title}"
+                          Focusable="True"
+                          ContextMenu="{StaticResource EventContextMenu}"
+                          ContextMenuOpening="OnEventContextMenuOpening"
+                          MouseLeftButtonDown="OnAllDayEventMouseLeftButtonDown"
                           AutomationProperties.AutomationId="AllDayEventChip">
                     <TextBlock Text="{Binding Title}"
                                FontSize="{DynamicResource FontSizeCaption}"
@@ -188,7 +208,12 @@
           </ItemsControl>
 
           <Border Grid.Column="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
-            <Canvas Margin="0,8,0,0">
+            <Canvas Margin="0,8,0,0"
+                    Background="Transparent"
+                    ContextMenu="{StaticResource SlotContextMenu}"
+                    ContextMenuOpening="OnSlotContextMenuOpening"
+                    MouseLeftButtonDown="OnCanvasMouseLeftButtonDown"
+                    MouseRightButtonDown="OnCanvasMouseRightButtonDown">
               <ItemsControl ItemsSource="{Binding TimedEvents}"
                             Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
                             Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
@@ -217,6 +242,12 @@
                               ClipToBounds="True"
                               HorizontalAlignment="Left"
                               ToolTip="{Binding Title}"
+                              Focusable="True"
+                              ContextMenu="{StaticResource EventContextMenu}"
+                              ContextMenuOpening="OnEventContextMenuOpening"
+                              PreviewMouseLeftButtonDown="OnTimedEventPreviewMouseLeftButtonDown"
+                              PreviewMouseMove="OnTimedEventPreviewMouseMove"
+                              PreviewMouseLeftButtonUp="OnTimedEventPreviewMouseLeftButtonUp"
                               AutomationProperties.AutomationId="TimedEventChip">
                         <Border.Width>
                           <MultiBinding Converter="{StaticResource LaneWidthConverter}" ConverterParameter="8,16">

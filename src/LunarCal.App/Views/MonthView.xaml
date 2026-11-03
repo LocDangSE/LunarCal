@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
              xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MonthViewModel}"
              AutomationProperties.AutomationId="MonthView">
@@ -14,6 +15,22 @@
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <conv:ColorToBrushConverter x:Key="ColorToBrush" />
+
+    <ContextMenu x:Key="EventContextMenu">
+      <MenuItem Header="{loc:Loc menu.event.edit}" Click="OnEditEventClick" />
+      <MenuItem Header="{loc:Loc menu.event.duplicate}" Click="OnDuplicateEventClick" />
+      <MenuItem Header="{loc:Loc menu.event.convert_lunar}" Click="OnConvertLunarClick" />
+      <Separator />
+      <MenuItem Header="{loc:Loc menu.event.delete}" Click="OnDeleteEventClick" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="SlotContextMenu">
+      <MenuItem Header="{loc:Loc menu.slot.create_at}" Click="OnCreateEventAtClick" />
+      <MenuItem Header="{loc:Loc menu.slot.create_all_day}" Click="OnCreateAllDayClick" />
+      <MenuItem Header="{loc:Loc menu.slot.create_lunar}" Click="OnCreateLunarClick" />
+      <Separator />
+      <MenuItem Header="{loc:Loc menu.slot.paste}" Click="OnPasteClick" />
+    </ContextMenu>
   </UserControl.Resources>
 
   <Grid Background="{DynamicResource SurfaceBackgroundBrush}">
@@ -63,6 +80,9 @@
             <Border Margin="0,0,1,1"
                     Padding="{DynamicResource ThicknessPaddingMonthCell}"
                     Cursor="Hand"
+                    ContextMenu="{StaticResource SlotContextMenu}"
+                    ContextMenuOpening="OnSlotContextMenuOpening"
+                    MouseLeftButtonDown="OnDayCellMouseLeftButtonDown"
                     AutomationProperties.AutomationId="DayCell">
               <Border.Style>
                 <Style TargetType="Border">
@@ -74,11 +94,6 @@
                   </Style.Triggers>
                 </Style>
               </Border.Style>
-              <Border.InputBindings>
-                <MouseBinding MouseAction="LeftClick"
-                              Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                              CommandParameter="{Binding}" />
-              </Border.InputBindings>
 
               <StackPanel>
                 <!-- top: day number (26 px circle) + lunar day -->
@@ -152,6 +167,10 @@
                               Background="{Binding Background, Converter={StaticResource ColorToBrush}}"
                               Visibility="{Binding IsVisible, Converter={StaticResource BoolToVis}}"
                               ToolTip="{Binding Title}"
+                              Focusable="True"
+                              ContextMenu="{StaticResource EventContextMenu}"
+                              ContextMenuOpening="OnEventContextMenuOpening"
+                              MouseLeftButtonDown="OnEventChipMouseLeftButtonDown"
                               AutomationProperties.AutomationId="EventChip">
                         <DockPanel>
                           <Path DockPanel.Dock="Left"

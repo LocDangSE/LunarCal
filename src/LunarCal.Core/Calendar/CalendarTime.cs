@@ -37,6 +37,15 @@ public static class CalendarTime
         return new DateTimeOffset(local, offset).ToUniversalTime();
     }
 
+    /// <summary>Converts local date and time in <paramref name="timeZone"/> to a UTC instant.</summary>
+    public static DateTimeOffset ToUtc(DateOnly date, TimeOnly time, TimeZoneInfo timeZone)
+    {
+        ArgumentNullException.ThrowIfNull(timeZone);
+        var dt = date.ToDateTime(time, DateTimeKind.Unspecified);
+        var offset = timeZone.GetUtcOffset(dt);
+        return new DateTimeOffset(dt, offset).ToUniversalTime();
+    }
+
     /// <summary>Converts a UTC instant to local wall-clock time in <paramref name="timeZone"/>.</summary>
     public static DateTimeOffset ToLocal(DateTimeOffset instant, TimeZoneInfo timeZone)
     {

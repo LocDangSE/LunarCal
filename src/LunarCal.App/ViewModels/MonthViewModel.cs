@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarCal.App.Localization;
@@ -13,25 +12,21 @@ using LunarCal.Core.Lunar;
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// View model controlling the 6×7 month grid calendar view (FR-UI-1, FR-UI-2, FR-UI-7, FR-LUNAR-6, NFR-PERF).
+/// View model controlling the 6×7 month grid view (Figma 01, FR-UI-1, FR-UI-2, FR-LUNAR-6).
 /// </summary>
 public sealed partial class MonthViewModel : ObservableObject, IDisposable
 {
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
+    private readonly IMutationService? _mutationService;
 
     // Incremented by every load request; a load whose version is no longer current drops its result, so the
     // latest request always wins even when earlier store calls complete later.
     private int _loadVersion;
 
-    private DateOnly? _selectedDate;
-
     [ObservableProperty]
     private DateOnly _displayDate;
-
-    [ObservableProperty]
-    private MonthDayViewModel? _selectedDay;
 
     [ObservableProperty]
     private bool _isLunarVisible = true;
@@ -40,13 +35,21 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     private DayOfWeek _weekStart = DayOfWeek.Monday;
 
     [ObservableProperty]
+    private MonthDayViewModel? _selectedDay;
+
+    [ObservableProperty]
     private string _monthTitle = string.Empty;
 
     [ObservableProperty]
     private TimeSpan _renderDuration;
 
-    /// <summary>Fired when a day is selected in the month view.</summary>
+    private DateOnly? _selectedDate;
+
+    /// <summary>Raised when a day cell is selected.</summary>
     public event EventHandler<DateOnly>? DaySelected;
+
+    /// <summary>Raised when the user asks to open the event editor dialog (Figma S10).</summary>
+    public event EventHandler<EventEditorRequest>? EventEditorRequested;
 
     /// <summary>Day of week header strings (7 columns).</summary>
     public ObservableCollection<string> WeekdayHeaders { get; } = new();
@@ -60,11 +63,13 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
     public MonthViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        IDisplayPreferences preferences)
+        IDisplayPreferences preferences,
+        IMutationService? mutationService = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
+        _mutationService = mutationService;
 
         var today = TodayInDisplayZone();
         _displayDate = new DateOnly(today.Year, today.Month, 1);
@@ -213,6 +218,10 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
             return; // superseded by a newer request
         }
 
+        var colorMap = (calendars ?? Array.Empty<CalendarInfo>())
+            .Where(c => !string.IsNullOrEmpty(c.Color))
+            .ToDictionary(c => c.Id, c => c.Color!, StringComparer.Ordinal);
+
         // Bucket events by every local date they cover (multi-day events appear on each day).
         var eventsByDate = new Dictionary<DateOnly, List<CalendarEvent>>();
         foreach (var ev in events.OrderBy(e => e.AllDay ? 0 : 1).ThenBy(e => e.StartUtc))
@@ -230,23 +239,17 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
                     list = new List<CalendarEvent>();
                     eventsByDate[d] = list;
                 }
-
                 list.Add(ev);
             }
         }
 
-        var moreEventsFormat = _localizationService.GetString("month.more_events", _localizationService.CurrentCulture);
-
-        // Figma 01 chips: timed events start with the start time ("09:00 Họp nhóm"), colours follow the calendar.
-        var colors = (calendars ?? Array.Empty<CalendarInfo>())
-            .Where(c => c is not null)
-            .ToDictionary(c => c.Id, c => c.Color, StringComparer.Ordinal);
-        var timeFormat = _preferences.TimeFormat;
+        var moreEventsFormat = _localizationService["month.more_events"];
         var culture = _localizationService.CurrentCulture;
+        var timeFormat = _preferences.TimeFormat;
         string LabelOf(CalendarEvent ev) => ev.AllDay
             ? ev.Title
             : string.Create(culture, $"{TimeFormattingHelper.FormatTime(CalendarTime.ToLocal(ev.StartUtc, timeZone), timeFormat, culture)} {ev.Title}");
-        string? ColorOf(CalendarEvent ev) => colors.TryGetValue(ev.CalendarId, out var c) ? c : null;
+        string? ColorOf(CalendarEvent ev) => colorMap.TryGetValue(ev.CalendarId, out var c) ? c : null;
 
         // Reuse the existing 42 cells when possible: WPF then only refreshes bindings instead of regenerating
         // every cell container, which dominates the month switch cost (NFR-PERF).
@@ -296,6 +299,126 @@ public sealed partial class MonthViewModel : ObservableObject, IDisposable
 
         stopwatch.Stop();
         RenderDuration = stopwatch.Elapsed;
+    }
+
+    /// <summary>Opens the editor dialog for an existing event (Figma S10).</summary>
+    public void OpenEvent(CalendarEvent calendarEvent)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Edit, Event: calendarEvent));
+    }
+
+    /// <summary>Opens the editor dialog for a new event at the specified date and time.</summary>
+    public void CreateEventAt(DateOnly date, TimeOnly time)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Create, Date: date, Time: time));
+    }
+
+    /// <summary>Opens the editor dialog for an all-day event.</summary>
+    public void CreateEventAllDay(DateOnly date)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Create, Date: date, IsAllDay: true));
+    }
+
+    /// <summary>Opens the editor dialog for creating a lunar rule.</summary>
+    public void CreateLunarRule(DateOnly date)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.CreateLunarRule, Date: date, IsAllDay: true));
+    }
+
+    /// <summary>Duplicates an event (Figma S10 context menu).</summary>
+    public async Task<CalendarEvent?> DuplicateEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(calendarEvent);
+        if (_mutationService is null)
+        {
+            return null;
+        }
+
+        var copy = calendarEvent with
+        {
+            Id = Guid.NewGuid().ToString("D"),
+            GoogleId = null,
+            Etag = null,
+            StartUtc = calendarEvent.AllDay ? calendarEvent.StartUtc.AddDays(1) : calendarEvent.StartUtc.AddHours(1),
+            EndUtc = calendarEvent.AllDay ? calendarEvent.EndUtc.AddDays(1) : calendarEvent.EndUtc.AddHours(1)
+        };
+
+        var accountId = "primary";
+        var result = await _mutationService.CreateEventOptimisticAsync(accountId, copy.CalendarId, copy, cancellationToken).ConfigureAwait(false);
+        await PopulateMonthAsync(DisplayDate).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>Moves an event to another calendar (Figma S10 context menu).</summary>
+    public async Task MoveEventToCalendarAsync(CalendarEvent calendarEvent, string targetCalendarId, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(calendarEvent);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetCalendarId);
+        if (_mutationService is null)
+        {
+            return;
+        }
+
+        var updated = calendarEvent with { CalendarId = targetCalendarId };
+        var accountId = "primary";
+        await _mutationService.UpdateEventOptimisticAsync(accountId, targetCalendarId, updated, cancellationToken).ConfigureAwait(false);
+        await PopulateMonthAsync(DisplayDate).ConfigureAwait(false);
+    }
+
+    /// <summary>Deletes an event (Figma S10 context menu).</summary>
+    public async Task DeleteEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(calendarEvent);
+        if (_mutationService is null)
+        {
+            return;
+        }
+
+        var accountId = "primary";
+        await _mutationService.DeleteEventOptimisticAsync(accountId, calendarEvent.CalendarId, calendarEvent.Id, calendarEvent.Etag, cancellationToken).ConfigureAwait(false);
+        await PopulateMonthAsync(DisplayDate).ConfigureAwait(false);
+    }
+
+    /// <summary>Pastes the copied event from clipboard at the specified date and time.</summary>
+    public async Task<CalendarEvent?> PasteEventAsync(DateOnly date, TimeOnly? time = null, CancellationToken cancellationToken = default)
+    {
+        if (!EventClipboard.HasEvent || EventClipboard.Current is null || _mutationService is null)
+        {
+            return null;
+        }
+
+        var source = EventClipboard.Current;
+        var timeZone = _preferences.TimeZone;
+        DateTimeOffset startUtc;
+        DateTimeOffset endUtc;
+
+        if (source.AllDay)
+        {
+            startUtc = CalendarTime.StartOfDayUtc(date, timeZone);
+            endUtc = CalendarTime.StartOfDayUtc(date.AddDays(1), timeZone);
+        }
+        else
+        {
+            var targetTime = time ?? new TimeOnly(9, 0);
+            var duration = source.EndUtc - source.StartUtc;
+            startUtc = CalendarTime.ToUtc(date, targetTime, timeZone);
+            endUtc = startUtc + (duration > TimeSpan.Zero ? duration : TimeSpan.FromHours(1));
+        }
+
+        var pasted = source with
+        {
+            Id = Guid.NewGuid().ToString("D"),
+            GoogleId = null,
+            Etag = null,
+            StartUtc = startUtc,
+            EndUtc = endUtc,
+            AllDay = source.AllDay
+        };
+
+        var accountId = "primary";
+        var result = await _mutationService.CreateEventOptimisticAsync(accountId, pasted.CalendarId, pasted, cancellationToken).ConfigureAwait(false);
+        await PopulateMonthAsync(DisplayDate).ConfigureAwait(false);
+        return result;
     }
 
     private DateOnly TodayInDisplayZone() => CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);

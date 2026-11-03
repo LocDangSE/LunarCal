@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -706,5 +706,120 @@
   </data>
   <data name="auth.signout.confirm_action" xml:space="preserve">
     <value>Đăng xuất &amp; Xóa dữ liệu</value>
+  </data>
+  <!-- Event Editor & Context Menu (FR-UI-4, Figma S10) -->
+  <data name="event.dialog.create_title" xml:space="preserve">
+    <value>Thêm sự kiện</value>
+  </data>
+  <data name="event.dialog.edit_title" xml:space="preserve">
+    <value>Sửa sự kiện</value>
+  </data>
+  <data name="event.title.placeholder" xml:space="preserve">
+    <value>Thêm tiêu đề</value>
+  </data>
+  <data name="event.location.placeholder" xml:space="preserve">
+    <value>Thêm địa điểm</value>
+  </data>
+  <data name="event.description.placeholder" xml:space="preserve">
+    <value>Thêm mô tả</value>
+  </data>
+  <data name="event.calendar" xml:space="preserve">
+    <value>Lịch</value>
+  </data>
+  <data name="event.start_time" xml:space="preserve">
+    <value>Bắt đầu</value>
+  </data>
+  <data name="event.end_time" xml:space="preserve">
+    <value>Kết thúc</value>
+  </data>
+  <data name="event.recurrence" xml:space="preserve">
+    <value>Lặp lại</value>
+  </data>
+  <data name="recurrence.none" xml:space="preserve">
+    <value>Không lặp</value>
+  </data>
+  <data name="recurrence.daily" xml:space="preserve">
+    <value>Hàng ngày</value>
+  </data>
+  <data name="recurrence.weekly" xml:space="preserve">
+    <value>Hàng tuần</value>
+  </data>
+  <data name="recurrence.monthly" xml:space="preserve">
+    <value>Hàng tháng</value>
+  </data>
+  <data name="recurrence.yearly" xml:space="preserve">
+    <value>Hàng năm</value>
+  </data>
+  <data name="recurrence.lunar" xml:space="preserve">
+    <value>Lặp theo âm lịch</value>
+  </data>
+  <data name="lunar_rule.day" xml:space="preserve">
+    <value>Ngày âm</value>
+  </data>
+  <data name="lunar_rule.month" xml:space="preserve">
+    <value>Tháng âm</value>
+  </data>
+  <data name="lunar_rule.leap_policy" xml:space="preserve">
+    <value>Tính cả tháng nhuận</value>
+  </data>
+  <data name="lunar_rule.sync_google" xml:space="preserve">
+    <value>Đồng bộ lên Google Calendar</value>
+  </data>
+  <data name="lunar_rule.years_ahead" xml:space="preserve">
+    <value>Số năm tính trước</value>
+  </data>
+  <data name="reminder.title" xml:space="preserve">
+    <value>Nhắc nhở</value>
+  </data>
+  <data name="reminder.minutes_before" xml:space="preserve">
+    <value>{0} phút trước</value>
+  </data>
+  <data name="reminder.hours_before" xml:space="preserve">
+    <value>{0} giờ trước</value>
+  </data>
+  <data name="reminder.days_before" xml:space="preserve">
+    <value>{0} ngày trước</value>
+  </data>
+  <data name="reminder.at_start" xml:space="preserve">
+    <value>Vào lúc bắt đầu</value>
+  </data>
+  <data name="reminder.add" xml:space="preserve">
+    <value>Thêm nhắc nhở</value>
+  </data>
+  <data name="menu.event.open" xml:space="preserve">
+    <value>Mở</value>
+  </data>
+  <data name="menu.event.edit" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="menu.event.duplicate" xml:space="preserve">
+    <value>Nhân bản</value>
+  </data>
+  <data name="menu.event.move_calendar" xml:space="preserve">
+    <value>Chuyển lịch</value>
+  </data>
+  <data name="menu.event.convert_lunar" xml:space="preserve">
+    <value>Đổi thành lặp âm lịch</value>
+  </data>
+  <data name="menu.event.delete" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="menu.slot.create_at" xml:space="preserve">
+    <value>Tạo lúc {0}</value>
+  </data>
+  <data name="menu.slot.create_all_day" xml:space="preserve">
+    <value>Tạo cả ngày</value>
+  </data>
+  <data name="menu.slot.create_lunar" xml:space="preserve">
+    <value>Tạo luật âm lịch</value>
+  </data>
+  <data name="menu.slot.paste" xml:space="preserve">
+    <value>Dán sự kiện</value>
+  </data>
+  <data name="event.validation.title_required" xml:space="preserve">
+    <value>Vui lòng nhập tiêu đề sự kiện.</value>
+  </data>
+  <data name="event.validation.invalid_time" xml:space="preserve">
+    <value>Thời gian kết thúc phải sau thời gian bắt đầu.</value>
   </data>
 </root>

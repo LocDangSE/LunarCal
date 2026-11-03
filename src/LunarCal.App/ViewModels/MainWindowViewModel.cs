@@ -20,6 +20,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly IThemeService _themeService;
     private readonly ISettingsStore _settingsStore;
     private readonly IDisplayPreferences _preferences;
+    private readonly IMutationService? _mutationService;
 
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
@@ -82,6 +83,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Child view model for the agenda schedule view (Figma S08, FR-UI-1).</summary>
     public AgendaViewModel AgendaView { get; }
 
+    /// <summary>Raised when any view or command requests the event editor dialog (Figma S10, FR-UI-4).</summary>
+    public event EventHandler<EventEditorRequest>? EventEditorRequested;
+
     /// <summary>List of calendars displayed in the sidebar (FR-UI-10).</summary>
     public ObservableCollection<CalendarItemViewModel> Calendars { get; } = new();
 
@@ -93,28 +97,33 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ILocalizationService localizationService,
         IThemeService themeService,
         ISettingsStore settingsStore,
-        IDisplayPreferences preferences)
+        IDisplayPreferences preferences,
+        IMutationService? mutationService = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
+        _mutationService = mutationService;
         _isLunarVisible = _preferences.LunarEnabled;
 
         MiniCalendar = new MiniCalendarViewModel(_localizationService);
         MiniCalendar.DateSelected += OnMiniCalendarDateSelected;
 
-        MonthView = new MonthViewModel(_eventStore, _localizationService, _preferences);
+        MonthView = new MonthViewModel(_eventStore, _localizationService, _preferences, _mutationService);
         MonthView.DaySelected += OnMonthViewDaySelected;
+        MonthView.EventEditorRequested += OnChildEventEditorRequested;
         MonthView.SetLunarVisibility(IsLunarVisible);
         _ = MonthView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
-        WeekView = new WeekViewModel(_eventStore, _localizationService, _preferences);
+        WeekView = new WeekViewModel(_eventStore, _localizationService, _preferences, _mutationService);
+        WeekView.EventEditorRequested += OnChildEventEditorRequested;
         WeekView.SetLunarVisibility(IsLunarVisible);
         _ = WeekView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
-        DayView = new DayViewModel(_eventStore, _localizationService, _preferences);
+        DayView = new DayViewModel(_eventStore, _localizationService, _preferences, _mutationService);
+        DayView.EventEditorRequested += OnChildEventEditorRequested;
         DayView.SetLunarVisibility(IsLunarVisible);
         _ = DayView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
@@ -131,6 +140,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         // Load calendars from store
         _ = LoadCalendarsAsync();
+    }
+
+    private void OnChildEventEditorRequested(object? sender, EventEditorRequest req)
+    {
+        EventEditorRequested?.Invoke(this, req);
     }
 
     partial void OnPendingAiCommandsCountChanged(int value) => UpdatePendingAiCommandsText();
@@ -279,13 +293,37 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Creates a new calendar event.
+    /// Creates a new calendar event (Figma 01, S10, FR-UI-4).
     /// </summary>
     [RelayCommand]
     public void CreateEvent()
     {
-        // Event creation dialog is wired in P3-14 with SelectedDate context
-        _ = SelectedDate;
+        var date = DateOnly.FromDateTime(SelectedDate);
+        var time = new TimeOnly(DateTime.Now.Hour < 23 ? DateTime.Now.Hour + 1 : 9, 0);
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Create, Date: date, Time: time));
+    }
+
+    /// <summary>
+    /// Reloads events across the active view after a mutation occurs.
+    /// </summary>
+    public async Task ReloadActiveViewAsync(CancellationToken cancellationToken = default)
+    {
+        var date = DateOnly.FromDateTime(SelectedDate);
+        switch (ActiveViewMode)
+        {
+            case CalendarViewMode.Day:
+                await DayView.PopulateDayAsync(date, cancellationToken);
+                break;
+            case CalendarViewMode.Week:
+                await WeekView.PopulateWeekAsync(date, cancellationToken);
+                break;
+            case CalendarViewMode.Agenda:
+                await AgendaView.SetDisplayDateAsync(date);
+                break;
+            default:
+                await MonthView.PopulateMonthAsync(date);
+                break;
+        }
     }
 
     /// <summary>Raised when the user asks to open Settings (Figma S13). The view opens the settings window.</summary>
@@ -439,6 +477,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _preferences.PropertyChanged -= OnPreferencesChanged;
         MiniCalendar.DateSelected -= OnMiniCalendarDateSelected;
         MonthView.DaySelected -= OnMonthViewDaySelected;
+        MonthView.EventEditorRequested -= OnChildEventEditorRequested;
+        WeekView.EventEditorRequested -= OnChildEventEditorRequested;
+        DayView.EventEditorRequested -= OnChildEventEditorRequested;
         _localizationService.PropertyChanged -= OnLocalizationChanged;
         MonthView.Dispose();
         WeekView.Dispose();

@@ -189,6 +189,7 @@ public static class DependencyInjection
             var oauthClient = sp.GetRequiredService<IGoogleOAuthClient>();
             var conflictNotifier = sp.GetRequiredService<IConflictNotifier>();
             var logger = sp.GetService<ILogger>();
+            var eventStore = sp.GetService<IEventStore>();
             return new MutationService(
                 connectionFactory,
                 mutationStore,
@@ -197,7 +198,8 @@ public static class DependencyInjection
                 conflictNotifier,
                 syncScheduler: null,
                 timeProvider: TimeProvider.System,
-                logger: logger);
+                logger: logger,
+                eventStore: eventStore);
         });
 
         // Phase 3: Background sync scheduler (FR-SYNC-3, FR-SYNC-4)
