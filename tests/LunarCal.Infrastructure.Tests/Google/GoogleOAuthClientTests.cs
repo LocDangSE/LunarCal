@@ -250,6 +250,321 @@ public sealed class GoogleOAuthClientTests
         result.ErrorDescription.Should().Contain("PKCE verification failed");
     }
 
+    [Fact]
+    public async Task FR_AUTH_3_RefreshAccessToken_succeeds_and_preserves_existing_refresh_token()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-001";
+        const string existingRefreshToken = "mock_existing_refresh_token_aaa";
+
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns(existingRefreshToken);
+
+        var options = new GoogleOAuthOptions
+        {
+            ClientId = "test-client-id-refresh"
+        };
+
+        string? capturedBody = null;
+        var refreshResponseJson = JsonSerializer.Serialize(new
+        {
+            access_token = "mock_refreshed_access_token_111",
+            token_type = "Bearer",
+            expires_in = 3600,
+            scope = "https://www.googleapis.com/auth/calendar.events"
+        });
+
+        var fakeHandler = new FakeHttpMessageHandler(async request =>
+        {
+            if (request.Content is not null)
+            {
+                capturedBody = await request.Content.ReadAsStringAsync();
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(refreshResponseJson, Encoding.UTF8, "application/json")
+            };
+        });
+
+        using var httpClient = new HttpClient(fakeHandler);
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser, httpClient);
+
+        var tokens = await client.RefreshAccessTokenAsync(accountId, ct);
+
+        tokens.Should().NotBeNull();
+        tokens.AccessToken.Should().Be("mock_refreshed_access_token_111");
+        tokens.TokenType.Should().Be("Bearer");
+        tokens.ExpiresInSeconds.Should().Be(3600);
+        tokens.RefreshToken.Should().Be(existingRefreshToken);
+
+        capturedBody.Should().NotBeNull();
+        capturedBody.Should().Contain("client_id=test-client-id-refresh");
+        capturedBody.Should().Contain("grant_type=refresh_token");
+        capturedBody.Should().Contain($"refresh_token={existingRefreshToken}");
+
+        // Store did not need to update since Google did not rotate the refresh token
+        await _secretStore.DidNotReceive().SetSecretAsync(
+            KnownSecretKeys.GoogleRefreshToken(accountId),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FR_AUTH_3_RefreshAccessToken_updates_stored_refresh_token_when_rotated()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-002";
+        const string oldRefreshToken = "mock_old_refresh_token_bbb";
+        const string newRotatedRefreshToken = "mock_new_rotated_refresh_token_ccc";
+
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns(oldRefreshToken);
+
+        var options = new GoogleOAuthOptions { ClientId = "test-client-id" };
+
+        var refreshResponseJson = JsonSerializer.Serialize(new
+        {
+            access_token = "mock_refreshed_access_token_222",
+            token_type = "Bearer",
+            expires_in = 3600,
+            refresh_token = newRotatedRefreshToken
+        });
+
+        var fakeHandler = new FakeHttpMessageHandler(async _ =>
+        {
+            return await Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(refreshResponseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(fakeHandler);
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser, httpClient);
+
+        var tokens = await client.RefreshAccessTokenAsync(accountId, ct);
+
+        tokens.AccessToken.Should().Be("mock_refreshed_access_token_222");
+        tokens.RefreshToken.Should().Be(newRotatedRefreshToken);
+
+        // SEC-OAUTH-3, FR-AUTH-3: New rotated refresh token saved in DPAPI secret store
+        await _secretStore.Received(1).SetSecretAsync(
+            KnownSecretKeys.GoogleRefreshToken(accountId),
+            newRotatedRefreshToken,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FR_AUTH_3_FR_AUTH_6_RefreshAccessToken_throws_invalid_grant_and_clears_stored_token()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-003";
+
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns("mock_expired_refresh_token_ddd");
+
+        var options = new GoogleOAuthOptions
+        {
+            ClientId = "test-client-id",
+            IsTestingConsentMode = true
+        };
+
+        var errorResponseJson = JsonSerializer.Serialize(new
+        {
+            error = "invalid_grant",
+            error_description = "Token has been expired or revoked."
+        });
+
+        var fakeHandler = new FakeHttpMessageHandler(async _ =>
+        {
+            return await Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(fakeHandler);
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser, httpClient);
+
+        var act = () => client.RefreshAccessTokenAsync(accountId, ct);
+
+        var ex = await act.Should().ThrowAsync<GoogleInvalidGrantException>();
+        ex.Which.AccountId.Should().Be(accountId);
+        ex.Which.IsTestingConsentMode.Should().BeTrue();
+        ex.Which.GuidanceMessage.Should().Contain("Testing");
+        ex.Which.GuidanceMessage.Should().Contain("7 days");
+
+        // FR-AUTH-3: Expired/revoked token deleted from DPAPI secret store
+        await _secretStore.Received(1).DeleteSecretAsync(
+            KnownSecretKeys.GoogleRefreshToken(accountId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FR_AUTH_3_FR_AUTH_6_TryRefreshAccessToken_returns_failed_result_with_guidance_on_invalid_grant()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-004";
+
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns("mock_expired_refresh_token_eee");
+
+        var options = new GoogleOAuthOptions
+        {
+            ClientId = "test-client-id",
+            IsTestingConsentMode = true
+        };
+
+        var errorResponseJson = JsonSerializer.Serialize(new
+        {
+            error = "invalid_grant",
+            error_description = "Token has been expired or revoked."
+        });
+
+        var fakeHandler = new FakeHttpMessageHandler(async _ =>
+        {
+            return await Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(fakeHandler);
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser, httpClient);
+
+        var result = await client.TryRefreshAccessTokenAsync(accountId, ct);
+
+        result.Success.Should().BeFalse();
+        result.IsInvalidGrant.Should().BeTrue();
+        result.RequiresReauthentication.Should().BeTrue();
+        result.Error.Should().Be("invalid_grant");
+        result.GuidanceMessage.Should().NotBeNull();
+        result.GuidanceMessage.Should().Contain("Testing");
+        result.GuidanceMessage.Should().Contain("7 days");
+    }
+
+    [Fact]
+    public async Task FR_AUTH_3_RefreshAccessToken_throws_when_refresh_token_not_found_in_store()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-missing";
+
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns((string?)null);
+
+        var options = new GoogleOAuthOptions { ClientId = "test-client-id" };
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser);
+
+        var act = () => client.RefreshAccessTokenAsync(accountId, ct);
+
+        var ex = await act.Should().ThrowAsync<GoogleInvalidGrantException>();
+        ex.Which.AccountId.Should().Be(accountId);
+
+        var tryResult = await client.TryRefreshAccessTokenAsync(accountId, ct);
+        tryResult.Success.Should().BeFalse();
+        tryResult.RequiresReauthentication.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task FR_AUTH_6_RefreshAccessToken_throws_when_client_id_is_empty()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var options = new GoogleOAuthOptions { ClientId = "" };
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser);
+
+        var act = () => client.RefreshAccessTokenAsync("account-123", ct);
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        var tryResult = await client.TryRefreshAccessTokenAsync("account-123", ct);
+        tryResult.Success.Should().BeFalse();
+        tryResult.Error.Should().Be("missing_client_id");
+        tryResult.RequiresReauthentication.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task FR_AUTH_3_RefreshAccessToken_includes_client_secret_when_configured()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-005";
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns("mock_token_fff");
+
+        var options = new GoogleOAuthOptions
+        {
+            ClientId = "test-client-id",
+            ClientSecret = "my-secret-credential"
+        };
+
+        string? capturedBody = null;
+        var fakeHandler = new FakeHttpMessageHandler(async request =>
+        {
+            if (request.Content is not null)
+            {
+                capturedBody = await request.Content.ReadAsStringAsync();
+            }
+
+            var json = JsonSerializer.Serialize(new
+            {
+                access_token = "mock_access_token_333",
+                token_type = "Bearer",
+                expires_in = 3600
+            });
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+        });
+
+        using var httpClient = new HttpClient(fakeHandler);
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser, httpClient);
+
+        await client.RefreshAccessTokenAsync(accountId, ct);
+
+        capturedBody.Should().NotBeNull();
+        capturedBody.Should().Contain("client_secret=my-secret-credential");
+    }
+
+    [Fact]
+    public async Task FR_AUTH_6_Guidance_reflects_production_mode_when_testing_mode_is_false()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        const string accountId = "account-user-006";
+
+        _secretStore.GetSecretAsync(KnownSecretKeys.GoogleRefreshToken(accountId), ct)
+            .Returns("mock_expired_token_ggg");
+
+        var options = new GoogleOAuthOptions
+        {
+            ClientId = "test-client-id",
+            IsTestingConsentMode = false
+        };
+
+        var errorResponseJson = JsonSerializer.Serialize(new
+        {
+            error = "invalid_grant",
+            error_description = "Token has been expired or revoked."
+        });
+
+        var fakeHandler = new FakeHttpMessageHandler(async _ =>
+        {
+            return await Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json")
+            });
+        });
+
+        using var httpClient = new HttpClient(fakeHandler);
+        var client = new GoogleOAuthClient(options, _secretStore, _listenerFactory, _browser, httpClient);
+
+        var act = () => client.RefreshAccessTokenAsync(accountId, ct);
+
+        var ex = await act.Should().ThrowAsync<GoogleInvalidGrantException>();
+        ex.Which.IsTestingConsentMode.Should().BeFalse();
+        ex.Which.GuidanceMessage.Should().Be(GoogleInvalidGrantException.ProductionModeDefaultGuidance);
+        ex.Which.GuidanceMessage.Should().NotContain("7 days");
+    }
+
     private static string ExtractQueryParameter(string query, string name)
     {
         var trimmed = query.TrimStart('?');
@@ -287,4 +602,3 @@ public sealed class GoogleOAuthClientTests
             handler(request);
     }
 }
-
