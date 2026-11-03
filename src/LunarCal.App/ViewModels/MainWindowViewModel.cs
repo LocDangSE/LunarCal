@@ -5,13 +5,13 @@ using CommunityToolkit.Mvvm.Input;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
-using LunarCal.Core.Lunar;
+using LunarCal.Core.Calendar;
 using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// Root view model for the main application shell window (Figma 01, FR-UI-1, FR-UI-9, FR-UI-10).
+/// Root view model for the shell window (MainWindow, Figma 01).
 /// </summary>
 public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
@@ -21,6 +21,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly ISettingsStore _settingsStore;
     private readonly IDisplayPreferences _preferences;
     private readonly IMutationService? _mutationService;
+    private readonly INetworkStatusService? _networkStatusService;
+    private readonly ISyncScheduler? _syncScheduler;
+    private readonly IAccountStore? _accountStore;
+    private readonly IGoogleOAuthClient? _oauthClient;
 
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
@@ -56,8 +60,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Second line of the sidebar sync card (Figma 1:195): "2 phút trước · Hàng chờ AI: 0".</summary>
     public string SyncDetailText => _localizationService.Format("format.dot_pair", SyncStatusText, PendingAiCommandsText);
 
-    /// <summary>Initials shown in the avatar (Figma 1:227) until a Google account is signed in (Phase 3).</summary>
-    public string UserInitials { get; } = InitialsOf(Environment.UserName);
+    /// <summary>Initials shown in the avatar (Figma 1:227).</summary>
+    [ObservableProperty]
+    private string _userInitials = InitialsOf(Environment.UserName);
+
+    [ObservableProperty]
+    private bool _isSyncing;
+
+    [ObservableProperty]
+    private bool _isOfflineBannerVisible;
+
+    [ObservableProperty]
+    private bool _isReauthBannerVisible;
+
+    [ObservableProperty]
+    private string _accountEmail = string.Empty;
+
+    [ObservableProperty]
+    private string _accountDisplayName = string.Empty;
 
     [ObservableProperty]
     private string _currentLanguage = "vi-VN";
@@ -98,7 +118,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IThemeService themeService,
         ISettingsStore settingsStore,
         IDisplayPreferences preferences,
-        IMutationService? mutationService = null)
+        IMutationService? mutationService = null,
+        INetworkStatusService? networkStatusService = null,
+        ISyncScheduler? syncScheduler = null,
+        IAccountStore? accountStore = null,
+        IGoogleOAuthClient? oauthClient = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
@@ -106,6 +130,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
         _mutationService = mutationService;
+        _networkStatusService = networkStatusService;
+        _syncScheduler = syncScheduler;
+        _accountStore = accountStore;
+        _oauthClient = oauthClient;
+
         _isLunarVisible = _preferences.LunarEnabled;
 
         MiniCalendar = new MiniCalendarViewModel(_localizationService);
@@ -131,6 +160,26 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         AgendaView.SetLunarVisibility(IsLunarVisible);
         _ = AgendaView.SetDisplayDateAsync(DateOnly.FromDateTime(SelectedDate));
 
+        if (_networkStatusService is not null)
+        {
+            _isOnline = _networkStatusService.IsOnline;
+            _networkStatusService.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        }
+
+        _networkStatusText = _localizationService[IsOnline ? "network.online" : "network.offline"];
+        _isOfflineBannerVisible = !IsOnline;
+
+        if (_syncScheduler is not null)
+        {
+            _syncScheduler.SyncStarted += OnSyncSchedulerStarted;
+            _syncScheduler.SyncCompleted += OnSyncSchedulerCompleted;
+            UpdateSyncStatusText(_syncScheduler.LastSyncTime);
+        }
+        else
+        {
+            _syncStatusText = _localizationService["sidebar.sync_status_now"];
+        }
+
         _localizationService.PropertyChanged += OnLocalizationChanged;
         _preferences.PropertyChanged += OnPreferencesChanged;
 
@@ -138,8 +187,86 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         UpdatePendingAiCommandsText();
         UpdateTitles();
 
-        // Load calendars from store
+        // Load calendars and account from store
         _ = LoadCalendarsAsync();
+        _ = LoadAccountAsync();
+    }
+
+    private void OnNetworkAvailabilityChanged(object? sender, bool isOnline)
+    {
+        IsOnline = isOnline;
+        NetworkStatusText = _localizationService[isOnline ? "network.online" : "network.offline"];
+        IsOfflineBannerVisible = !isOnline;
+    }
+
+    private void OnSyncSchedulerStarted(object? sender, EventArgs e)
+    {
+        IsSyncing = true;
+        SyncStatusText = _localizationService["sidebar.sync_status_syncing"];
+    }
+
+    private void OnSyncSchedulerCompleted(object? sender, SyncResult result)
+    {
+        IsSyncing = false;
+        UpdateSyncStatusText(_syncScheduler?.LastSyncTime);
+
+        if (result.Success)
+        {
+            _ = ReloadActiveViewAsync();
+        }
+        else
+        {
+            SyncStatusText = _localizationService["sidebar.sync_status_failed"];
+        }
+    }
+
+    private void UpdateSyncStatusText(DateTimeOffset? lastSync)
+    {
+        if (lastSync is null)
+        {
+            SyncStatusText = _localizationService["sidebar.sync_status_now"];
+            return;
+        }
+
+        var elapsed = DateTimeOffset.UtcNow - lastSync.Value;
+        if (elapsed.TotalMinutes < 1)
+        {
+            SyncStatusText = _localizationService["time.just_now"];
+        }
+        else if (elapsed.TotalHours < 1)
+        {
+            SyncStatusText = _localizationService.Format("time.minutes_ago", (int)elapsed.TotalMinutes);
+        }
+        else
+        {
+            SyncStatusText = _localizationService.Format("time.hours_ago", (int)elapsed.TotalHours);
+        }
+    }
+
+    /// <summary>
+    /// Loads the authenticated account details into view model properties.
+    /// </summary>
+    public async Task LoadAccountAsync(CancellationToken cancellationToken = default)
+    {
+        if (_accountStore is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var account = await _accountStore.GetPrimaryAccountAsync(cancellationToken).ConfigureAwait(true);
+            if (account is not null)
+            {
+                AccountEmail = account.Email;
+                AccountDisplayName = account.DisplayName ?? account.Email;
+                UserInitials = InitialsOf(AccountDisplayName);
+            }
+        }
+        catch
+        {
+            // Fallback gracefully
+        }
     }
 
     private void OnChildEventEditorRequested(object? sender, EventEditorRequest req)
@@ -155,7 +282,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private static string InitialsOf(string? name)
     {
-        var words = (name ?? string.Empty).Split([' ', '.', '_', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var words = (name ?? string.Empty).Split([' ', '.', '_', '-', '@'], StringSplitOptions.RemoveEmptyEntries);
         var initials = string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
         return initials.Length > 0 ? initials : "?";
     }
@@ -183,39 +310,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public void GoToToday()
     {
         SelectedDate = DateTime.Today;
-        var dateOnly = DateOnly.FromDateTime(SelectedDate);
-        MiniCalendar.SetSelectedDate(dateOnly);
-        _ = MonthView.SetDisplayDateAsync(dateOnly);
-        _ = WeekView.SetDisplayDateAsync(dateOnly);
-        _ = DayView.SetDisplayDateAsync(dateOnly);
-        _ = AgendaView.SetDisplayDateAsync(dateOnly);
+        var today = DateOnly.FromDateTime(SelectedDate);
+        MiniCalendar.SetSelectedDate(today);
+        _ = MonthView.SetDisplayDateAsync(today);
+        _ = WeekView.SetDisplayDateAsync(today);
+        _ = DayView.SetDisplayDateAsync(today);
+        _ = AgendaView.SetDisplayDateAsync(today);
         UpdateTitles();
     }
 
     /// <summary>
-    /// Navigates back by one period (month, week, or day depending on active view).
-    /// </summary>
-    [RelayCommand]
-    public void PreviousPeriod()
-    {
-        SelectedDate = ActiveViewMode switch
-        {
-            CalendarViewMode.Day => SelectedDate.AddDays(-1),
-            CalendarViewMode.Week => SelectedDate.AddDays(-7),
-            _ => SelectedDate.AddMonths(-1),
-        };
-
-        var dateOnly = DateOnly.FromDateTime(SelectedDate);
-        MiniCalendar.SetSelectedDate(dateOnly);
-        _ = MonthView.SetDisplayDateAsync(dateOnly);
-        _ = WeekView.SetDisplayDateAsync(dateOnly);
-        _ = DayView.SetDisplayDateAsync(dateOnly);
-        _ = AgendaView.SetDisplayDateAsync(dateOnly);
-        UpdateTitles();
-    }
-
-    /// <summary>
-    /// Navigates forward by one period (month, week, or day depending on active view).
+    /// Navigates one period forward depending on active view mode (FR-UI-9).
     /// </summary>
     [RelayCommand]
     public void NextPeriod()
@@ -224,15 +329,37 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             CalendarViewMode.Day => SelectedDate.AddDays(1),
             CalendarViewMode.Week => SelectedDate.AddDays(7),
-            _ => SelectedDate.AddMonths(1),
+            _ => SelectedDate.AddMonths(1)
         };
 
-        var dateOnly = DateOnly.FromDateTime(SelectedDate);
-        MiniCalendar.SetSelectedDate(dateOnly);
-        _ = MonthView.SetDisplayDateAsync(dateOnly);
-        _ = WeekView.SetDisplayDateAsync(dateOnly);
-        _ = DayView.SetDisplayDateAsync(dateOnly);
-        _ = AgendaView.SetDisplayDateAsync(dateOnly);
+        var date = DateOnly.FromDateTime(SelectedDate);
+        MiniCalendar.SetSelectedDate(date);
+        _ = MonthView.SetDisplayDateAsync(date);
+        _ = WeekView.SetDisplayDateAsync(date);
+        _ = DayView.SetDisplayDateAsync(date);
+        _ = AgendaView.SetDisplayDateAsync(date);
+        UpdateTitles();
+    }
+
+    /// <summary>
+    /// Navigates one period backward depending on active view mode (FR-UI-9).
+    /// </summary>
+    [RelayCommand]
+    public void PreviousPeriod()
+    {
+        SelectedDate = ActiveViewMode switch
+        {
+            CalendarViewMode.Day => SelectedDate.AddDays(-1),
+            CalendarViewMode.Week => SelectedDate.AddDays(-7),
+            _ => SelectedDate.AddMonths(-1)
+        };
+
+        var date = DateOnly.FromDateTime(SelectedDate);
+        MiniCalendar.SetSelectedDate(date);
+        _ = MonthView.SetDisplayDateAsync(date);
+        _ = WeekView.SetDisplayDateAsync(date);
+        _ = DayView.SetDisplayDateAsync(date);
+        _ = AgendaView.SetDisplayDateAsync(date);
         UpdateTitles();
     }
 
@@ -283,13 +410,73 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Triggers an immediate calendar synchronization cycle.
+    /// Triggers an immediate calendar synchronization cycle (FR-UI-10, FR-SYNC-3).
     /// </summary>
     [RelayCommand]
-    public void SyncNow()
+    public async Task SyncNowAsync(CancellationToken cancellationToken = default)
     {
-        SyncStatusText = _localizationService["sidebar.sync_status_now"];
-        UpdatePendingAiCommandsText();
+        if (_syncScheduler is not null)
+        {
+            IsSyncing = true;
+            SyncStatusText = _localizationService["sidebar.sync_status_syncing"];
+            try
+            {
+                await _syncScheduler.TriggerManualSyncAsync(cancellationToken).ConfigureAwait(true);
+            }
+            finally
+            {
+                IsSyncing = false;
+            }
+            await ReloadActiveViewAsync(cancellationToken).ConfigureAwait(true);
+        }
+        else
+        {
+            SyncStatusText = _localizationService["sidebar.sync_status_now"];
+            UpdatePendingAiCommandsText();
+        }
+    }
+
+    /// <summary>Dismisses the offline warning banner.</summary>
+    [RelayCommand]
+    public void DismissOfflineBanner() => IsOfflineBannerVisible = false;
+
+    /// <summary>Dismisses the re-authentication warning banner.</summary>
+    [RelayCommand]
+    public void DismissReauthBanner() => IsReauthBannerVisible = false;
+
+    /// <summary>Initiates re-authentication when token is expired or invalid (FR-AUTH-3).</summary>
+    [RelayCommand]
+    public async Task ReauthAsync(CancellationToken cancellationToken = default)
+    {
+        if (_oauthClient is null)
+        {
+            OpenSettings();
+            return;
+        }
+
+        try
+        {
+            var result = await _oauthClient.AuthorizeAsync(cancellationToken).ConfigureAwait(true);
+            if (result.Success && result.UserInfo is not null)
+            {
+                IsReauthBannerVisible = false;
+                if (_accountStore is not null)
+                {
+                    await _accountStore.SaveAccountAsync(new AccountInfo
+                    {
+                        Id = result.UserInfo.Id,
+                        Email = result.UserInfo.Email,
+                        DisplayName = result.UserInfo.DisplayName
+                    }, cancellationToken).ConfigureAwait(true);
+                }
+                await LoadAccountAsync(cancellationToken).ConfigureAwait(true);
+                await SyncNowAsync(cancellationToken).ConfigureAwait(true);
+            }
+        }
+        catch
+        {
+            OpenSettings();
+        }
     }
 
     /// <summary>
@@ -318,7 +505,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 await WeekView.PopulateWeekAsync(date, cancellationToken);
                 break;
             case CalendarViewMode.Agenda:
-                await AgendaView.SetDisplayDateAsync(date);
+                await AgendaView.LoadDataAsync(cancellationToken);
                 break;
             default:
                 await MonthView.PopulateMonthAsync(date);
@@ -326,11 +513,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
     }
 
-    /// <summary>Raised when the user asks to open Settings (Figma S13). The view opens the settings window.</summary>
+    /// <summary>
+    /// Event raised to request the Settings window (Figma 04, S13, S20).
+    /// </summary>
     public event EventHandler? SettingsRequested;
 
     /// <summary>
-    /// Opens the Settings screen (Cài đặt &gt; Giao diện, Figma S13, FR-UI-7).
+    /// Opens the application settings window.
     /// </summary>
     [RelayCommand]
     public void OpenSettings()
@@ -345,7 +534,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var list = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken);
+            var list = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken).ConfigureAwait(true);
             Calendars.Clear();
             foreach (var cal in list)
             {
@@ -356,7 +545,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     Color = cal.Color ?? CalendarColors.DefaultHex,
                     IsSelected = cal.IsSelected,
                     IsPrimary = cal.IsPrimary,
-                    AccountId = cal.AccountId,
+                    AccountId = cal.AccountId
                 });
             }
         }
@@ -385,7 +574,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             ? _localizationService["network.online"]
             : _localizationService["network.offline"];
 
-        SyncStatusText = _localizationService["sidebar.sync_status_now"];
+        UpdateSyncStatusText(_syncScheduler?.LastSyncTime);
         UpdatePendingAiCommandsText();
     }
 
@@ -474,6 +663,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (_networkStatusService is not null)
+        {
+            _networkStatusService.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+        }
+
+        if (_syncScheduler is not null)
+        {
+            _syncScheduler.SyncStarted -= OnSyncSchedulerStarted;
+            _syncScheduler.SyncCompleted -= OnSyncSchedulerCompleted;
+        }
+
         _preferences.PropertyChanged -= OnPreferencesChanged;
         MiniCalendar.DateSelected -= OnMiniCalendarDateSelected;
         MonthView.DaySelected -= OnMonthViewDaySelected;

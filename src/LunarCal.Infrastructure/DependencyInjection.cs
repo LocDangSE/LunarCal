@@ -225,6 +225,17 @@ public static class DependencyInjection
         services.AddSingleton<ISyncScheduler>(sp => sp.GetRequiredService<SyncScheduler>());
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<SyncScheduler>());
 
+        // Phase 3: Network status service (FR-UI-9)
+        services.AddSingleton<INetworkStatusService, NetworkStatusService>();
+
+        // Phase 3: Account store (spec §6, FR-AUTH-1, FR-AUTH-4)
+        services.AddSingleton<IAccountStore>(sp =>
+        {
+            var connectionFactory = sp.GetService<ISqliteConnectionFactory>();
+            var logger = sp.GetService<ILogger>();
+            return new SqliteAccountStore(connectionFactory, logger);
+        });
+
         return services;
     }
 }

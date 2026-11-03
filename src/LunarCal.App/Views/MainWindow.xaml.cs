@@ -1,9 +1,7 @@
 using System.Windows;
-using System.Windows.Automation;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
-using LunarCal.App.Views.Settings;
 using LunarCal.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,23 +24,12 @@ public partial class MainWindow : Window
         viewModel.EventEditorRequested += OnEventEditorRequested;
     }
 
-    // Opens Settings > Appearance (Figma S13) as a modal window owned by the shell.
+    // Opens Settings Window (Figma 04, S13, S20) as a modal window owned by the shell.
     private void OnSettingsRequested(object? sender, EventArgs e)
     {
-        var localization = _services.GetRequiredService<ILocalizationService>();
-        var page = _services.GetRequiredService<AppearancePage>();
-        var window = new Window
-        {
-            Owner = this,
-            Title = localization["topbar.settings"],
-            Content = page,
-            Width = 760,
-            Height = 720,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        };
-        window.SetResourceReference(BackgroundProperty, "WindowBackgroundBrush");
-        AutomationProperties.SetAutomationId(window, "SettingsWindow");
-        window.ShowDialog();
+        var settingsWindow = _services.GetRequiredService<SettingsWindow>();
+        settingsWindow.Owner = this;
+        settingsWindow.ShowDialog();
     }
 
     // Opens Event Editor Dialog (Figma S10) as a modal dialog owned by the shell.

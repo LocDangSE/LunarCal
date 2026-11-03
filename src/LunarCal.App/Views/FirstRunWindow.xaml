@@ -1,0 +1,276 @@
+<Window x:Class="LunarCal.App.Views.FirstRunWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+        xmlns:loc="clr-namespace:LunarCal.App.Localization"
+        xmlns:conv="clr-namespace:LunarCal.App.Converters"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:FirstRunViewModel}"
+        Title="{loc:Loc Key=firstrun.title}"
+        AutomationProperties.AutomationId="FirstRunWindow"
+        Width="640" Height="520"
+        MinWidth="560" MinHeight="440"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{DynamicResource FontFamilyBase}"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+  <Window.Resources>
+    <x:Static x:Key="Loc" Member="loc:LocalizationService.Instance" />
+    <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
+
+    <Style x:Key="PrimaryBtnStyle" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="20,10" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{DynamicResource AccentPrimaryBrush}"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                TextElement.Foreground="{DynamicResource OnAccentBrush}"
+                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
+                                TextElement.FontSize="{DynamicResource FontSizeBodyStrong}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="GhostBtnStyle" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="16,10" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="Transparent"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                TextElement.Foreground="{DynamicResource TextSecondaryBrush}"
+                                TextElement.FontWeight="{DynamicResource FontWeightMedium}"
+                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="36,32">
+    <Grid.RowDefinitions>
+      <!-- Stepper / Brand Header -->
+      <RowDefinition Height="Auto" />
+      <!-- Step Body Content -->
+      <RowDefinition Height="*" />
+      <!-- Footer Actions -->
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- Top Stepper / Brand Header -->
+    <StackPanel Grid.Row="0" Margin="0,0,0,24">
+      <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+        <Border Width="32" Height="32"
+                CornerRadius="{DynamicResource CornerRadiusMedium}"
+                Background="{DynamicResource AccentPrimaryBrush}"
+                Margin="0,0,12,0">
+          <TextBlock Text="{DynamicResource IconGlyphCalendar}"
+                     FontFamily="{DynamicResource FontFamilyIcon}"
+                     FontSize="{DynamicResource FontSizeTitle}"
+                     Foreground="{DynamicResource OnAccentBrush}"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <TextBlock Text="{Binding [firstrun.title], Source={StaticResource Loc}}"
+                   FontSize="{DynamicResource FontSizeTitle}"
+                   FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+
+      <TextBlock Text="{Binding [firstrun.subtitle], Source={StaticResource Loc}}"
+                 FontSize="{DynamicResource FontSizeBody}"
+                 Foreground="{DynamicResource TextSecondaryBrush}" />
+    </StackPanel>
+
+    <!-- Step Content Area -->
+    <Grid Grid.Row="1">
+      <!-- Step 1: Language and Lunar Configuration (Figma S14 39:280) -->
+      <Border x:Name="Step1Border">
+        <Border.Style>
+          <Style TargetType="Border">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding CurrentStep}" Value="1">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+
+        <StackPanel>
+          <TextBlock Text="{Binding [firstrun.step1_title], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeSection}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,6" />
+
+          <TextBlock Text="{Binding [firstrun.step1_desc], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     Margin="0,0,0,20" />
+
+          <!-- Language selection radios -->
+          <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusLarge}"
+                  Padding="20,16"
+                  Margin="0,0,0,16">
+            <StackPanel>
+              <RadioButton Content="Tiếng Việt (vi-VN)"
+                           IsChecked="{Binding IsVietnamese, Mode=TwoWay}"
+                           GroupName="FirstRunLang"
+                           Command="{Binding SelectLanguageCommand}"
+                           CommandParameter="vi"
+                           Margin="0,0,0,12"
+                           AutomationProperties.AutomationId="RadioFirstRunVi" />
+              <RadioButton Content="English (en-US)"
+                           IsChecked="{Binding IsEnglish, Mode=TwoWay}"
+                           GroupName="FirstRunLang"
+                           Command="{Binding SelectLanguageCommand}"
+                           CommandParameter="en"
+                           AutomationProperties.AutomationId="RadioFirstRunEn" />
+            </StackPanel>
+          </Border>
+
+          <!-- Lunar calendar master toggle -->
+          <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusLarge}"
+                  Padding="20,16">
+            <CheckBox Content="{Binding [settings.appearance.lunar_title], Source={StaticResource Loc}}"
+                      IsChecked="{Binding IsLunarEnabled, Mode=TwoWay}"
+                      FontSize="{DynamicResource FontSizeBody}"
+                      FontWeight="{DynamicResource FontWeightMedium}"
+                      Foreground="{DynamicResource TextPrimaryBrush}"
+                      AutomationProperties.AutomationId="CheckFirstRunLunar" />
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- Step 2: Google Calendar Sign-in (Figma S14 39:336) -->
+      <Border x:Name="Step2Border">
+        <Border.Style>
+          <Style TargetType="Border">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+
+        <StackPanel>
+          <TextBlock Text="{Binding [firstrun.step2_title], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeSection}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     Margin="0,0,0,6" />
+
+          <TextBlock Text="{Binding [firstrun.step2_desc], Source={StaticResource Loc}}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     Margin="0,0,0,20" />
+
+          <!-- Connect Card -->
+          <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusLarge}"
+                  Padding="24,20"
+                  Margin="0,0,0,16">
+            <StackPanel>
+              <!-- Authorizing indicator -->
+              <StackPanel Margin="0,0,0,16">
+                <StackPanel.Style>
+                  <Style TargetType="StackPanel">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsAuthorizing}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </StackPanel.Style>
+                <TextBlock Text="{Binding [settings.account.authorizing], Source={StaticResource Loc}}"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource AccentPrimaryBrush}"
+                           FontWeight="{DynamicResource FontWeightMedium}" />
+              </StackPanel>
+
+              <!-- Error Banner -->
+              <Border Background="{DynamicResource DangerSubtleBrush}"
+                      BorderBrush="{DynamicResource DangerBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="{DynamicResource CornerRadiusMedium}"
+                      Padding="12,8"
+                      Margin="0,0,0,16"
+                      Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}">
+                <TextBlock Text="{Binding ErrorMessage}"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource DangerTextBrush}" />
+              </Border>
+
+              <Button Style="{StaticResource PrimaryBtnStyle}"
+                      Content="{Binding [settings.account.signin_button], Source={StaticResource Loc}}"
+                      Command="{Binding SignInCommand}"
+                      HorizontalAlignment="Left"
+                      AutomationProperties.AutomationId="BtnFirstRunSignIn" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Footer Actions -->
+    <DockPanel Grid.Row="2" Margin="0,16,0,0">
+      <!-- Step 1 Continue -->
+      <Button Content="{Binding [firstrun.btn_continue], Source={StaticResource Loc}}"
+              Command="{Binding ContinueStep1Command}"
+              DockPanel.Dock="Right"
+              AutomationProperties.AutomationId="BtnFirstRunContinue">
+        <Button.Style>
+          <Style TargetType="Button" BasedOn="{StaticResource PrimaryBtnStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding CurrentStep}" Value="1">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Button.Style>
+      </Button>
+
+      <!-- Step 2 Skip / Later -->
+      <Button Content="{Binding [firstrun.btn_skip], Source={StaticResource Loc}}"
+              Command="{Binding SkipCommand}"
+              DockPanel.Dock="Right"
+              AutomationProperties.AutomationId="BtnFirstRunSkip">
+        <Button.Style>
+          <Style TargetType="Button" BasedOn="{StaticResource GhostBtnStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding CurrentStep}" Value="2">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Button.Style>
+      </Button>
+    </DockPanel>
+  </Grid>
+</Window>

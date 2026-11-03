@@ -34,4 +34,13 @@ public static class SettingKeys
 
     /// <summary>Pseudonymous contributor UUID (FR-CLOUD-3).</summary>
     public const string ContributorId = "contributor_id";
+
+    /// <summary>Flag whether first-run setup has completed: "true" or "false" (Figma S14, FR-AUTH-1).</summary>
+    public const string FirstRunCompleted = "first_run_completed";
+
+    /// <summary>Custom OAuth Client ID override (FR-AUTH-6, S20).</summary>
+    public const string GoogleOAuthClientId = "google_oauth_client_id";
+
+    /// <summary>Custom OAuth Client Secret override (FR-AUTH-6, S20).</summary>
+    public const string GoogleOAuthClientSecret = "google_oauth_client_secret";
 }

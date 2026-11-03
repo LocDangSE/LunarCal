@@ -822,4 +822,168 @@
   <data name="event.validation.invalid_time" xml:space="preserve">
     <value>Thời gian kết thúc phải sau thời gian bắt đầu.</value>
   </data>
+  <!-- Settings Navigation & Tabs (Figma 04, S13, S20) -->
+  <data name="settings.nav.appearance" xml:space="preserve">
+    <value>Giao diện</value>
+  </data>
+  <data name="settings.nav.account" xml:space="preserve">
+    <value>Tài khoản Google</value>
+  </data>
+  <data name="settings.nav.advanced" xml:space="preserve">
+    <value>Nâng cao</value>
+  </data>
+  <!-- Google Account Settings (Figma 04, S14) -->
+  <data name="settings.account.title" xml:space="preserve">
+    <value>Tài khoản Google</value>
+  </data>
+  <data name="settings.account.desc" xml:space="preserve">
+    <value>Quản lý tài khoản Google Calendar và trạng thái đồng bộ hai chiều</value>
+  </data>
+  <data name="settings.account.status_connected" xml:space="preserve">
+    <value>Đã kết nối</value>
+  </data>
+  <data name="settings.account.status_disconnected" xml:space="preserve">
+    <value>Chưa kết nối</value>
+  </data>
+  <data name="settings.account.signin_button" xml:space="preserve">
+    <value>Đăng nhập bằng Google</value>
+  </data>
+  <data name="settings.account.signout_button" xml:space="preserve">
+    <value>Đăng xuất</value>
+  </data>
+  <data name="settings.account.sync_now" xml:space="preserve">
+    <value>Đồng bộ ngay</value>
+  </data>
+  <data name="settings.account.syncing" xml:space="preserve">
+    <value>Đang đồng bộ...</value>
+  </data>
+  <data name="settings.account.last_synced" xml:space="preserve">
+    <value>Đồng bộ lần cuối: {0}</value>
+  </data>
+  <data name="settings.account.never_synced" xml:space="preserve">
+    <value>Chưa đồng bộ</value>
+  </data>
+  <data name="settings.account.authorizing" xml:space="preserve">
+    <value>Đang mở trình duyệt để đăng nhập... (chờ tối đa 5 phút)</value>
+  </data>
+  <data name="settings.account.auth_cancelled" xml:space="preserve">
+    <value>Đăng nhập đã bị hủy.</value>
+  </data>
+  <data name="settings.account.auth_failed" xml:space="preserve">
+    <value>Đăng nhập thất bại: {0}</value>
+  </data>
+  <data name="settings.account.testing_warning" xml:space="preserve">
+    <value>Màn hình đồng ý OAuth đang ở chế độ Testing: phiên đăng nhập sẽ tự động hết hạn sau 7 ngày.</value>
+  </data>
+  <!-- Advanced Settings (Figma S20) -->
+  <data name="settings.advanced.title" xml:space="preserve">
+    <value>Nâng cao</value>
+  </data>
+  <data name="settings.advanced.desc" xml:space="preserve">
+    <value>Cấu hình nâng cao dành cho nhà phát triển, kho lưu trữ và nhật ký</value>
+  </data>
+  <data name="settings.advanced.oauth_title" xml:space="preserve">
+    <value>OAuth Client ID riêng (FR-AUTH-6)</value>
+  </data>
+  <data name="settings.advanced.oauth_desc" xml:space="preserve">
+    <value>Sử dụng Client ID và Client Secret từ Google Cloud Project của riêng bạn</value>
+  </data>
+  <data name="settings.advanced.client_id" xml:space="preserve">
+    <value>OAuth Client ID</value>
+  </data>
+  <data name="settings.advanced.client_secret" xml:space="preserve">
+    <value>OAuth Client Secret (tuỳ chọn)</value>
+  </data>
+  <data name="settings.advanced.save_oauth" xml:space="preserve">
+    <value>Lưu cấu hình</value>
+  </data>
+  <data name="settings.advanced.oauth_saved" xml:space="preserve">
+    <value>Đã lưu cấu hình OAuth. Thay đổi sẽ áp dụng cho lần đăng nhập kế tiếp.</value>
+  </data>
+  <data name="settings.advanced.wipe_title" xml:space="preserve">
+    <value>Xóa toàn bộ dữ liệu cục bộ (SEC-DATA-3)</value>
+  </data>
+  <data name="settings.advanced.wipe_desc" xml:space="preserve">
+    <value>Xóa sạch tất cả tài khoản, bộ nhớ đệm sự kiện, khóa bí mật DPAPI và cơ sở dữ liệu SQLite trên máy này</value>
+  </data>
+  <data name="settings.advanced.wipe_button" xml:space="preserve">
+    <value>Xóa toàn bộ dữ liệu</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_title" xml:space="preserve">
+    <value>Xóa toàn bộ dữ liệu cục bộ?</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_message" xml:space="preserve">
+    <value>Mọi dữ liệu cục bộ bao gồm tài khoản Google, lịch và sự kiện sẽ bị xóa hoàn toàn khỏi máy này. Ứng dụng sẽ trở về trạng thái như khi mới cài đặt.</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_action" xml:space="preserve">
+    <value>Xóa sạch tất cả</value>
+  </data>
+  <data name="settings.advanced.logs_title" xml:space="preserve">
+    <value>Nhật ký hoạt động (SEC-LOG-1)</value>
+  </data>
+  <data name="settings.advanced.logs_desc" xml:space="preserve">
+    <value>Nhật ký ứng dụng xoay vòng 14 ngày và đã lọc sạch thông tin nhạy cảm</value>
+  </data>
+  <data name="settings.advanced.open_logs" xml:space="preserve">
+    <value>Mở thư mục nhật ký</value>
+  </data>
+  <!-- First Run Wizard (Figma S14) -->
+  <data name="firstrun.title" xml:space="preserve">
+    <value>Chào mừng đến với LunarCal</value>
+  </data>
+  <data name="firstrun.subtitle" xml:space="preserve">
+    <value>Lịch vạn niên và Google Calendar thông minh cho Windows</value>
+  </data>
+  <data name="firstrun.step1_title" xml:space="preserve">
+    <value>1. Ngôn ngữ &amp; Âm lịch</value>
+  </data>
+  <data name="firstrun.step1_desc" xml:space="preserve">
+    <value>Chọn ngôn ngữ hiển thị và cấu hình tính năng lịch âm Việt Nam</value>
+  </data>
+  <data name="firstrun.step2_title" xml:space="preserve">
+    <value>2. Kết nối Google Calendar</value>
+  </data>
+  <data name="firstrun.step2_desc" xml:space="preserve">
+    <value>Đồng bộ hai chiều với Google Calendar để quản lý sự kiện thuận tiện</value>
+  </data>
+  <data name="firstrun.btn_continue" xml:space="preserve">
+    <value>Tiếp tục</value>
+  </data>
+  <data name="firstrun.btn_skip" xml:space="preserve">
+    <value>Để sau</value>
+  </data>
+  <data name="firstrun.btn_finish" xml:space="preserve">
+    <value>Bắt đầu sử dụng</value>
+  </data>
+  <!-- Status Banners & Relative Time (Figma S18, FR-UI-9, FR-UI-10) -->
+  <data name="banner.offline" xml:space="preserve">
+    <value>Bạn đang ở chế độ ngoại tuyến. Dữ liệu mới sẽ được lưu cục bộ và tự động đồng bộ khi có kết nối mạng.</value>
+  </data>
+  <data name="banner.reauth" xml:space="preserve">
+    <value>Phiên đăng nhập Google đã hết hạn (chế độ Testing 7 ngày). Vui lòng đăng nhập lại để tiếp tục đồng bộ.</value>
+  </data>
+  <data name="banner.btn_reauth" xml:space="preserve">
+    <value>Đăng nhập lại</value>
+  </data>
+  <data name="banner.btn_dismiss" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="sidebar.sync_status_syncing" xml:space="preserve">
+    <value>Đang đồng bộ...</value>
+  </data>
+  <data name="sidebar.sync_status_failed" xml:space="preserve">
+    <value>Lỗi đồng bộ</value>
+  </data>
+  <data name="time.just_now" xml:space="preserve">
+    <value>Vừa xong</value>
+  </data>
+  <data name="time.minutes_ago" xml:space="preserve">
+    <value>{0} phút trước</value>
+  </data>
+  <data name="time.hours_ago" xml:space="preserve">
+    <value>{0} giờ trước</value>
+  </data>
+  <data name="time.days_ago" xml:space="preserve">
+    <value>{0} ngày trước</value>
+  </data>
 </root>

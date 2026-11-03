@@ -4,6 +4,7 @@ using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views;
+using LunarCal.App.Views.Settings;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Settings;
 using LunarCal.Infrastructure;
@@ -62,8 +63,17 @@ public partial class App : Application
             builder.Services.AddSingleton<IDisplayPreferences, DisplayPreferences>();
             builder.Services.AddSingleton<MainWindowViewModel>();
             builder.Services.AddSingleton<MainWindow>();
+
             builder.Services.AddTransient<AppearanceSettingsViewModel>();
-            builder.Services.AddTransient<Views.Settings.AppearancePage>();
+            builder.Services.AddTransient<AppearancePage>();
+            builder.Services.AddTransient<GoogleAccountViewModel>();
+            builder.Services.AddTransient<GoogleAccountPage>();
+            builder.Services.AddTransient<AdvancedSettingsViewModel>();
+            builder.Services.AddTransient<AdvancedPage>();
+            builder.Services.AddTransient<SettingsViewModel>();
+            builder.Services.AddTransient<SettingsWindow>();
+            builder.Services.AddTransient<FirstRunViewModel>();
+            builder.Services.AddTransient<FirstRunWindow>();
 
             _host = builder.Build();
 
@@ -76,7 +86,13 @@ public partial class App : Application
             var themeService = _host.Services.GetRequiredService<IThemeService>();
             themeService.ApplyTheme(await settingsStore.GetThemeAsync().ConfigureAwait(true));
 
-            // Hosted services are started in a later phase (sync engine, AI queue); nothing to start yet.
+            // Launch first-run wizard if requested via arguments
+            if (e.Args.Contains("--first-run"))
+            {
+                var firstRun = _host.Services.GetRequiredService<FirstRunWindow>();
+                firstRun.ShowDialog();
+            }
+
             var window = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = window;
             window.Show();

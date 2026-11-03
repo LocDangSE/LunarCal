@@ -58,6 +58,11 @@ public interface ISyncScheduler
     Task TriggerManualSyncAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Event raised when a sync pass begins.
+    /// </summary>
+    event EventHandler? SyncStarted;
+
+    /// <summary>
     /// Event raised when a sync pass completes, carrying the sync result.
     /// </summary>
     event EventHandler<SyncResult>? SyncCompleted;
