@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
         xmlns:conv="clr-namespace:LunarCal.App.Converters"
-        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         xmlns:loc="clr-namespace:LunarCal.App.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:EventEditorViewModel}"
@@ -13,10 +12,17 @@
         Width="{DynamicResource EventEditorDialogWidth}"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
+        FontFamily="{DynamicResource FontFamilyBase}"
         Background="{DynamicResource SurfaceBackgroundBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
+        BorderThickness="1"
+        FocusManager.FocusedElement="{Binding ElementName=TxtEventTitle}"
         AutomationProperties.AutomationId="EventEditorDialog">
+
+  <!-- Figma S10 35:774: 560 px card, header 71, body with a 92 px label column, footer 65. -->
 
   <Window.InputBindings>
     <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
@@ -29,388 +35,429 @@
     <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
     <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTimeConverter" />
     <conv:TimeOnlyToStringConverter x:Key="TimeOnlyToStringConverter" />
-    <sys:Int32 x:Key="Reminder10">10</sys:Int32>
-    <sys:Int32 x:Key="Reminder30">30</sys:Int32>
-    <sys:Int32 x:Key="Reminder60">60</sys:Int32>
-    <sys:Int32 x:Key="Reminder1440">1440</sys:Int32>
 
-    <!-- Form label style -->
-    <Style x:Key="FormLabel" TargetType="TextBlock">
+    <!-- Label column of a field row (Figma "Field · …" 92 px wide, text vertically centred on the first control) -->
+    <Style x:Key="FieldRowLabel" TargetType="TextBlock">
       <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
-      <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-      <Setter Property="Margin" Value="0,0,0,6" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="Margin" Value="0,9,0,0" />
     </Style>
 
-    <!-- Form text box style -->
-    <Style x:Key="FormTextBox" TargetType="TextBox">
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeBodyStrong}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <!-- 34 px field box shown for a date; a transparent DatePicker lies on top to give the calendar pop-up -->
+    <Style x:Key="DateFieldBox" TargetType="Border">
+      <Setter Property="Height" Value="34" />
       <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Padding" Value="{DynamicResource ThicknessPaddingInput}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}" />
     </Style>
 
-    <!-- Primary action button -->
-    <Style x:Key="PrimaryButton" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{TemplateBinding Background}"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{DynamicResource ThicknessPaddingButton}">
-              <ContentPresenter HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                TextElement.FontSize="{DynamicResource FontSizeBodyStrong}"
-                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
-                                TextElement.Foreground="{TemplateBinding Foreground}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
+    <Style x:Key="EventTitleBox" TargetType="TextBox" BasedOn="{StaticResource TextFieldStyle}">
+      <Setter Property="Height" Value="43" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSection}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+      <Setter Property="Padding" Value="14,0" />
+      <Style.Triggers>
+        <Trigger Property="IsKeyboardFocused" Value="True">
+          <Setter Property="BorderThickness" Value="2" />
+        </Trigger>
+      </Style.Triggers>
     </Style>
 
-    <!-- Secondary button -->
-    <Style x:Key="SecondaryButton" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{DynamicResource ThicknessPaddingButton}">
-              <ContentPresenter HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                TextElement.FontSize="{DynamicResource FontSizeBodyStrong}"
-                                TextElement.FontWeight="{DynamicResource FontWeightMedium}"
-                                TextElement.Foreground="{TemplateBinding Foreground}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
-
-    <!-- Danger button -->
-    <Style x:Key="DangerButton" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{TemplateBinding Background}"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{DynamicResource ThicknessPaddingButton}">
-              <ContentPresenter HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                TextElement.FontSize="{DynamicResource FontSizeBodyStrong}"
-                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
-                                TextElement.Foreground="{TemplateBinding Foreground}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
-
-    <!-- Small chip button -->
-    <Style x:Key="ChipButton" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Background" Value="{DynamicResource ControlTrackBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{TemplateBinding Background}"
-                    CornerRadius="{DynamicResource CornerRadiusPill}"
-                    Padding="10,4,10,4">
-              <ContentPresenter HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                TextElement.FontSize="{DynamicResource FontSizeCaption}"
-                                TextElement.FontWeight="{DynamicResource FontWeightMedium}"
-                                TextElement.Foreground="{TemplateBinding Foreground}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
+    <Style x:Key="ReminderMenuItemStyle" TargetType="MenuItem">
+      <Setter Property="Header" Value="{Binding Label}" />
+      <Setter Property="Command" Value="{Binding AddCommand}" />
     </Style>
   </Window.Resources>
 
-  <Grid Margin="24">
+  <Grid>
     <Grid.RowDefinitions>
-      <!-- Header -->
       <RowDefinition Height="Auto" />
-      <!-- Form Content -->
       <RowDefinition Height="*" />
-      <!-- Error banner -->
       <RowDefinition Height="Auto" />
-      <!-- Footer Buttons -->
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <!-- Title Bar / Header -->
-    <DockPanel Grid.Row="0" Margin="0,0,0,20">
-      <TextBlock Text="{Binding DialogTitle}"
-                 FontSize="{DynamicResource FontSizeTitle}"
-                 FontWeight="{DynamicResource FontWeightBold}"
-                 Foreground="{DynamicResource TextPrimaryBrush}"
-                 VerticalAlignment="Center"
-                 AutomationProperties.AutomationId="DialogTitleText" />
-    </DockPanel>
+    <!-- Header: title, sub line "Cá nhân · sửa lần cuối 2 phút trước", close (35:775) -->
+    <Grid Grid.Row="0" Margin="20,18,20,12" Background="Transparent" MouseLeftButtonDown="OnHeaderMouseDown">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="{Binding DialogTitle}"
+                   FontSize="{DynamicResource FontSizePanelTitle}"
+                   FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   AutomationProperties.AutomationId="DialogTitleText" />
+        <TextBlock Text="{Binding DialogSubtitle}"
+                   Margin="0,2,0,0"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   TextTrimming="CharacterEllipsis"
+                   Visibility="{Binding DialogSubtitle, Converter={StaticResource StringToVis}}"
+                   AutomationProperties.AutomationId="DialogSubtitleText" />
+      </StackPanel>
+      <Button Grid.Column="1" Command="{Binding CancelCommand}"
+              Width="28" Height="28" VerticalAlignment="Top" Margin="0,-2,-6,0"
+              Background="Transparent" BorderThickness="0" Cursor="Hand" Focusable="False"
+              ToolTip="{loc:Loc common.close}"
+              AutomationProperties.Name="{loc:Loc common.close}"
+              AutomationProperties.AutomationId="BtnCloseDialog">
+        <Path Width="12" Height="12" Data="{DynamicResource IconClose32}" Stretch="Uniform"
+              Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.6"
+              StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+      </Button>
+    </Grid>
 
-    <!-- Scrollable Form Body -->
-    <ScrollViewer Grid.Row="1" MaxHeight="520" VerticalScrollBarVisibility="Auto">
-      <StackPanel Margin="0,0,12,0">
+    <ScrollViewer Grid.Row="1" MaxHeight="600" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="20,4,20,12">
 
-        <!-- Title -->
-        <TextBlock Text="{loc:Loc common.title}" Style="{StaticResource FormLabel}" />
-        <TextBox Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 Style="{StaticResource FormTextBox}"
-                 Margin="0,0,0,16"
-                 AutomationProperties.AutomationId="TxtEventTitle" />
+        <!-- Title input (35:781): 43 px, accent border while focused -->
+        <Grid Margin="0,0,0,12">
+          <TextBox x:Name="TxtEventTitle"
+                   Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   Style="{StaticResource EventTitleBox}"
+                   AutomationProperties.Name="{loc:Loc common.title}"
+                   AutomationProperties.AutomationId="TxtEventTitle" />
+          <TextBlock Text="{loc:Loc event.title.placeholder}" IsHitTestVisible="False"
+                     Margin="16,0,0,0" VerticalAlignment="Center"
+                     FontSize="{DynamicResource FontSizeSection}"
+                     FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource TextTertiaryBrush}">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Text, ElementName=TxtEventTitle}" Value="">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+        </Grid>
 
-        <!-- Target Calendar -->
-        <TextBlock Text="{loc:Loc event.calendar}" Style="{StaticResource FormLabel}" />
-        <ComboBox ItemsSource="{Binding AvailableCalendars}"
-                  SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"
-                  Margin="0,0,0,16"
-                  AutomationProperties.AutomationId="CmbCalendarPicker">
-          <ComboBox.ItemTemplate>
-            <DataTemplate DataType="{x:Type vm:CalendarItemViewModel}">
-              <StackPanel Orientation="Horizontal">
-                <Border Width="10" Height="10"
-                        CornerRadius="{DynamicResource CornerRadiusFull}"
-                        Background="{Binding Color, Converter={StaticResource ColorToBrush}}"
-                        Margin="0,0,8,0"
-                        VerticalAlignment="Center" />
-                <TextBlock Text="{Binding Summary}"
-                           FontSize="{DynamicResource FontSizeBody}"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
-                           VerticalAlignment="Center" />
-              </StackPanel>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-
-        <!-- All Day Toggle -->
-        <CheckBox IsChecked="{Binding IsAllDay, Mode=TwoWay}"
-                  Content="{loc:Loc calendar.all_day}"
-                  FontSize="{DynamicResource FontSizeBody}"
-                  Margin="0,0,0,16"
-                  AutomationProperties.AutomationId="ChkAllDay" />
-
-        <!-- Dates & Times Grid -->
-        <Grid Margin="0,0,0,16">
+        <!-- Thời gian (35:800) -->
+        <Grid Margin="0,0,0,12">
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="10" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-
-          <!-- Start Date & Time -->
-          <StackPanel Grid.Column="0">
-            <TextBlock Text="{loc:Loc event.start_time}" Style="{StaticResource FormLabel}" />
-            <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay, Converter={StaticResource DateOnlyToDateTimeConverter}}"
-                        Margin="0,0,0,6"
-                        AutomationProperties.AutomationId="DpStartDate" />
-            <TextBox Text="{Binding StartTime, Mode=TwoWay, Converter={StaticResource TimeOnlyToStringConverter}}"
-                     Style="{StaticResource FormTextBox}"
-                     Visibility="{Binding IsTimed, Converter={StaticResource BoolToVis}}"
-                     AutomationProperties.AutomationId="TxtStartTime" />
-          </StackPanel>
-
-          <!-- End Date & Time -->
+          <TextBlock Grid.Column="0" Text="{loc:Loc event.time}" Style="{StaticResource FieldRowLabel}" />
           <StackPanel Grid.Column="2">
-            <TextBlock Text="{loc:Loc event.end_time}" Style="{StaticResource FormLabel}" />
-            <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay, Converter={StaticResource DateOnlyToDateTimeConverter}}"
-                        Margin="0,0,0,6"
-                        AutomationProperties.AutomationId="DpEndDate" />
-            <TextBox Text="{Binding EndTime, Mode=TwoWay, Converter={StaticResource TimeOnlyToStringConverter}}"
-                     Style="{StaticResource FormTextBox}"
-                     Visibility="{Binding IsTimed, Converter={StaticResource BoolToVis}}"
-                     AutomationProperties.AutomationId="TxtEndTime" />
+            <WrapPanel>
+              <!-- Start date: "Thứ 5, 22/10/2026  13/9 ÂL ▾" -->
+              <Grid Width="230" Margin="0,0,8,8">
+                <Border x:Name="StartDateBox">
+                  <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource DateFieldBox}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsKeyboardFocusWithin, ElementName=DpStartDate}" Value="True">
+                          <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <DockPanel Margin="13,0,12,0" LastChildFill="False" IsHitTestVisible="False">
+                    <Path DockPanel.Dock="Right" Data="{DynamicResource IconChevronDown16}" Width="7" Height="7" Stretch="Uniform"
+                          VerticalAlignment="Center" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.4"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                    <TextBlock Text="{Binding StartDateText}" VerticalAlignment="Center"
+                               FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="{Binding StartLunarChipText}" VerticalAlignment="Center" Margin="8,0,8,0"
+                               FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                               AutomationProperties.AutomationId="TxtStartLunarChip" />
+                  </DockPanel>
+                </Border>
+                <DatePicker x:Name="DpStartDate" Opacity="0"
+                            SelectedDate="{Binding StartDate, Mode=TwoWay, Converter={StaticResource DateOnlyToDateTimeConverter}}"
+                            AutomationProperties.AutomationId="DpStartDate" />
+              </Grid>
+
+              <ComboBox Width="73" Height="34" Margin="0,0,8,8" Style="{StaticResource TimeDropdownStyle}"
+                        ItemsSource="{Binding TimeSlots}"
+                        Text="{Binding StartTime, Mode=TwoWay, Converter={StaticResource TimeOnlyToStringConverter}}"
+                        Visibility="{Binding IsTimed, Converter={StaticResource BoolToVis}}"
+                        AutomationProperties.AutomationId="TxtStartTime" />
+
+              <Path Data="{DynamicResource IconArrowRight16}" Width="12" Height="12" Stretch="Uniform" Margin="0,11,8,0"
+                    VerticalAlignment="Top" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.4"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+
+              <!-- End date: only for all-day events and for timed events that already span several days -->
+              <Grid Width="205" Margin="0,0,8,8" Visibility="{Binding ShowEndDate, Converter={StaticResource BoolToVis}}">
+                <Border Style="{StaticResource DateFieldBox}">
+                  <DockPanel Margin="13,0,12,0" LastChildFill="False" IsHitTestVisible="False">
+                    <Path DockPanel.Dock="Right" Data="{DynamicResource IconChevronDown16}" Width="7" Height="7" Stretch="Uniform"
+                          VerticalAlignment="Center" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.4"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                    <TextBlock Text="{Binding EndDateText}" VerticalAlignment="Center"
+                               FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                  </DockPanel>
+                </Border>
+                <DatePicker Opacity="0"
+                            SelectedDate="{Binding EndDate, Mode=TwoWay, Converter={StaticResource DateOnlyToDateTimeConverter}}"
+                            AutomationProperties.AutomationId="DpEndDate" />
+              </Grid>
+
+              <ComboBox Width="73" Height="34" Margin="0,0,0,8" Style="{StaticResource TimeDropdownStyle}"
+                        ItemsSource="{Binding TimeSlots}"
+                        Text="{Binding EndTime, Mode=TwoWay, Converter={StaticResource TimeOnlyToStringConverter}}"
+                        Visibility="{Binding IsTimed, Converter={StaticResource BoolToVis}}"
+                        AutomationProperties.AutomationId="TxtEndTime" />
+            </WrapPanel>
+
+            <!-- "Cả ngày" + time zone (35:795) -->
+            <StackPanel Orientation="Horizontal">
+              <CheckBox IsChecked="{Binding IsAllDay, Mode=TwoWay}"
+                        Content="{loc:Loc calendar.all_day}"
+                        Style="{StaticResource FormCheckBoxStyle}"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="ChkAllDay" />
+              <TextBlock Text="{Binding TimeZoneText}" Margin="16,0,0,0" VerticalAlignment="Center"
+                         FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource AccentPrimaryBrush}"
+                         AutomationProperties.AutomationId="TxtTimeZone" />
+            </StackPanel>
           </StackPanel>
         </Grid>
 
-        <!-- Lunar Date Display (calculated from Start Date) -->
-        <Border Background="{DynamicResource LunarSubtleBrush}"
-                CornerRadius="{DynamicResource CornerRadiusMedium}"
-                Padding="12,8"
-                Margin="0,0,0,16"
-                Visibility="{Binding LunarDateText, Converter={StaticResource StringToVis}}">
-          <DockPanel>
-            <TextBlock Text="{loc:Loc lunar.label}"
-                       FontSize="{DynamicResource FontSizeCaption}"
-                       FontWeight="{DynamicResource FontWeightSemiBold}"
-                       Foreground="{DynamicResource LunarTextPrimaryBrush}"
-                       DockPanel.Dock="Left"
-                       Margin="0,0,8,0"
-                       VerticalAlignment="Center" />
-            <TextBlock Text="{Binding LunarDateText}"
-                       FontSize="{DynamicResource FontSizeBodyStrong}"
-                       FontWeight="{DynamicResource FontWeightMedium}"
-                       Foreground="{DynamicResource LunarStrongBrush}"
-                       VerticalAlignment="Center"
-                       AutomationProperties.AutomationId="TxtLunarDateNotice" />
-          </DockPanel>
-        </Border>
-
-        <!-- Recurrence selector -->
-        <TextBlock Text="{loc:Loc event.recurrence}" Style="{StaticResource FormLabel}" />
-        <ComboBox ItemsSource="{Binding RecurrenceOptions}"
-                  SelectedItem="{Binding SelectedRecurrenceOption, Mode=TwoWay}"
-                  DisplayMemberPath="Label"
-                  Margin="0,0,0,16"
-                  AutomationProperties.AutomationId="CmbRecurrence" />
-
-        <!-- Lunar Recurrence Options (shown when RecurrenceKind == Lunar) -->
-        <Border Background="{DynamicResource SurfaceMutedBrush}"
-                CornerRadius="{DynamicResource CornerRadiusMedium}"
-                Padding="14"
-                Margin="0,0,0,16"
-                Visibility="{Binding IsLunarRecurrence, Converter={StaticResource BoolToVis}}"
-                AutomationProperties.AutomationId="BoxLunarRecurrenceSettings">
-          <StackPanel>
-            <TextBlock Text="{loc:Loc lunar_rule.annual_on}"
-                       FontSize="{DynamicResource FontSizeBodyStrong}"
-                       FontWeight="{DynamicResource FontWeightSemiBold}"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       Margin="0,0,0,8" />
-
-            <!-- Lunar Day and Month selectors -->
-            <Grid Margin="0,0,0,10">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="12" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <StackPanel Grid.Column="0">
-                <TextBlock Text="{loc:Loc lunar_rule.day}" Style="{StaticResource FormLabel}" />
-                <TextBox Text="{Binding LunarDay, Mode=TwoWay}" Style="{StaticResource FormTextBox}" AutomationProperties.AutomationId="TxtLunarDay" />
+        <!-- Lặp lại (35:811): segmented + lunar rule panel -->
+        <Grid Margin="0,0,0,12">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{loc:Loc event.recurrence}" Style="{StaticResource FieldRowLabel}" />
+          <StackPanel Grid.Column="2">
+            <Border Style="{StaticResource FormSegmentTrackStyle}" AutomationProperties.AutomationId="CmbRecurrence">
+              <StackPanel Orientation="Horizontal">
+                <RadioButton GroupName="Recurrence" Style="{StaticResource FormSegmentStyle}"
+                             Content="{loc:Loc recurrence.none}"
+                             IsChecked="{Binding IsRecurrenceNone, Mode=TwoWay}"
+                             AutomationProperties.AutomationId="RecurrenceNone" />
+                <RadioButton GroupName="Recurrence" Style="{StaticResource FormSegmentStyle}"
+                             Content="{loc:Loc recurrence.solar}"
+                             IsChecked="{Binding IsSolarRecurrence, Mode=TwoWay}"
+                             AutomationProperties.AutomationId="RecurrenceSolar" />
+                <RadioButton GroupName="Recurrence" Style="{StaticResource FormSegmentStyle}"
+                             Content="{loc:Loc recurrence.lunar_short}"
+                             IsChecked="{Binding IsLunarRecurrence, Mode=TwoWay}"
+                             AutomationProperties.AutomationId="RecurrenceLunar" />
               </StackPanel>
-              <StackPanel Grid.Column="2">
-                <TextBlock Text="{loc:Loc lunar_rule.month}" Style="{StaticResource FormLabel}" />
-                <TextBox Text="{Binding LunarMonth, Mode=TwoWay}" Style="{StaticResource FormTextBox}" AutomationProperties.AutomationId="TxtLunarMonth" />
+            </Border>
+
+            <!-- Solar: pick the frequency -->
+            <ComboBox Margin="0,8,0,0" Width="160" HorizontalAlignment="Left"
+                      Style="{StaticResource DropdownStyle}"
+                      ItemsSource="{Binding SolarFrequencyOptions}"
+                      SelectedItem="{Binding SelectedSolarFrequencyOption, Mode=TwoWay}"
+                      DisplayMemberPath="Label"
+                      Visibility="{Binding IsSolarRecurrence, Converter={StaticResource BoolToVis}}"
+                      AutomationProperties.AutomationId="CmbSolarFrequency" />
+
+            <!-- Lunar rule panel (35:815): headline, policy, next dates, customise -->
+            <Border Margin="0,8,0,0" Padding="14,12"
+                    Background="{DynamicResource LunarSubtleBrush}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}"
+                    Visibility="{Binding IsLunarRecurrence, Converter={StaticResource BoolToVis}}"
+                    AutomationProperties.AutomationId="BoxLunarRecurrenceSettings">
+              <StackPanel>
+                <TextBlock Text="{Binding LunarRuleTitle}" TextWrapping="Wrap"
+                           FontSize="{DynamicResource FontSizeBodyStrong}"
+                           FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource LunarStrongBrush}"
+                           AutomationProperties.AutomationId="TxtLunarRuleTitle" />
+                <TextBlock Text="{Binding LunarRulePolicyText}" TextWrapping="Wrap" Margin="0,4,0,0"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource LunarTextPrimaryBrush}" />
+                <TextBlock Text="{Binding LunarRuleNextText}" TextWrapping="Wrap" Margin="0,6,0,0"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource LunarTextPrimaryBrush}"
+                           Visibility="{Binding LunarRuleNextText, Converter={StaticResource StringToVis}}"
+                           AutomationProperties.AutomationId="TxtLunarRuleNext" />
+                <Button Content="{loc:Loc lunar_rule.customize}" Margin="0,6,0,0"
+                        Style="{StaticResource LinkButtonStyle}" FontSize="{DynamicResource FontSizeBody}"
+                        Command="{Binding ToggleLunarRuleCustomizingCommand}"
+                        AutomationProperties.AutomationId="BtnCustomizeLunarRule" />
+
+                <!-- Customise: day, month, leap month, years ahead -->
+                <Grid Margin="0,10,0,0" Visibility="{Binding IsLunarRuleCustomizing, Converter={StaticResource BoolToVis}}"
+                      AutomationProperties.AutomationId="BoxLunarRuleFields">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="{loc:Loc lunar_rule.day}" Margin="0,0,0,4" FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource LunarTextPrimaryBrush}" />
+                    <TextBox Text="{Binding LunarDay, Mode=TwoWay}" Style="{StaticResource TextFieldStyle}" Height="34"
+                             AutomationProperties.AutomationId="TxtLunarDay" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2">
+                    <TextBlock Text="{loc:Loc lunar_rule.month}" Margin="0,0,0,4" FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource LunarTextPrimaryBrush}" />
+                    <TextBox Text="{Binding LunarMonth, Mode=TwoWay}" Style="{StaticResource TextFieldStyle}" Height="34"
+                             AutomationProperties.AutomationId="TxtLunarMonth" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="4">
+                    <TextBlock Text="{loc:Loc lunar_rule.years_ahead}" Margin="0,0,0,4" FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource LunarTextPrimaryBrush}" />
+                    <TextBox Text="{Binding LunarYearsAhead, Mode=TwoWay}" Style="{StaticResource TextFieldStyle}" Height="34"
+                             AutomationProperties.AutomationId="TxtLunarYearsAhead" />
+                  </StackPanel>
+                  <CheckBox Grid.Row="1" Grid.ColumnSpan="5" Margin="0,10,0,0"
+                            IsChecked="{Binding IsLunarLeap, Mode=TwoWay}"
+                            Content="{loc:Loc lunar_rule.is_leap}"
+                            Style="{StaticResource FormCheckBoxStyle}"
+                            AutomationProperties.AutomationId="ChkLunarLeap" />
+                </Grid>
               </StackPanel>
-            </Grid>
+            </Border>
+          </StackPanel>
+        </Grid>
 
-            <!-- Leap month check & sync to Google -->
-            <CheckBox IsChecked="{Binding IsLunarLeap, Mode=TwoWay}"
-                      Content="{loc:Loc lunar_rule.is_leap}"
-                      FontSize="{DynamicResource FontSizeBody}"
-                      Margin="0,0,0,8"
-                      AutomationProperties.AutomationId="ChkLunarLeap" />
+        <!-- Nhắc nhở (35:827): chips + "+ Thêm nhắc nhở" -->
+        <Grid Margin="0,0,0,12">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{loc:Loc reminder.label}" Style="{StaticResource FieldRowLabel}" />
+          <WrapPanel Grid.Column="2">
+            <ItemsControl ItemsSource="{Binding ReminderChips}" Focusable="False">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:ReminderChipViewModel}">
+                  <Border Background="{DynamicResource ControlTrackBrush}"
+                          CornerRadius="{DynamicResource CornerRadiusPill}"
+                          Padding="10,4,6,4"
+                          Margin="0,0,8,8">
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="{Binding Label}"
+                                 FontSize="{DynamicResource FontSizeBody}"
+                                 Foreground="{DynamicResource TextBodyBrush}"
+                                 VerticalAlignment="Center" />
+                      <Button Command="{Binding RemoveCommand}"
+                              Background="Transparent" BorderThickness="0" Margin="6,0,0,0" Padding="2" Cursor="Hand"
+                              Focusable="False"
+                              AutomationProperties.AutomationId="BtnRemoveReminder">
+                        <Path Width="8" Height="8"
+                              Data="{DynamicResource IconClose32}"
+                              Stroke="{DynamicResource TextSecondaryBrush}"
+                              StrokeThickness="1.5"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Stretch="Uniform" />
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-            <CheckBox IsChecked="{Binding SyncToGoogle, Mode=TwoWay}"
-                      Content="{loc:Loc lunar_rule.sync_google}"
-                      FontSize="{DynamicResource FontSizeBody}"
+            <Button Content="{loc:Loc reminder.add_button}" Margin="0,0,0,8" Style="{StaticResource AddChipButtonStyle}"
+                    Click="OnAddReminderClick"
+                    AutomationProperties.AutomationId="BtnAddReminder">
+              <Button.ContextMenu>
+                <ContextMenu ItemsSource="{Binding ReminderPresets}" ItemContainerStyle="{StaticResource ReminderMenuItemStyle}" />
+              </Button.ContextMenu>
+            </Button>
+          </WrapPanel>
+        </Grid>
+
+        <!-- Lịch (35:839): calendar picker + sync to Google for lunar rules -->
+        <Grid Margin="0,0,0,12">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{loc:Loc event.calendar}" Style="{StaticResource FieldRowLabel}" />
+          <StackPanel Grid.Column="2">
+            <ComboBox ItemsSource="{Binding AvailableCalendars}"
+                      SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"
+                      Style="{StaticResource DropdownStyle}"
+                      HorizontalAlignment="Left" MinWidth="156" Height="34"
+                      AutomationProperties.AutomationId="CmbCalendarPicker">
+              <ComboBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:CalendarItemViewModel}">
+                  <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center"
+                             Fill="{Binding Color, Converter={StaticResource ColorToBrush}}" />
+                    <TextBlock Text="{Binding Summary}" VerticalAlignment="Center"
+                               FontSize="{DynamicResource FontSizeBodyStrong}"
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <CheckBox Margin="0,8,0,0"
+                      IsChecked="{Binding SyncToGoogle, Mode=TwoWay}"
+                      Content="{Binding SyncToGoogleText}"
+                      Style="{StaticResource FormCheckBoxStyle}"
+                      Visibility="{Binding IsLunarRecurrence, Converter={StaticResource BoolToVis}}"
                       AutomationProperties.AutomationId="ChkSyncToGoogle" />
           </StackPanel>
-        </Border>
+        </Grid>
 
-        <!-- Reminders Section -->
-        <TextBlock Text="{loc:Loc reminder.label}" Style="{StaticResource FormLabel}" />
-        <WrapPanel Margin="0,0,0,8">
-          <ItemsControl ItemsSource="{Binding ReminderChips}" Focusable="False">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel Orientation="Horizontal" />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="{x:Type vm:ReminderChipViewModel}">
-                <Border Background="{DynamicResource ControlTrackBrush}"
-                        CornerRadius="{DynamicResource CornerRadiusPill}"
-                        Padding="10,4,8,4"
-                        Margin="0,0,8,6">
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Label}"
-                               FontSize="{DynamicResource FontSizeCaption}"
-                               Foreground="{DynamicResource TextBodyBrush}"
-                               VerticalAlignment="Center" />
-                    <Button Command="{Binding RemoveCommand}"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Margin="6,0,0,0"
-                            Cursor="Hand"
-                            AutomationProperties.AutomationId="BtnRemoveReminder">
-                      <Path Width="8" Height="8"
-                            Data="{DynamicResource IconClose32}"
-                            Stroke="{DynamicResource TextTertiaryBrush}"
-                            StrokeThickness="1.5"
-                            StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                            Stretch="Uniform" />
-                    </Button>
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </WrapPanel>
+        <!-- Địa điểm (35:845) -->
+        <Grid Margin="0,0,0,12">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{loc:Loc event.location.label}" Style="{StaticResource FieldRowLabel}" />
+          <TextBox Grid.Column="2" Height="34"
+                   Text="{Binding Location, Mode=TwoWay}"
+                   Style="{StaticResource TextFieldStyle}"
+                   AutomationProperties.AutomationId="TxtEventLocation" />
+        </Grid>
 
-        <!-- Quick add reminder buttons -->
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-          <Button Content="+ 10m"
-                  Command="{Binding AddReminderCommand}"
-                  CommandParameter="{StaticResource Reminder10}"
-                  Style="{StaticResource ChipButton}"
-                  Margin="0,0,6,0" />
-          <Button Content="+ 30m"
-                  Command="{Binding AddReminderCommand}"
-                  CommandParameter="{StaticResource Reminder30}"
-                  Style="{StaticResource ChipButton}"
-                  Margin="0,0,6,0" />
-          <Button Content="+ 1h"
-                  Command="{Binding AddReminderCommand}"
-                  CommandParameter="{StaticResource Reminder60}"
-                  Style="{StaticResource ChipButton}"
-                  Margin="0,0,6,0" />
-          <Button Content="+ 1d"
-                  Command="{Binding AddReminderCommand}"
-                  CommandParameter="{StaticResource Reminder1440}"
-                  Style="{StaticResource ChipButton}" />
-        </StackPanel>
-
-        <!-- Location -->
-        <TextBlock Text="{loc:Loc event.location.placeholder}" Style="{StaticResource FormLabel}" />
-        <TextBox Text="{Binding Location, Mode=TwoWay}"
-                 Style="{StaticResource FormTextBox}"
-                 Margin="0,0,0,16"
-                 AutomationProperties.AutomationId="TxtEventLocation" />
-
-        <!-- Description -->
-        <TextBlock Text="{loc:Loc event.description.placeholder}" Style="{StaticResource FormLabel}" />
-        <TextBox Text="{Binding Description, Mode=TwoWay}"
-                 Style="{StaticResource FormTextBox}"
-                 AcceptsReturn="True"
-                 TextWrapping="Wrap"
-                 MinHeight="72"
-                 Margin="0,0,0,16"
-                 AutomationProperties.AutomationId="TxtEventDescription" />
+        <!-- Mô tả (35:850) -->
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{loc:Loc event.description.label}" Style="{StaticResource FieldRowLabel}" />
+          <TextBox Grid.Column="2" MinHeight="72"
+                   Text="{Binding Description, Mode=TwoWay}"
+                   Style="{StaticResource TextFieldStyle}"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   VerticalContentAlignment="Top"
+                   VerticalScrollBarVisibility="Auto"
+                   AutomationProperties.AutomationId="TxtEventDescription" />
+        </Grid>
       </StackPanel>
     </ScrollViewer>
 
-    <!-- Error Banner -->
+    <!-- Error banner -->
     <Border Grid.Row="2"
             Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"
             Background="{DynamicResource DangerSubtleBrush}"
-            BorderBrush="{DynamicResource DangerBrush}"
+            BorderBrush="{DynamicResource DangerBorderBrush}"
             BorderThickness="1"
-            CornerRadius="{DynamicResource CornerRadiusSmall}"
+            CornerRadius="{DynamicResource CornerRadiusMedium}"
             Padding="12,8"
-            Margin="0,0,0,16"
+            Margin="20,0,20,12"
             AutomationProperties.AutomationId="BoxErrorMessage">
       <TextBlock Text="{Binding ErrorMessage}"
                  FontSize="{DynamicResource FontSizeBody}"
@@ -418,28 +465,32 @@
                  TextWrapping="Wrap" />
     </Border>
 
-    <!-- Footer Actions: Delete (if editing), Cancel, Save -->
-    <DockPanel Grid.Row="3" Margin="0,8,0,0">
-      <Button DockPanel.Dock="Left"
-              Content="{loc:Loc common.delete}"
-              Command="{Binding DeleteCommand}"
-              Style="{StaticResource DangerButton}"
-              Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"
-              AutomationProperties.AutomationId="BtnDeleteEvent" />
+    <!-- Footer (35:855): Xoá sự kiện | Ctrl+S, Huỷ, Lưu -->
+    <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,14">
+      <DockPanel>
+        <Button DockPanel.Dock="Left"
+                Content="{loc:Loc event.delete_event}"
+                Command="{Binding DeleteCommand}"
+                Style="{StaticResource DangerButtonStyle}"
+                Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"
+                AutomationProperties.AutomationId="BtnDeleteEvent" />
 
-      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-        <Button Content="{loc:Loc common.cancel}"
-                Command="{Binding CancelCommand}"
-                Style="{StaticResource SecondaryButton}"
-                IsCancel="True"
-                Margin="0,0,12,0"
-                AutomationProperties.AutomationId="BtnCancelEvent" />
-        <Button Content="{loc:Loc common.save}"
-                Command="{Binding SaveCommand}"
-                Style="{StaticResource PrimaryButton}"
-                IsDefault="True"
-                AutomationProperties.AutomationId="BtnSaveEvent" />
-      </StackPanel>
-    </DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <TextBlock Text="Ctrl+S" Margin="0,0,8,0" VerticalAlignment="Center"
+                     FontSize="{DynamicResource FontSizeCaption}" Foreground="{DynamicResource TextTertiaryBrush}" />
+          <Button Content="{loc:Loc common.cancel}"
+                  Command="{Binding CancelCommand}"
+                  Style="{StaticResource SecondaryButtonStyle}"
+                  IsCancel="True"
+                  Margin="0,0,8,0"
+                  AutomationProperties.AutomationId="BtnCancelEvent" />
+          <Button Content="{loc:Loc common.save}"
+                  Command="{Binding SaveCommand}"
+                  Style="{StaticResource PrimaryButtonStyle}"
+                  IsDefault="True"
+                  AutomationProperties.AutomationId="BtnSaveEvent" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
   </Grid>
 </Window>

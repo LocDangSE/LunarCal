@@ -786,6 +786,66 @@
   <data name="reminder.add" xml:space="preserve">
     <value>Add reminder</value>
   </data>
+  <data name="common.title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="reminder.label" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="lunar_rule.annual_on" xml:space="preserve">
+    <value>Every year on lunar day {0} of month {1}</value>
+  </data>
+  <data name="lunar_rule.is_leap" xml:space="preserve">
+    <value>Leap month</value>
+  </data>
+  <data name="recurrence.solar" xml:space="preserve">
+    <value>Solar</value>
+  </data>
+  <data name="recurrence.lunar_short" xml:space="preserve">
+    <value>Lunar</value>
+  </data>
+  <data name="reminder.chip" xml:space="preserve">
+    <value>Notification · {0}</value>
+  </data>
+  <data name="reminder.add_button" xml:space="preserve">
+    <value>+ Add reminder</value>
+  </data>
+  <data name="format.date_weekday" xml:space="preserve">
+    <value>{0:ddd}, {0:MMM d, yyyy}</value>
+  </data>
+  <data name="lunar.abbrev" xml:space="preserve">
+    <value>Lunar</value>
+  </data>
+  <data name="lunar_rule.policy" xml:space="preserve">
+    <value>Years with a leap month {0}: regular month only · Short month: use the last day · Created {1} years ahead</value>
+  </data>
+  <data name="lunar_rule.next" xml:space="preserve">
+    <value>Next: {0}</value>
+  </data>
+  <data name="lunar_rule.customize" xml:space="preserve">
+    <value>Customize lunar rule…</value>
+  </data>
+  <data name="lunar_rule.sync_google_to" xml:space="preserve">
+    <value>Sync to Google ({0} calendar)</value>
+  </data>
+  <data name="event.time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="event.location.label" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="event.description.label" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="event.delete_event" xml:space="preserve">
+    <value>Delete event</value>
+  </data>
+  <data name="event.subtitle.edited" xml:space="preserve">
+    <value>last edited {0}</value>
+  </data>
+  <data name="event.validation.calendar_required" xml:space="preserve">
+    <value>Choose a calendar to save the event.</value>
+  </data>
   <data name="menu.event.open" xml:space="preserve">
     <value>Open</value>
   </data>

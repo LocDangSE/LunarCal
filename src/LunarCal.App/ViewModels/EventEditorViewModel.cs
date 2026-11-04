@@ -31,6 +31,21 @@ public sealed class ReminderChipViewModel
     }
 }
 
+/// <summary>One entry of the "+ Thêm nhắc nhở" menu: a reminder offset that can be added with one click.</summary>
+public sealed class ReminderPreset
+{
+    public ReminderPreset(int minutes, string label, Action<int> onAdd)
+    {
+        Minutes = minutes;
+        Label = label;
+        AddCommand = new RelayCommand(() => onAdd(minutes));
+    }
+
+    public int Minutes { get; }
+    public string Label { get; }
+    public IRelayCommand AddCommand { get; }
+}
+
 /// <summary>
 /// View model powering the event editor dialog (Figma S10, FR-UI-4, FR-LUNAR-5).
 /// </summary>
@@ -40,6 +55,30 @@ public sealed partial class EventEditorViewModel : ObservableObject
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
     private readonly IMutationService? _mutationService;
+
+    // Offsets offered by "+ Thêm nhắc nhở": at start, 10 min, 30 min, 1 h, 1 day.
+    private static readonly int[] _presetMinutes = [0, 10, 30, 60, 1440];
+
+    // Frequency used when the "Dương lịch" segment is chosen.
+    private EventRecurrenceType _solarFrequency = EventRecurrenceType.Weekly;
+
+    // RRULE lines of the event being edited. Kept as they are while the user leaves the solar frequency alone, so a rule
+    // the editor cannot express (BYDAY, INTERVAL, COUNT, UNTIL, EXDATE, ...) is not rewritten into a plain FREQ rule.
+    private IReadOnlyList<string>? _preservedRecurrence;
+
+    // True while editing an event that uses the calendar's default reminders (ReminderMinutes == null) and the user has
+    // not touched the reminder chips: saving then keeps "use default" instead of writing an empty list (= no reminder).
+    private bool _usesDefaultReminders;
+
+    // The kind the recurrence had when the editor was initialised; _preservedRecurrence applies only while it is unchanged.
+    private EventRecurrenceType _preservedKind = EventRecurrenceType.None;
+
+    private string? _lunarRuleId;
+
+    // Calendar of the event being edited, so deleting it does not depend on the picker.
+    private string? _originalCalendarId;
+
+    private DateTimeOffset? _updated;
 
     /// <summary>Raised when an event is saved (created or updated) successfully.</summary>
     public event EventHandler<CalendarEvent>? Saved;
@@ -122,27 +161,72 @@ public sealed partial class EventEditorViewModel : ObservableObject
     /// <summary>Observable collection of reminder chips with remove commands.</summary>
     public ObservableCollection<ReminderChipViewModel> ReminderChips { get; } = new();
 
-    /// <summary>Available recurrence options for the dropdown selector.</summary>
-    public IReadOnlyList<RecurrenceOption> RecurrenceOptions => new[]
+    /// <summary>Solar frequencies offered once "Dương lịch" is chosen in the recurrence segmented control (Figma S10).</summary>
+    public IReadOnlyList<RecurrenceOption> SolarFrequencyOptions => new[]
     {
-        new RecurrenceOption(EventRecurrenceType.None, _localizationService["recurrence.none"]),
         new RecurrenceOption(EventRecurrenceType.Daily, _localizationService["recurrence.daily"]),
         new RecurrenceOption(EventRecurrenceType.Weekly, _localizationService["recurrence.weekly"]),
         new RecurrenceOption(EventRecurrenceType.Monthly, _localizationService["recurrence.monthly"]),
         new RecurrenceOption(EventRecurrenceType.Yearly, _localizationService["recurrence.yearly"]),
-        new RecurrenceOption(EventRecurrenceType.Lunar, _localizationService["recurrence.lunar"]),
     };
 
-    /// <summary>Selected recurrence option.</summary>
-    public RecurrenceOption? SelectedRecurrenceOption
+    /// <summary>Selected solar frequency; setting it while the solar segment is active also changes the recurrence.</summary>
+    public RecurrenceOption? SelectedSolarFrequencyOption
     {
-        get => RecurrenceOptions.FirstOrDefault(o => o.Type == RecurrenceKind);
+        get => SolarFrequencyOptions.FirstOrDefault(o => o.Type == _solarFrequency);
         set
         {
-            if (value is not null && RecurrenceKind != value.Type)
+            if (value is null || value.Type == _solarFrequency)
+            {
+                return;
+            }
+
+            _solarFrequency = value.Type;
+            if (IsSolarRecurrence)
             {
                 RecurrenceKind = value.Type;
-                OnPropertyChanged(nameof(SelectedRecurrenceOption));
+            }
+
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>"Không lặp" segment (Figma S10).</summary>
+    public bool IsRecurrenceNone
+    {
+        get => RecurrenceKind == EventRecurrenceType.None;
+        set
+        {
+            if (value)
+            {
+                RecurrenceKind = EventRecurrenceType.None;
+            }
+        }
+    }
+
+    /// <summary>"Dương lịch" segment: any of the solar frequencies.</summary>
+    public bool IsSolarRecurrence
+    {
+        get => RecurrenceKind is EventRecurrenceType.Daily or EventRecurrenceType.Weekly
+            or EventRecurrenceType.Monthly or EventRecurrenceType.Yearly;
+        set
+        {
+            if (value && !IsSolarRecurrence)
+            {
+                RecurrenceKind = _solarFrequency;
+            }
+        }
+    }
+
+    /// <summary>"Âm lịch" segment: yearly or monthly rule on a lunar day (FR-LUNAR-4).</summary>
+    public bool IsLunarRecurrence
+    {
+        get => RecurrenceKind == EventRecurrenceType.Lunar;
+        set
+        {
+            if (value)
+            {
+                RecurrenceKind = EventRecurrenceType.Lunar;
             }
         }
     }
@@ -153,8 +237,21 @@ public sealed partial class EventEditorViewModel : ObservableObject
     /// <summary>True when event is not all-day and has specific start and end times.</summary>
     public bool IsTimed => !IsAllDay;
 
-    /// <summary>True when recurrence type is set to lunar.</summary>
-    public bool IsLunarRecurrence => RecurrenceKind == EventRecurrenceType.Lunar;
+    /// <summary>
+    /// True when the end date needs its own picker: all-day events, and timed events that already span several days
+    /// (Figma S10 shows start date, start time and end time only).
+    /// </summary>
+    public bool ShowEndDate => IsAllDay || EndDate != StartDate;
+
+    /// <summary>Half-hour time slots offered by the time drop-downs (Figma S10 "10:00 ▾").</summary>
+    public IReadOnlyList<string> TimeSlots { get; } =
+        Enumerable.Range(0, 48)
+            .Select(i => new TimeOnly(i / 2, i % 2 * 30).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture))
+            .ToList();
+
+    /// <summary>When the lunar-rule fields (day, month, leap, years ahead) are expanded ("Tuỳ chỉnh luật lặp âm lịch…").</summary>
+    [ObservableProperty]
+    private bool _isLunarRuleCustomizing;
 
     /// <summary>True when there is an active validation error message.</summary>
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
@@ -163,6 +260,108 @@ public sealed partial class EventEditorViewModel : ObservableObject
     public string DialogTitle => IsNew
         ? _localizationService["event.dialog.create_title"]
         : _localizationService["event.dialog.edit_title"];
+
+    /// <summary>Header sub line: calendar name, plus "sửa lần cuối …" when editing an event with a known update time.</summary>
+    public string DialogSubtitle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (SelectedCalendar is not null)
+            {
+                parts.Add(SelectedCalendar.Summary);
+            }
+
+            if (IsEditing && _updated is { } updated)
+            {
+                parts.Add(_localizationService.Format("event.subtitle.edited", GoogleAccountViewModel.FormatRelativeTime(updated, _localizationService)));
+            }
+
+            return string.Join(" · ", parts);
+        }
+    }
+
+    /// <summary>Time zone shown next to the all-day check box: "(GMT+07:00) Bangkok, Hanoi, Jakarta" (Figma S10).</summary>
+    public string TimeZoneText
+    {
+        get
+        {
+            var zone = _preferences.TimeZone;
+            var offset = zone.GetUtcOffset(CalendarTime.ToUtc(StartDate, StartTime, zone));
+            var sign = offset < TimeSpan.Zero ? "-" : "+";
+            var abs = offset.Duration();
+            var name = zone.DisplayName;
+
+            // Windows names read "(UTC+07:00) Bangkok, Hanoi, Jakarta": the offset is already shown, so drop that prefix.
+            var close = name.IndexOf(')', StringComparison.Ordinal);
+            if (name.StartsWith('(') && close > 0)
+            {
+                name = name[(close + 1)..].TrimStart();
+            }
+
+            return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"(GMT{sign}{abs.Hours:D2}:{abs.Minutes:D2}) {name}");
+        }
+    }
+
+    /// <summary>Start date with weekday for the date field: "Thứ Năm, 22/10/2026" (Figma S10).</summary>
+    public string StartDateText => FormatDateWithWeekday(StartDate);
+
+    /// <summary>End date with weekday for the end-date field.</summary>
+    public string EndDateText => FormatDateWithWeekday(EndDate);
+
+    /// <summary>Lunar date chip inside the start-date field: "13/9 ÂL"; empty when the lunar calendar is off.</summary>
+    public string StartLunarChipText
+    {
+        get
+        {
+            if (!_preferences.LunarEnabled)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var lunar = LunarCalendar.ToLunar(StartDate);
+                var leap = lunar.IsLeapMonth ? _localizationService["lunar.leap_marker"] : string.Empty;
+                return $"{lunar.Day}/{lunar.Month}{leap} {_localizationService["lunar.abbrev"]}";
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return string.Empty;
+            }
+        }
+    }
+
+    /// <summary>Lunar-rule headline: "Hằng năm vào ngày 13 tháng 9 âm lịch".</summary>
+    public string LunarRuleTitle => _localizationService.Format("lunar_rule.annual_on", LunarDay, LunarMonthLabel);
+
+    /// <summary>Lunar-rule policy line (leap month, short month, years ahead).</summary>
+    public string LunarRulePolicyText => _localizationService.Format("lunar_rule.policy", LunarMonth, LunarYearsAhead);
+
+    /// <summary>"Lần tới: 22/10/2026 · 12/10/2027 · 30/10/2028": the next solar dates of the rule, computed by the lunar engine.</summary>
+    public string LunarRuleNextText
+    {
+        get
+        {
+            var dates = NextLunarOccurrences(3);
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            return dates.Count == 0
+                ? string.Empty
+                : _localizationService.Format("lunar_rule.next", string.Join(" · ", dates.Select(d => d.ToString("dd/MM/yyyy", culture))));
+        }
+    }
+
+    /// <summary>Label of the "sync to Google" check box: names the Google calendar the rule is written to.</summary>
+    public string SyncToGoogleText =>
+        _localizationService.Format("lunar_rule.sync_google_to", AvailableCalendars.FirstOrDefault(c => c.IsPrimary)?.Summary ?? SelectedCalendar?.Summary ?? string.Empty);
+
+    /// <summary>Preset reminders offered by "+ Thêm nhắc nhở".</summary>
+    public IReadOnlyList<ReminderPreset> ReminderPresets { get; private set; } = Array.Empty<ReminderPreset>();
+
+    private string FormatDateWithWeekday(DateOnly date) =>
+        _localizationService.Format("format.date_weekday", date.ToDateTime(TimeOnly.MinValue));
+
+    private string LunarMonthLabel => CalendarText.MonthLabel(_localizationService, new LunarDate(0, LunarMonth, LunarDay, IsLunarLeap));
 
     public EventEditorViewModel(
         IEventStore eventStore,
@@ -180,19 +379,30 @@ public sealed partial class EventEditorViewModel : ObservableObject
             if (e.PropertyName is nameof(IDisplayPreferences.LunarEnabled) or nameof(IDisplayPreferences.TimeZone))
             {
                 UpdateLunarDateText();
+                OnPropertyChanged(nameof(TimeZoneText));
+                OnPropertyChanged(nameof(StartLunarChipText));
             }
         };
 
         _localizationService.PropertyChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(DialogTitle));
-            OnPropertyChanged(nameof(RecurrenceOptions));
-            OnPropertyChanged(nameof(SelectedRecurrenceOption));
+            OnPropertyChanged(nameof(DialogSubtitle));
+            OnPropertyChanged(nameof(SolarFrequencyOptions));
+            OnPropertyChanged(nameof(SelectedSolarFrequencyOption));
+            OnPropertyChanged(nameof(SyncToGoogleText));
+            OnPropertyChanged(nameof(StartDateText));
+            OnPropertyChanged(nameof(EndDateText));
+            OnPropertyChanged(nameof(StartLunarChipText));
+            NotifyLunarRuleChanged();
             UpdateLunarDateText();
             RefreshReminderChips();
         };
 
+        AvailableCalendars.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SyncToGoogleText));
+
         UpdateLunarDateText();
+        RefreshReminderChips();
     }
 
     partial void OnStartDateChanged(DateOnly value)
@@ -202,20 +412,107 @@ public sealed partial class EventEditorViewModel : ObservableObject
             EndDate = value;
         }
 
+        OnPropertyChanged(nameof(ShowEndDate));
+        OnPropertyChanged(nameof(TimeZoneText));
+        OnPropertyChanged(nameof(StartDateText));
+        OnPropertyChanged(nameof(StartLunarChipText));
         UpdateLunarDateText();
+
+        // Until "Tuỳ chỉnh" is opened the rule simply follows the start date (Figma S10 derives it from the date).
+        if (IsLunarRecurrence && !IsLunarRuleCustomizing)
+        {
+            SyncLunarRuleToStartDate();
+        }
+
+        OnPropertyChanged(nameof(LunarRuleNextText));
     }
+
+    partial void OnEndDateChanged(DateOnly value)
+    {
+        OnPropertyChanged(nameof(ShowEndDate));
+        OnPropertyChanged(nameof(EndDateText));
+    }
+
+    partial void OnSelectedCalendarChanged(CalendarItemViewModel? value)
+    {
+        OnPropertyChanged(nameof(DialogSubtitle));
+        OnPropertyChanged(nameof(SyncToGoogleText));
+    }
+
+    partial void OnLunarDayChanged(int value) => NotifyLunarRuleChanged();
+
+    partial void OnLunarMonthChanged(int value) => NotifyLunarRuleChanged();
+
+    partial void OnIsLunarLeapChanged(bool value) => NotifyLunarRuleChanged();
+
+    partial void OnLunarYearsAheadChanged(int value) => NotifyLunarRuleChanged();
 
     partial void OnRecurrenceKindChanged(EventRecurrenceType value)
     {
+        OnPropertyChanged(nameof(IsRecurrenceNone));
+        OnPropertyChanged(nameof(IsSolarRecurrence));
         OnPropertyChanged(nameof(IsLunarRecurrence));
-        OnPropertyChanged(nameof(SelectedRecurrenceOption));
+        if (value is EventRecurrenceType.Daily or EventRecurrenceType.Weekly or EventRecurrenceType.Monthly or EventRecurrenceType.Yearly)
+        {
+            _solarFrequency = value;
+            OnPropertyChanged(nameof(SelectedSolarFrequencyOption));
+        }
+
         if (value == EventRecurrenceType.Lunar)
+        {
+            SyncLunarRuleToStartDate();
+        }
+    }
+
+    private void SyncLunarRuleToStartDate()
+    {
+        try
         {
             var lunar = LunarCalendar.ToLunar(StartDate);
             LunarDay = lunar.Day;
             LunarMonth = lunar.Month;
             IsLunarLeap = lunar.IsLeapMonth;
         }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Outside 1900..2100 there is no lunar date; the rule keeps its previous values.
+        }
+    }
+
+    private void NotifyLunarRuleChanged()
+    {
+        OnPropertyChanged(nameof(LunarRuleTitle));
+        OnPropertyChanged(nameof(LunarRulePolicyText));
+        OnPropertyChanged(nameof(LunarRuleNextText));
+    }
+
+    private List<DateOnly> NextLunarOccurrences(int count)
+    {
+        var result = new List<DateOnly>();
+        if (LunarMonth is < 1 or > 12 || LunarDay is < 1 or > 30)
+        {
+            return result;
+        }
+
+        try
+        {
+            for (var year = LunarCalendar.ToLunar(StartDate).Year; year <= LunarCalendar.MaxLunarYear && result.Count < count; year++)
+            {
+                // Short month: day 30 falls back to the last day of the month (the rule's stated policy).
+                var solar = LunarCalendar.ToSolar(year, LunarMonth, LunarDay, IsLunarLeap)
+                    ?? (LunarDay == 30 ? LunarCalendar.ToSolar(year, LunarMonth, 29, IsLunarLeap) : null);
+                if (solar is { } date && date >= StartDate)
+                {
+                    result.Add(date);
+                }
+            }
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Past the supported range (solar 2100-12-31): list what was found.
+        }
+
+        return result;
     }
 
     partial void OnErrorMessageChanged(string? value)
@@ -226,12 +523,14 @@ public sealed partial class EventEditorViewModel : ObservableObject
     partial void OnIsNewChanged(bool value)
     {
         OnPropertyChanged(nameof(DialogTitle));
+        OnPropertyChanged(nameof(DialogSubtitle));
         OnPropertyChanged(nameof(IsEditing));
     }
 
     partial void OnIsAllDayChanged(bool value)
     {
         OnPropertyChanged(nameof(IsTimed));
+        OnPropertyChanged(nameof(ShowEndDate));
     }
 
     /// <summary>
@@ -239,7 +538,8 @@ public sealed partial class EventEditorViewModel : ObservableObject
     /// </summary>
     public async Task LoadCalendarsAsync(CancellationToken cancellationToken = default)
     {
-        var calendars = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        // Back on the caller's context: AvailableCalendars is bound to the dialog's calendar picker.
+        var calendars = await _eventStore.GetCalendarsAsync(cancellationToken: cancellationToken).ConfigureAwait(true);
         AvailableCalendars.Clear();
         foreach (var cal in calendars)
         {
@@ -249,16 +549,21 @@ public sealed partial class EventEditorViewModel : ObservableObject
                 AccountId = cal.AccountId,
                 Summary = cal.Summary,
                 Color = cal.Color ?? CalendarColors.DefaultHex,
-                IsSelected = cal.IsSelected
+                IsSelected = cal.IsSelected,
+                IsPrimary = cal.IsPrimary,
             };
             AvailableCalendars.Add(item);
         }
 
         if (SelectedCalendar is null && AvailableCalendars.Count > 0)
         {
-            SelectedCalendar = AvailableCalendars[0];
+            SelectedCalendar = DefaultCalendar();
         }
     }
+
+    // The primary calendar when there is one, otherwise the first.
+    private CalendarItemViewModel? DefaultCalendar() =>
+        AvailableCalendars.FirstOrDefault(c => c.IsPrimary) ?? AvailableCalendars.FirstOrDefault();
 
     /// <summary>
     /// Initializes state according to an <see cref="EventEditorRequest"/>.
@@ -300,6 +605,13 @@ public sealed partial class EventEditorViewModel : ObservableObject
         EventId = Guid.NewGuid().ToString("D");
         GoogleId = null;
         OriginalEtag = null;
+        _updated = null;
+        _originalCalendarId = null;
+        _preservedRecurrence = null;
+        _preservedKind = EventRecurrenceType.None;
+        _lunarRuleId = null;
+        _usesDefaultReminders = false;
+        IsLunarRuleCustomizing = false;
         Title = string.Empty;
         Location = string.Empty;
         Description = string.Empty;
@@ -339,7 +651,7 @@ public sealed partial class EventEditorViewModel : ObservableObject
         }
         else if (SelectedCalendar is null && AvailableCalendars.Count > 0)
         {
-            SelectedCalendar = AvailableCalendars[0];
+            SelectedCalendar = DefaultCalendar();
         }
 
         UpdateLunarDateText();
@@ -356,6 +668,9 @@ public sealed partial class EventEditorViewModel : ObservableObject
         EventId = calendarEvent.Id;
         GoogleId = calendarEvent.GoogleId;
         OriginalEtag = calendarEvent.Etag;
+        _updated = calendarEvent.Updated;
+        _originalCalendarId = calendarEvent.CalendarId;
+        IsLunarRuleCustomizing = false;
         Title = calendarEvent.Title;
         Location = calendarEvent.Location ?? string.Empty;
         Description = calendarEvent.Description ?? string.Empty;
@@ -371,9 +686,13 @@ public sealed partial class EventEditorViewModel : ObservableObject
         EndDate = DateOnly.FromDateTime(endLocal.DateTime);
         EndTime = TimeOnly.FromDateTime(endLocal.DateTime);
 
+        _preservedRecurrence = null;
+        _lunarRuleId = null;
+
         // Check lunar recurrence in extended properties
         if (calendarEvent.ExtendedProperties.TryGetValue("lunarRuleId", out var ruleId) && !string.IsNullOrEmpty(ruleId))
         {
+            _lunarRuleId = ruleId;
             RecurrenceKind = EventRecurrenceType.Lunar;
             if (calendarEvent.ExtendedProperties.TryGetValue("lunarDay", out var dStr) && int.TryParse(dStr, out var d))
             {
@@ -395,13 +714,27 @@ public sealed partial class EventEditorViewModel : ObservableObject
                 SyncToGoogle = sync;
             }
         }
+        else if (calendarEvent.Recurrence is { Count: > 0 } rules)
+        {
+            // A recurring master: show its frequency, and keep the original lines unless the user changes the frequency.
+            _preservedRecurrence = rules;
+            RecurrenceKind = ParseSolarFrequency(rules);
+        }
         else
         {
             RecurrenceKind = EventRecurrenceType.None;
         }
 
+        _preservedKind = RecurrenceKind;
+
+        // null = the calendar's default reminders; an explicit list (possibly empty) is shown as chips.
+        _usesDefaultReminders = calendarEvent.ReminderMinutes is null;
         Reminders.Clear();
-        Reminders.Add(10);
+        foreach (var minutes in calendarEvent.ReminderMinutes ?? Array.Empty<int>())
+        {
+            Reminders.Add(minutes);
+        }
+
         RefreshReminderChips();
 
         var cal = AvailableCalendars.FirstOrDefault(c => c.Id == calendarEvent.CalendarId);
@@ -434,6 +767,7 @@ public sealed partial class EventEditorViewModel : ObservableObject
     {
         if (minutes >= 0 && !Reminders.Contains(minutes))
         {
+            _usesDefaultReminders = false;
             Reminders.Add(minutes);
             RefreshReminderChips();
         }
@@ -447,6 +781,7 @@ public sealed partial class EventEditorViewModel : ObservableObject
     {
         if (Reminders.Remove(minutes))
         {
+            _usesDefaultReminders = false;
             RefreshReminderChips();
         }
     }
@@ -471,6 +806,13 @@ public sealed partial class EventEditorViewModel : ObservableObject
                 ErrorMessage = _localizationService["event.validation.invalid_time"];
                 return false;
             }
+        }
+
+        // The Event table has a foreign key to CalendarInfo: an event needs a real calendar, never a made-up "primary".
+        if (SelectedCalendar is null)
+        {
+            ErrorMessage = _localizationService["event.validation.calendar_required"];
+            return false;
         }
 
         ErrorMessage = null;
@@ -508,14 +850,15 @@ public sealed partial class EventEditorViewModel : ObservableObject
             endUtc = CalendarTime.ToUtc(EndDate, EndTime, timeZone);
         }
 
-        var calendarId = SelectedCalendar?.Id ?? "primary";
-        var accountId = SelectedCalendar?.AccountId ?? "primary";
+        var calendarId = SelectedCalendar!.Id;
+        var accountId = SelectedCalendar.AccountId ?? calendarId;
         var eventId = EventId ?? Guid.NewGuid().ToString("D");
 
         var extended = new Dictionary<string, string>(StringComparer.Ordinal);
         if (IsLunarRecurrence)
         {
-            extended["lunarRuleId"] = Guid.NewGuid().ToString("D");
+            _lunarRuleId ??= Guid.NewGuid().ToString("D");
+            extended["lunarRuleId"] = _lunarRuleId;
             extended["lunarDay"] = LunarDay.ToString(System.Globalization.CultureInfo.InvariantCulture);
             extended["lunarMonth"] = LunarMonth.ToString(System.Globalization.CultureInfo.InvariantCulture);
             extended["isLeap"] = IsLunarLeap.ToString();
@@ -536,6 +879,8 @@ public sealed partial class EventEditorViewModel : ObservableObject
             TimeZone = timeZone.Id,
             Etag = OriginalEtag,
             Status = "confirmed",
+            ReminderMinutes = _usesDefaultReminders ? null : Reminders.Order().ToList(),
+            Recurrence = BuildRecurrence(),
             ExtendedProperties = extended
         };
 
@@ -564,8 +909,15 @@ public sealed partial class EventEditorViewModel : ObservableObject
             return false;
         }
 
-        var calendarId = SelectedCalendar?.Id ?? "primary";
-        var accountId = SelectedCalendar?.AccountId ?? "primary";
+        // Delete from the event's own calendar; the picker may have been changed (unsaved) after opening.
+        var calendarId = _originalCalendarId ?? SelectedCalendar?.Id;
+        if (calendarId is null)
+        {
+            ErrorMessage = _localizationService["event.validation.calendar_required"];
+            return false;
+        }
+
+        var accountId = AvailableCalendars.FirstOrDefault(c => c.Id == calendarId)?.AccountId ?? calendarId;
 
         await _mutationService.DeleteEventOptimisticAsync(accountId, calendarId, EventId, OriginalEtag, cancellationToken).ConfigureAwait(false);
         Deleted?.Invoke(this, EventId);
@@ -591,8 +943,14 @@ public sealed partial class EventEditorViewModel : ObservableObject
             ? CalendarTime.StartOfDayUtc(EndDate.AddDays(2), timeZone)
             : CalendarTime.ToUtc(EndDate, EndTime.AddHours(1), timeZone);
 
-        var calendarId = SelectedCalendar?.Id ?? "primary";
-        var accountId = SelectedCalendar?.AccountId ?? "primary";
+        if (SelectedCalendar is null)
+        {
+            ErrorMessage = _localizationService["event.validation.calendar_required"];
+            return null;
+        }
+
+        var calendarId = SelectedCalendar.Id;
+        var accountId = SelectedCalendar.AccountId ?? calendarId;
 
         var copy = new CalendarEvent
         {
@@ -611,6 +969,10 @@ public sealed partial class EventEditorViewModel : ObservableObject
         return await _mutationService.CreateEventOptimisticAsync(accountId, calendarId, copy, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>Expands or collapses the lunar-rule fields ("Tuỳ chỉnh luật lặp âm lịch…").</summary>
+    [RelayCommand]
+    public void ToggleLunarRuleCustomizing() => IsLunarRuleCustomizing = !IsLunarRuleCustomizing;
+
     /// <summary>
     /// Cancels dialog editing and raises <see cref="Cancelled"/>.
     /// </summary>
@@ -623,11 +985,18 @@ public sealed partial class EventEditorViewModel : ObservableObject
     private void RefreshReminderChips()
     {
         ReminderChips.Clear();
-        foreach (var m in Reminders.OrderBy(m => m))
+        // Earliest reminder first, as in Figma S10 ("1 ngày trước" before "2 giờ trước").
+        foreach (var m in Reminders.OrderByDescending(m => m))
         {
-            var label = FormatReminder(m);
+            var label = _localizationService.Format("reminder.chip", FormatReminder(m));
             ReminderChips.Add(new ReminderChipViewModel(m, label, RemoveReminder));
         }
+
+        ReminderPresets = _presetMinutes
+            .Where(m => !Reminders.Contains(m))
+            .Select(m => new ReminderPreset(m, FormatReminder(m), AddReminder))
+            .ToList();
+        OnPropertyChanged(nameof(ReminderPresets));
     }
 
     private string FormatReminder(int minutes)
@@ -645,6 +1014,55 @@ public sealed partial class EventEditorViewModel : ObservableObject
             return _localizationService.Format("reminder.hours_before", minutes / 60);
         }
         return _localizationService.Format("reminder.minutes_before", minutes);
+    }
+
+    /// <summary>RRULE lines to write for the chosen recurrence; null when the event does not repeat.</summary>
+    private IReadOnlyList<string>? BuildRecurrence()
+    {
+        if (_preservedRecurrence is not null && RecurrenceKind == _preservedKind)
+        {
+            return _preservedRecurrence;
+        }
+
+        var freq = RecurrenceKind switch
+        {
+            EventRecurrenceType.Daily => "DAILY",
+            EventRecurrenceType.Weekly => "WEEKLY",
+            EventRecurrenceType.Monthly => "MONTHLY",
+            EventRecurrenceType.Yearly => "YEARLY",
+            _ => null,
+        };
+
+        // Lunar rules are materialised later (FR-LUNAR-4, Phase 5); they carry no RRULE of their own.
+        return freq is null ? null : new[] { "RRULE:FREQ=" + freq };
+    }
+
+    private static EventRecurrenceType ParseSolarFrequency(IReadOnlyList<string> rules)
+    {
+        foreach (var line in rules)
+        {
+            if (!line.StartsWith("RRULE:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            foreach (var part in line["RRULE:".Length..].Split(';'))
+            {
+                if (part.StartsWith("FREQ=", StringComparison.OrdinalIgnoreCase))
+                {
+                    return part["FREQ=".Length..].ToUpperInvariant() switch
+                    {
+                        "DAILY" => EventRecurrenceType.Daily,
+                        "WEEKLY" => EventRecurrenceType.Weekly,
+                        "MONTHLY" => EventRecurrenceType.Monthly,
+                        "YEARLY" => EventRecurrenceType.Yearly,
+                        _ => EventRecurrenceType.None,
+                    };
+                }
+            }
+        }
+
+        return EventRecurrenceType.None;
     }
 
     private void UpdateLunarDateText()

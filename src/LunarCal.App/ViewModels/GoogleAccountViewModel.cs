@@ -136,6 +136,26 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
         }
     }
 
+    /// <summary>Elapsed time since <paramref name="moment"/> in words: "Vừa xong", "2 phút trước", "3 giờ trước", "4 ngày trước".</summary>
+    public static string FormatRelativeTime(DateTimeOffset moment, ILocalizationService localization)
+    {
+        ArgumentNullException.ThrowIfNull(localization);
+        var elapsed = DateTimeOffset.UtcNow - moment;
+        if (elapsed.TotalMinutes < 1)
+        {
+            return localization["time.just_now"];
+        }
+
+        if (elapsed.TotalHours < 1)
+        {
+            return localization.Format("time.minutes_ago", (int)elapsed.TotalMinutes);
+        }
+
+        return elapsed.TotalDays < 1
+            ? localization.Format("time.hours_ago", (int)elapsed.TotalHours)
+            : localization.Format("time.days_ago", (int)elapsed.TotalDays);
+    }
+
     /// <summary>
     /// Formats relative sync time string according to current culture.
     /// </summary>
@@ -147,26 +167,7 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
             return localization["settings.account.never_synced"];
         }
 
-        var elapsed = DateTimeOffset.UtcNow - lastSync.Value;
-        string relativeTime;
-        if (elapsed.TotalMinutes < 1)
-        {
-            relativeTime = localization["time.just_now"];
-        }
-        else if (elapsed.TotalHours < 1)
-        {
-            relativeTime = localization.Format("time.minutes_ago", (int)elapsed.TotalMinutes);
-        }
-        else if (elapsed.TotalDays < 1)
-        {
-            relativeTime = localization.Format("time.hours_ago", (int)elapsed.TotalHours);
-        }
-        else
-        {
-            relativeTime = localization.Format("time.days_ago", (int)elapsed.TotalDays);
-        }
-
-        return localization.Format("settings.account.last_synced", relativeTime);
+        return localization.Format("settings.account.last_synced", FormatRelativeTime(lastSync.Value, localization));
     }
 
     private void UpdateLastSyncText(DateTimeOffset? lastSync)

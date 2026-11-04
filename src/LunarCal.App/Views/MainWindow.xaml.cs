@@ -50,7 +50,9 @@ public partial class MainWindow : Window
     }
 
     // Opens Event Editor Dialog (Figma S10) as a modal dialog owned by the shell.
-    private void OnEventEditorRequested(object? sender, EventEditorRequest request)
+    // Event handler: async void is allowed here (AGENTS.md §7); the calendars must be loaded before the form is
+    // initialised, otherwise the calendar picker is empty and the event has no calendar to be written to.
+    private async void OnEventEditorRequested(object? sender, EventEditorRequest request)
     {
         var eventStore = _services.GetRequiredService<IEventStore>();
         var localization = _services.GetRequiredService<ILocalizationService>();
@@ -58,6 +60,7 @@ public partial class MainWindow : Window
         var mutationService = _services.GetService<IMutationService>();
 
         var editorVm = new EventEditorViewModel(eventStore, localization, preferences, mutationService);
+        await editorVm.LoadCalendarsAsync().ConfigureAwait(true);
         editorVm.Initialize(request);
 
         var dialog = new EventEditorDialog(editorVm)

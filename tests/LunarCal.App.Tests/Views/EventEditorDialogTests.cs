@@ -35,6 +35,7 @@ public sealed class EventEditorDialogTests
                 app = Application.Current ?? new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
                 app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/LunarCal;component/Resources/Tokens.xaml", UriKind.Relative) });
                 app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/LunarCal;component/Themes/Light.xaml", UriKind.Relative) });
+                app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/LunarCal;component/Resources/Controls.xaml", UriKind.Relative) });
 
                 var vm = new EventEditorViewModel(
                     new InMemoryEventStore(seedSampleData: false),
@@ -50,7 +51,7 @@ public sealed class EventEditorDialogTests
 
                 title = dialog.Title;
                 startPicker = FindByAutomationId<System.Windows.Controls.DatePicker>(content, "DpStartDate").SelectedDate;
-                startTimeText = FindByAutomationId<System.Windows.Controls.TextBox>(content, "TxtStartTime").Text;
+                startTimeText = FindByAutomationId<System.Windows.Controls.ComboBox>(content, "TxtStartTime").Text;
                 dialog.Close();
             }
             catch (Exception ex)

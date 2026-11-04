@@ -41,6 +41,8 @@
   <!-- Figma icon paths (P2-R11..R15), copied from the exported SVG of each icon node. Coordinates are in the icon's
        own box (the number in the key), so draw them with Stretch="None" inside a box of that size. -->
   <Geometry x:Key="IconPlus16">M8 3.33333V8M8 8V12.6667M8 8H3.33333M8 8H12.6667</Geometry>
+  <Geometry x:Key="IconArrowRight16">M3 8H13M9 4L13 8L9 12</Geometry>
+  <Geometry x:Key="IconChevronDown16">M4 6L8 10L12 6</Geometry>
   <Geometry x:Key="IconChevronLeft16">M10 12L6 8L10 4</Geometry>
   <Geometry x:Key="IconChevronRight16">M6 12L10 8L6 4</Geometry>
   <Geometry x:Key="IconChevronLeft18">M11.25 13.5L6.75 9L11.25 4.5</Geometry>

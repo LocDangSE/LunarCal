@@ -94,9 +94,10 @@ public sealed class EventEditorViewModelTests
     }
 
     [Fact]
-    public void FR_UI_4_Validation_requires_title_and_valid_time_interval()
+    public async Task FR_UI_4_Validation_requires_title_and_valid_time_interval()
     {
         var vm = new EventEditorViewModel(_eventStore, _localizationService, _preferences, _mutationService);
+        await vm.LoadCalendarsAsync(TestContext.Current.CancellationToken);
         vm.InitializeForNew();
 
         // 1. Empty title -> fails
@@ -233,6 +234,7 @@ public sealed class EventEditorViewModelTests
     public async Task FR_UI_4_DuplicateAsync_creates_copy_with_shifted_time()
     {
         var vm = new EventEditorViewModel(_eventStore, _localizationService, _preferences, _mutationService);
+        await vm.LoadCalendarsAsync(TestContext.Current.CancellationToken);
         vm.InitializeForNew(new DateOnly(2026, 11, 10), new TimeOnly(10, 0), isAllDay: false);
         vm.Title = "Weekly Workshop";
 

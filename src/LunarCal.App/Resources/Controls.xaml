@@ -183,7 +183,7 @@
                   CornerRadius="{DynamicResource CornerRadiusMedium}"
                   Padding="0"
                   SnapsToDevicePixels="True">
-            <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="0" VerticalAlignment="Center"
+            <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="0" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Focusable="False" />
           </Border>
           <ControlTemplate.Triggers>
@@ -404,5 +404,153 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Padding" Value="6,4" />
+  </Style>
+
+  <!-- Event editor (S10 35:774): segmented "Không lặp / Dương lịch / Âm lịch" with a white selected segment -->
+  <Style x:Key="FormSegmentTrackStyle" TargetType="Border">
+    <Setter Property="Background" Value="{DynamicResource ControlTrackBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSegmentTrack}" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+  </Style>
+  <Style x:Key="FormSegmentStyle" TargetType="RadioButton">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+    <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Border x:Name="Bd" Background="Transparent" CornerRadius="{DynamicResource CornerRadiusSegment}"
+                  Padding="14,6" BorderThickness="1" BorderBrush="Transparent">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+              <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+              <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Checkbox/Off, Checkbox/On: 16 px box, radius 4, accent fill with a white tick when checked -->
+  <Style x:Key="FormCheckBoxStyle" TargetType="CheckBox">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <StackPanel Orientation="Horizontal" Background="Transparent">
+            <Border x:Name="Box" Width="16" Height="16" CornerRadius="{DynamicResource CornerRadiusCheckbox}"
+                    Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{DynamicResource BorderStrongBrush}"
+                    BorderThickness="1" VerticalAlignment="Center">
+              <Path x:Name="Tick" Data="{DynamicResource IconCheck11}" Width="10" Height="10" Stretch="Uniform"
+                    Stroke="{DynamicResource OnAccentBrush}" StrokeThickness="1.6"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed" />
+            </Border>
+            <ContentPresenter Margin="10,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
+          </StackPanel>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+              <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+              <Setter TargetName="Tick" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Time drop-down "10:00 ▾" (S10 35:788): editable text + list of slots; the text is parsed by the binding -->
+  <Style x:Key="TimeDropdownStyle" TargetType="ComboBox" BasedOn="{StaticResource DropdownStyle}">
+    <Setter Property="IsEditable" Value="True" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MaxDropDownHeight" Value="240" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBox">
+          <Grid>
+            <Border x:Name="Bd"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}">
+              <DockPanel>
+                <ToggleButton DockPanel.Dock="Right" Width="26" Style="{StaticResource DropdownToggleStyle}"
+                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                <TextBox x:Name="PART_EditableTextBox"
+                         Padding="12,0,0,0" BorderThickness="0" Background="Transparent"
+                         VerticalContentAlignment="Center" VerticalAlignment="Stretch"
+                         FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}"
+                         CaretBrush="{DynamicResource TextPrimaryBrush}" />
+              </DockPanel>
+            </Border>
+            <TextBlock Text="▾" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" IsHitTestVisible="False"
+                       FontSize="{DynamicResource FontSizeCaption}" Foreground="{DynamicResource TextSecondaryBrush}" />
+            <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True"
+                   Focusable="False" PopupAnimation="Fade" MinWidth="{TemplateBinding ActualWidth}">
+              <Border Margin="0,4,0,0" Padding="4"
+                      Background="{DynamicResource SurfaceBackgroundBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                      CornerRadius="{DynamicResource CornerRadiusMedium}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                  <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                </ScrollViewer>
+              </Border>
+            </Popup>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+              <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Reminder chip (S10 35:821): gray pill "Thông báo · 1 ngày trước ✕" and the outlined "+ Thêm nhắc nhở" pill -->
+  <Style x:Key="AddChipButtonStyle" TargetType="Button">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+    <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Bd" Background="{DynamicResource SurfaceBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderStrongBrush}" BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusPill}" Padding="11,5">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
 </ResourceDictionary>

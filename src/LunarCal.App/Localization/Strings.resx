@@ -786,6 +786,66 @@
   <data name="reminder.add" xml:space="preserve">
     <value>Thêm nhắc nhở</value>
   </data>
+  <data name="common.title" xml:space="preserve">
+    <value>Tiêu đề</value>
+  </data>
+  <data name="reminder.label" xml:space="preserve">
+    <value>Nhắc nhở</value>
+  </data>
+  <data name="lunar_rule.annual_on" xml:space="preserve">
+    <value>Hằng năm vào ngày {0} tháng {1} âm lịch</value>
+  </data>
+  <data name="lunar_rule.is_leap" xml:space="preserve">
+    <value>Tháng nhuận</value>
+  </data>
+  <data name="recurrence.solar" xml:space="preserve">
+    <value>Dương lịch</value>
+  </data>
+  <data name="recurrence.lunar_short" xml:space="preserve">
+    <value>Âm lịch</value>
+  </data>
+  <data name="reminder.chip" xml:space="preserve">
+    <value>Thông báo · {0}</value>
+  </data>
+  <data name="reminder.add_button" xml:space="preserve">
+    <value>+ Thêm nhắc nhở</value>
+  </data>
+  <data name="format.date_weekday" xml:space="preserve">
+    <value>{0:dddd}, {0:dd/MM/yyyy}</value>
+  </data>
+  <data name="lunar.abbrev" xml:space="preserve">
+    <value>ÂL</value>
+  </data>
+  <data name="lunar_rule.policy" xml:space="preserve">
+    <value>Năm có tháng {0} nhuận: chỉ tháng thường · Tháng thiếu: dùng ngày cuối tháng · Tạo trước {1} năm</value>
+  </data>
+  <data name="lunar_rule.next" xml:space="preserve">
+    <value>Lần tới: {0}</value>
+  </data>
+  <data name="lunar_rule.customize" xml:space="preserve">
+    <value>Tuỳ chỉnh luật lặp âm lịch…</value>
+  </data>
+  <data name="lunar_rule.sync_google_to" xml:space="preserve">
+    <value>Đồng bộ lên Google (lịch {0})</value>
+  </data>
+  <data name="event.time" xml:space="preserve">
+    <value>Thời gian</value>
+  </data>
+  <data name="event.location.label" xml:space="preserve">
+    <value>Địa điểm</value>
+  </data>
+  <data name="event.description.label" xml:space="preserve">
+    <value>Mô tả</value>
+  </data>
+  <data name="event.delete_event" xml:space="preserve">
+    <value>Xoá sự kiện</value>
+  </data>
+  <data name="event.subtitle.edited" xml:space="preserve">
+    <value>sửa lần cuối {0}</value>
+  </data>
+  <data name="event.validation.calendar_required" xml:space="preserve">
+    <value>Chọn lịch để lưu sự kiện.</value>
+  </data>
   <data name="menu.event.open" xml:space="preserve">
     <value>Mở</value>
   </data>
