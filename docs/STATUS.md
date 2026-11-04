@@ -3,19 +3,26 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
+**Cập nhật lần cuối:** 2026-11-04 09:10 +07:00, Claude Code (Opus 5.5). Dừng phiên theo yêu cầu chủ dự án, đang làm dở P3-R1..R3 trên `phase/3`; P3-R4 xong. Commit phiên này: 936f569, 7b8d6a9, 6d871df, 81d85bd (chưa push). 473 test: 472 pass, 1 fail khi chạy cả solution ở Debug (test đo thời gian NFR_PERF MonthView, chưa chạy lại để xác nhận do tải máy).
+
+**Phiên trước:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
 
 **Trước đó:** 2026-11-03 23:10 +07:00, Antigravity. Hoàn thành P3-16: Persistent SQLCipher SQLite `AppSetting` store (`SqliteSettingsStore`), seeding default settings, DI chuyển từ `InMemorySettingsStore` sang `SqliteSettingsStore`, 5 test mới, 439/439 tests pass (Core 99, Infra 194, App 143, UiTests 3), Core coverage 97%, Lunar coverage 100%, 0 lỗ hổng package. Hoàn thành toàn bộ các task Phase 3 (P3-00a..P3-16).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Cổng `P3-REVIEW` bị trả lại (`[~]`), còn P3-R1..P3-R4 `[ ]`. Chưa được bắt đầu Phase 4.
+- **Phase hiện tại:** Phase 3. Cổng `P3-REVIEW` ở `[f]` (Claude Code giữ). P3-R4 `[x]`; P3-R1, P3-R2, P3-R3 `[~]` (Claude Code). Chưa được bắt đầu Phase 4.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Đã review Phase 3 và trả cổng (log `RETURN` 2026-11-04 00:34). Commit sửa trên `phase/3`: b4f5b26, f6b27b9, 77d005b (chưa push). Bước tiếp theo: khi Antigravity xong P3-R1..R4 và chuyển cổng lại `[r]`, review lại phần thay đổi từ commit review (`git diff <commit docs review>..phase/3`), chạy app thật và đặt cạnh Figma.
+  - **Claude Code:** giữ cổng `P3-REVIEW` và P3-R1..R3 trên `phase/3`, working tree sạch (mọi thay đổi đã commit, chưa push). Đã xong:
+    - P3-R1: SqliteEventStore, host `StartAsync` + `StopAsync` khi đóng cửa sổ chính (7b8d6a9), tự mở S14 lần đầu, sidebar "chưa đồng bộ", `SyncCompleted` về Dispatcher. **Còn lại:** bước DoD "chạy app thật: đăng nhập → lịch Google hiện trên lưới" cần chủ dự án đăng nhập bằng tài khoản thật.
+    - P3-R3: Settings (Chung, Tài khoản, Giao diện, Nâng cao) và S14 dựng lại theo Figma, đã chụp app thật đặt cạnh `4:2`, `34:191`, `39:280`, `39:336`; nút "Hiện" cho client secret; nav Settings chỉ hiện viền focus khi dùng bàn phím. **Còn lại:** chưa xem trang Tài khoản ở trạng thái đã đăng nhập (cần tài khoản thật); bỏ nút "Tìm hiểu"/"Xem hướng dẫn" vì chưa có URL trợ giúp đã xác minh (ghi vào review); bước 3 Gemini của S14 để Phase 4 (P4-00, P4-03).
+    - P3-R4 xong: xác nhận trước khi đăng xuất/xoá dữ liệu, client OAuth riêng (secret chỉ ở DPAPI, Client ID dùng thật trong URL authorize, có test).
+    - **P3-R2 chưa làm:** dựng lại S10 (`35:774`) theo mô tả trong TASKS.md, thêm 4 key resx thiếu.
+  - **Bước tiếp theo (Claude Code):** (1) chạy lại `dotnet test --project tests/LunarCal.App.Tests` (Debug và `-c Release`) để xác nhận test NFR_PERF fail chỉ do tải máy; (2) làm P3-R2; (3) nhờ chủ dự án đăng nhập để kiểm DoD P3-R1 và trang Tài khoản; (4) cập nhật `docs/reviews/PHASE3.md` (thêm các mục đã sửa và "Nên sửa sau": UI smoke `Settings_button_opens_appearance_page` fail ở lần chạy đầu sau build, timeout 10s+5s; thiếu nút "Tìm hiểu"), cập nhật TRACEABILITY/CHANGELOG, đặt cổng `[x]`, merge `phase/3` vào `main`.
   - **Antigravity:** đã hoàn thành toàn bộ Phase 3 (P3-00a..P3-16), cổng `P3-REVIEW` ở trạng thái `[r]`. Theo quy tắc bắt buộc (ADR-0027, progress-sync.md), Antigravity dừng lại và chờ Claude Code review Phase 3; không bắt đầu bất kỳ task nào của Phase 4 cho đến khi `P3-REVIEW` chuyển sang `[x]` trên `main`.
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: P3-R1 (SqliteEventStore, host StartAsync, lần chạy đầu tự mở, trạng thái sync thật), rồi P3-R4, P3-R2, P3-R3; sau đó chuyển cổng `P3-REVIEW` về `[r]` và xoá đuôi `Trả lại`.
-  2. Claude Code: chờ cổng `[r]` để review lại.
+  1. Claude Code: hoàn tất P3-R1..R3 như mục trên, rồi đóng cổng `P3-REVIEW`.
+  2. Antigravity: chờ cổng `P3-REVIEW` `[x]` mới bắt đầu Phase 4.
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -30,6 +37,8 @@
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
 ## Build, test, format (chạy ngày 2026-11-03, Windows 11, .NET SDK 10.0.403, Release)
+
+Lần chạy mới nhất 2026-11-04 09:05 (Debug, commit 81d85bd): build 0 warning, format pass, 473 test, 472 pass, 1 fail (`NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events`, test đo thời gian, chưa chạy lại). UI smoke `Settings_button_opens_appearance_page` fail ở lần chạy đầu sau mỗi lần build, pass ở 10/10 lần chạy lại.
 
 | Lệnh | Kết quả |
 | --- | --- |
