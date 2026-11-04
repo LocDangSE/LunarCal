@@ -3,7 +3,7 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-04 09:10 +07:00, Claude Code (Opus 5.5). Dừng phiên theo yêu cầu chủ dự án, đang làm dở P3-R1..R3 trên `phase/3`; P3-R4 xong. Commit phiên này: 936f569, 7b8d6a9, 6d871df, 81d85bd (chưa push). 473 test: 472 pass, 1 fail khi chạy cả solution ở Debug (test đo thời gian NFR_PERF MonthView, chưa chạy lại để xác nhận do tải máy).
+**Cập nhật lần cuối:** 2026-11-04 23:02 +07:00, Claude Code (Sonnet 5.5). Chủ dự án yêu cầu review hết Phase 3 và cho Claude sửa trực tiếp. Xong P3-R2 (dựng lại S10) và sửa các lỗi tìm thấy khi dựng. Commit phiên này: 37dcf37, 8690fc7 (chưa push). 490/490 test Release, format sạch, coverage Lunar 100%, Core 97%. Cổng `P3-REVIEW` vẫn `[f]`, chưa merge vào `main`: còn hai bước DoD cần đăng nhập Google thật.
 
 **Phiên trước:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
 
@@ -11,18 +11,18 @@
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Cổng `P3-REVIEW` ở `[f]` (Claude Code giữ). P3-R4 `[x]`; P3-R1, P3-R2, P3-R3 `[~]` (Claude Code). Chưa được bắt đầu Phase 4.
+- **Phase hiện tại:** Phase 3. Cổng `P3-REVIEW` ở `[f]` (Claude Code giữ). P3-R2, P3-R4 `[x]`; P3-R1, P3-R3 `[~]` (chỉ còn bước DoD cần đăng nhập Google thật). Chưa được bắt đầu Phase 4.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** giữ cổng `P3-REVIEW` và P3-R1..R3 trên `phase/3`, working tree sạch (mọi thay đổi đã commit, chưa push). Đã xong:
-    - P3-R1: SqliteEventStore, host `StartAsync` + `StopAsync` khi đóng cửa sổ chính (7b8d6a9), tự mở S14 lần đầu, sidebar "chưa đồng bộ", `SyncCompleted` về Dispatcher. **Còn lại:** bước DoD "chạy app thật: đăng nhập → lịch Google hiện trên lưới" cần chủ dự án đăng nhập bằng tài khoản thật.
-    - P3-R3: Settings (Chung, Tài khoản, Giao diện, Nâng cao) và S14 dựng lại theo Figma, đã chụp app thật đặt cạnh `4:2`, `34:191`, `39:280`, `39:336`; nút "Hiện" cho client secret; nav Settings chỉ hiện viền focus khi dùng bàn phím. **Còn lại:** chưa xem trang Tài khoản ở trạng thái đã đăng nhập (cần tài khoản thật); bỏ nút "Tìm hiểu"/"Xem hướng dẫn" vì chưa có URL trợ giúp đã xác minh (ghi vào review); bước 3 Gemini của S14 để Phase 4 (P4-00, P4-03).
-    - P3-R4 xong: xác nhận trước khi đăng xuất/xoá dữ liệu, client OAuth riêng (secret chỉ ở DPAPI, Client ID dùng thật trong URL authorize, có test).
-    - **P3-R2 chưa làm:** dựng lại S10 (`35:774`) theo mô tả trong TASKS.md, thêm 4 key resx thiếu.
-  - **Bước tiếp theo (Claude Code):** (1) chạy lại `dotnet test --project tests/LunarCal.App.Tests` (Debug và `-c Release`) để xác nhận test NFR_PERF fail chỉ do tải máy; (2) làm P3-R2; (3) nhờ chủ dự án đăng nhập để kiểm DoD P3-R1 và trang Tài khoản; (4) cập nhật `docs/reviews/PHASE3.md` (thêm các mục đã sửa và "Nên sửa sau": UI smoke `Settings_button_opens_appearance_page` fail ở lần chạy đầu sau build, timeout 10s+5s; thiếu nút "Tìm hiểu"), cập nhật TRACEABILITY/CHANGELOG, đặt cổng `[x]`, merge `phase/3` vào `main`.
-  - **Antigravity:** đã hoàn thành toàn bộ Phase 3 (P3-00a..P3-16), cổng `P3-REVIEW` ở trạng thái `[r]`. Theo quy tắc bắt buộc (ADR-0027, progress-sync.md), Antigravity dừng lại và chờ Claude Code review Phase 3; không bắt đầu bất kỳ task nào của Phase 4 cho đến khi `P3-REVIEW` chuyển sang `[x]` trên `main`.
+  - **Claude Code:** giữ cổng `P3-REVIEW` trên `phase/3`, working tree sạch sau khi commit docs (chưa push). Kết quả lần 2 ở `docs/reviews/PHASE3.md` (mục "Lần 2"):
+    - P3-R2 xong: S10 dựng lại theo Figma `35:774` (ảnh app thật khớp). Lỗi tìm thấy khi dựng và đã sửa: editor không bao giờ nạp danh sách lịch (mọi sự kiện ghi vào calendar "primary" không tồn tại), Save làm mất nhắc nhở và lặp dương lịch, sửa luật âm lịch sinh `lunarRuleId` mới mỗi lần.
+    - UI smoke `Settings_button_opens_appearance_page`: nguyên nhân thật là `NoClickablePointException` (bấm chuột quá sớm), không phải "fail chỉ ở lần chạy đầu"; đã sửa, pass 3/3 ba lần liên tiếp.
+    - **Còn lại (cần chủ dự án):** (1) đăng nhập Google thật để kiểm DoD P3-R1 "lịch Google hiện trên lưới, không còn dữ liệu mẫu"; (2) xem trang Cài đặt > Tài khoản ở trạng thái đã đăng nhập (P3-R3); (3) chốt hành vi S10 mà Figma chưa vẽ (tần suất Dương lịch, ngày kết thúc cho sự kiện có giờ, múi giờ); (4) quyết định có đổi khoá chính `Event` sang `(calendar_id, id)` không (migration, xem "Nên sửa sau" trong review).
+  - **Bước tiếp theo (Claude Code):** sau khi chủ dự án xác nhận (1) và (2): đặt cổng `[x]`, merge `phase/3` vào `main`, chạy CI.
+  - **Antigravity:** đã hoàn thành toàn bộ Phase 3 (P3-00a..P3-16). Theo ADR-0027, dừng lại và chờ `P3-REVIEW` `[x]` trên `main`; không bắt đầu task nào của Phase 4.
 - **Task tiếp theo đề xuất:**
-  1. Claude Code: hoàn tất P3-R1..R3 như mục trên, rồi đóng cổng `P3-REVIEW`.
-  2. Antigravity: chờ cổng `P3-REVIEW` `[x]` mới bắt đầu Phase 4.
+  1. Chủ dự án: đăng nhập Google thật trên bản `phase/3` và báo kết quả (hai bước DoD còn lại).
+  2. Claude Code: đóng cổng `P3-REVIEW` và merge vào `main`.
+  3. Antigravity: chờ cổng `P3-REVIEW` `[x]` mới bắt đầu Phase 4.
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -38,15 +38,15 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 
 ## Build, test, format (chạy ngày 2026-11-03, Windows 11, .NET SDK 10.0.403, Release)
 
-Lần chạy mới nhất 2026-11-04 09:05 (Debug, commit 81d85bd): build 0 warning, format pass, 473 test, 472 pass, 1 fail (`NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events`, test đo thời gian, chưa chạy lại). UI smoke `Settings_button_opens_appearance_page` fail ở lần chạy đầu sau mỗi lần build, pass ở 10/10 lần chạy lại.
+Lần chạy mới nhất 2026-11-04 23:00 (Release, commit 8690fc7): build 0 warning, format pass, 490 test, 490 pass, UI smoke 3/3 (3 lần liên tiếp). Coverage: Lunar 100%, Core 97% (cổng CI: `dotnet test --solution LunarCal.slnx --coverage ...` rồi `eng/Test-Coverage.ps1`; chạy riêng project Core cho 59,95% vì lớp Core còn được phủ bởi test ở project khác). Test `NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` đỏ 1 trong 3 lần chạy cả solution do tải song song, chạy riêng pass (median ~28 ms).
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 439 test: 439 pass, 0 fail, 0 skip (P3-16). Test NFR-PERF MonthView: pass trên luồng STA |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 97% (ngưỡng 95% và 85%; đo 2026-11-03) |
-| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 test out-of-process |
+| `dotnet test --solution LunarCal.slnx -c Release` | 490 test: 490 pass, 0 fail, 0 skip (2026-11-04 23:00). Test NFR-PERF MonthView nhạy với tải song song |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 97% (ngưỡng 95% và 85%; đo 2026-11-04 23:00) |
+| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 test out-of-process, 3 lần liên tiếp (2026-11-04) |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
 - **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Lần đo đầu (code P2-07): median 132 ms, max 166 ms, **không đạt**. Sau khi tái sử dụng ô và khe chip, 5 lượt: median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms. Chưa đo lần render đầu tiên lúc khởi động app (thuộc NFR khởi động nguội).
