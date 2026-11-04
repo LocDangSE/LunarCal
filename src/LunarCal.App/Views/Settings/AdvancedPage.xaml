@@ -97,8 +97,19 @@
           <TextBlock Text="{loc:Loc Key=settings.advanced.client_id_help}" Style="{StaticResource FieldHelpStyle}" />
 
           <TextBlock Text="{loc:Loc Key=settings.advanced.client_secret}" Style="{StaticResource FieldLabelStyle}" Margin="0,14,0,6" />
-          <PasswordBox Style="{StaticResource PasswordFieldStyle}" PasswordChanged="OnSecretChanged"
-                       AutomationProperties.AutomationId="TxtClientSecret" AutomationProperties.Name="{loc:Loc Key=settings.advanced.client_secret}" />
+          <!-- Masked secret with "Hiện"/"Ẩn" (S20 34:191); the stored secret is never loaded back -->
+          <Grid>
+            <PasswordBox x:Name="SecretBox" Style="{StaticResource PasswordFieldStyle}" Padding="12,9,64,9"
+                         PasswordChanged="OnSecretChanged"
+                         AutomationProperties.AutomationId="TxtClientSecret" AutomationProperties.Name="{loc:Loc Key=settings.advanced.client_secret}" />
+            <TextBox x:Name="SecretPlain" Style="{StaticResource TextFieldStyle}" Padding="12,9,64,9" Visibility="Collapsed"
+                     TextChanged="OnPlainSecretChanged"
+                     AutomationProperties.AutomationId="TxtClientSecretPlain" AutomationProperties.Name="{loc:Loc Key=settings.advanced.client_secret}" />
+            <Button x:Name="BtnRevealSecret" Style="{StaticResource LinkButtonStyle}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Margin="0,0,12,0" FontSize="{DynamicResource FontSizeBody}" FontWeight="{DynamicResource FontWeightRegular}"
+                    Foreground="{DynamicResource TextSecondaryBrush}" Content="{loc:Loc Key=common.show}" Click="OnRevealSecret"
+                    AutomationProperties.AutomationId="BtnRevealSecret" />
+          </Grid>
           <TextBlock Text="{loc:Loc Key=settings.advanced.client_secret_stored}" Style="{StaticResource FieldHelpStyle}"
                      Visibility="{Binding Advanced.HasStoredSecret, Converter={StaticResource BoolToVis}}" />
           <TextBlock Text="{loc:Loc Key=settings.advanced.client_secret_help}" Style="{StaticResource FieldHelpStyle}" />

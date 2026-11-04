@@ -1191,4 +1191,11 @@
   <data name="firstrun.signed_in" xml:space="preserve">
     <value>Đã kết nối {0}</value>
   </data>
+  <!-- Reveal a masked field (Figma S20 client secret, P3-R3) -->
+  <data name="common.show" xml:space="preserve">
+    <value>Hiện</value>
+  </data>
+  <data name="common.hide" xml:space="preserve">
+    <value>Ẩn</value>
+  </data>
 </root>
