@@ -4,241 +4,195 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
-             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=vm:AdvancedSettingsViewModel}"
-             Background="{DynamicResource WindowBackgroundBrush}"
-             AutomationProperties.AutomationId="AdvancedSettingsPage"
-             AutomationProperties.Name="{loc:Loc Key=settings.advanced.title}">
-
+             d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+             AutomationProperties.AutomationId="AdvancedSettingsPage">
   <UserControl.Resources>
-    <x:Static x:Key="Loc" Member="loc:LocalizationService.Instance" />
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
-
-    <Style x:Key="PrimaryBtnStyle" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Padding" Value="16,8" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{DynamicResource AccentPrimaryBrush}"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{TemplateBinding Padding}">
-              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource OnAccentBrush}"
-                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
-                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
-
-    <Style x:Key="DangerBtnStyle" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Padding" Value="16,8" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="Transparent"
-                    BorderBrush="{DynamicResource DangerBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{TemplateBinding Padding}">
-              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource DangerTextBrush}"
-                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
-                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
-
-    <Style x:Key="SecondaryBtnStyle" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Padding" Value="16,8" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{DynamicResource SurfaceMutedBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{TemplateBinding Padding}">
-              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource TextPrimaryBrush}"
-                                TextElement.FontWeight="{DynamicResource FontWeightMedium}"
-                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
   </UserControl.Resources>
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32,24,32,32" MaxWidth="720" HorizontalAlignment="Left">
+  <!-- Figma S20 (34:191). "Model Gemini" (34:372) arrives with the Gemini client in P4-02. -->
+  <StackPanel>
+    <!-- Messages for the actions on this page -->
+    <TextBlock Text="{Binding Advanced.StatusMessage}" Margin="0,0,0,12" TextWrapping="Wrap"
+               FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource SuccessTextBrush}"
+               Visibility="{Binding Advanced.StatusMessage, Converter={StaticResource StringToVis}}"
+               AutomationProperties.AutomationId="AdvancedStatusText" />
+    <TextBlock Text="{Binding Advanced.ErrorMessage}" Margin="0,0,0,12" TextWrapping="Wrap"
+               FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource DangerBrush}"
+               Visibility="{Binding Advanced.ErrorMessage, Converter={StaticResource StringToVis}}"
+               AutomationProperties.AutomationId="AdvancedErrorText" />
 
-      <!-- Header Section -->
-      <TextBlock Text="{Binding [settings.advanced.title], Source={StaticResource Loc}}"
-                 FontSize="{DynamicResource FontSizeDisplay}"
-                 FontWeight="{DynamicResource FontWeightBold}"
-                 Foreground="{DynamicResource TextPrimaryBrush}"
-                 Margin="0,0,0,4" />
+    <!-- Section · Tài khoản Google (34:318). Several accounts arrive with FR-AUTH-5; one account for now. -->
+    <TextBlock Text="{loc:Loc Key=settings.account.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.advanced.accounts_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}" Visibility="{Binding Account.IsSignedIn, Converter={StaticResource BoolToVis}}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.advanced.signout}" Command="{Binding Account.SignOutCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" Margin="16,0,0,0" AutomationProperties.AutomationId="BtnAdvancedSignOut" />
+            <Border DockPanel.Dock="Right" Background="{DynamicResource SuccessSubtleBrush}" CornerRadius="{DynamicResource CornerRadiusPill}"
+                    Padding="8,3" VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.account_active}" FontSize="{DynamicResource FontSizeBadge}"
+                         FontWeight="{DynamicResource FontWeightSemiBold}" Foreground="{DynamicResource SuccessTextBrush}" />
+            </Border>
+            <Border DockPanel.Dock="Left" Width="32" Height="32" CornerRadius="{DynamicResource CornerRadiusFull}"
+                    Background="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0">
+              <TextBlock Text="{Binding Account.AccountInitials}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="{DynamicResource FontSizeBody}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                         Foreground="{DynamicResource OnAccentBrush}" />
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{Binding Account.AccountDisplayName}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Style="{StaticResource SettingsRowDescStyle}">
+                <Run Text="{Binding Account.AccountEmail, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Account.LastSyncText, Mode=OneWay}" />
+              </TextBlock>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Command="{Binding Account.SignInCommand}" Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding Account.IsSignedIn, Converter={StaticResource InverseBool}}"
+                    AutomationProperties.AutomationId="BtnAddAccount">
+              <StackPanel Orientation="Horizontal">
+                <Path Width="16" Height="16" Data="{DynamicResource IconPlus16}" Stretch="None" Stroke="{DynamicResource OnAccentBrush}"
+                      StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                <TextBlock Text="{loc:Loc Key=settings.advanced.add_account}" Margin="6,0,0,0" />
+              </StackPanel>
+            </Button>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.add_account_title}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.add_account_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
 
-      <TextBlock Text="{Binding [settings.advanced.desc], Source={StaticResource Loc}}"
-                 FontSize="{DynamicResource FontSizeBody}"
-                 Foreground="{DynamicResource TextSecondaryBrush}"
-                 Margin="0,0,0,24" />
+    <!-- Section · OAuth client (34:354) — FR-AUTH-6 -->
+    <TextBlock Text="{loc:Loc Key=settings.advanced.oauth_title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.advanced.oauth_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitchStyle}" IsChecked="{Binding Advanced.UseCustomClient, Mode=TwoWay}"
+                      AutomationProperties.AutomationId="UseCustomClientToggle"
+                      AutomationProperties.Name="{loc:Loc Key=settings.advanced.custom_client}" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.custom_client}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.custom_client_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <StackPanel Margin="18,16" Visibility="{Binding Advanced.UseCustomClient, Converter={StaticResource BoolToVis}}">
+          <TextBlock Text="{loc:Loc Key=settings.advanced.client_id}" Style="{StaticResource FieldLabelStyle}" />
+          <TextBox Text="{Binding Advanced.ClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextFieldStyle}"
+                   AutomationProperties.AutomationId="TxtClientId" AutomationProperties.Name="{loc:Loc Key=settings.advanced.client_id}" />
+          <TextBlock Text="{loc:Loc Key=settings.advanced.client_id_help}" Style="{StaticResource FieldHelpStyle}" />
 
-      <!-- Status Banner -->
-      <Border Background="{DynamicResource SuccessSubtleBrush}"
-              BorderBrush="{DynamicResource SuccessBorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusMedium}"
-              Padding="14,10"
-              Margin="0,0,0,16"
-              Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}}">
-        <TextBlock Text="{Binding StatusMessage}"
-                   FontSize="{DynamicResource FontSizeBody}"
-                   Foreground="{DynamicResource SuccessTextBrush}" />
-      </Border>
+          <TextBlock Text="{loc:Loc Key=settings.advanced.client_secret}" Style="{StaticResource FieldLabelStyle}" Margin="0,14,0,6" />
+          <PasswordBox Style="{StaticResource PasswordFieldStyle}" PasswordChanged="OnSecretChanged"
+                       AutomationProperties.AutomationId="TxtClientSecret" AutomationProperties.Name="{loc:Loc Key=settings.advanced.client_secret}" />
+          <TextBlock Text="{loc:Loc Key=settings.advanced.client_secret_stored}" Style="{StaticResource FieldHelpStyle}"
+                     Visibility="{Binding Advanced.HasStoredSecret, Converter={StaticResource BoolToVis}}" />
+          <TextBlock Text="{loc:Loc Key=settings.advanced.client_secret_help}" Style="{StaticResource FieldHelpStyle}" />
 
-      <!-- Error Banner -->
-      <Border Background="{DynamicResource DangerSubtleBrush}"
-              BorderBrush="{DynamicResource DangerBorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusMedium}"
-              Padding="14,10"
-              Margin="0,0,0,16"
-              Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}">
-        <TextBlock Text="{Binding ErrorMessage}"
-                   FontSize="{DynamicResource FontSizeBody}"
-                   Foreground="{DynamicResource DangerTextBrush}" />
-      </Border>
-
-      <!-- Section 1: Custom OAuth Client ID (FR-AUTH-6) -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="24,20"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.advanced.oauth_title], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.advanced.oauth_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,16" />
-
-          <!-- Client ID Field -->
-          <TextBlock Text="{Binding [settings.advanced.client_id], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeCaption}"
-                     FontWeight="{DynamicResource FontWeightMedium}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,6" />
-          <TextBox Text="{Binding ClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                   Background="{DynamicResource SurfaceBackgroundBrush}"
-                   Foreground="{DynamicResource TextPrimaryBrush}"
-                   BorderBrush="{DynamicResource BorderBrush}"
-                   BorderThickness="1"
-                   Padding="10,8"
-                   FontSize="{DynamicResource FontSizeBody}"
-                   Margin="0,0,0,14"
-                   AutomationProperties.AutomationId="InputOAuthClientId" />
-
-          <!-- Client Secret Field -->
-          <TextBlock Text="{Binding [settings.advanced.client_secret], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeCaption}"
-                     FontWeight="{DynamicResource FontWeightMedium}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,6" />
-          <TextBox Text="{Binding ClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                   Background="{DynamicResource SurfaceBackgroundBrush}"
-                   Foreground="{DynamicResource TextPrimaryBrush}"
-                   BorderBrush="{DynamicResource BorderBrush}"
-                   BorderThickness="1"
-                   Padding="10,8"
-                   FontSize="{DynamicResource FontSizeBody}"
-                   Margin="0,0,0,16"
-                   AutomationProperties.AutomationId="InputOAuthClientSecret" />
-
-          <Button Style="{StaticResource PrimaryBtnStyle}"
-                  Content="{Binding [settings.advanced.save_oauth], Source={StaticResource Loc}}"
-                  Command="{Binding SaveOAuthCommand}"
-                  HorizontalAlignment="Left"
-                  AutomationProperties.AutomationId="BtnSaveOAuth" />
-        </StackPanel>
-      </Border>
-
-      <!-- Section 2: Storage & Local Wipe (SEC-DATA-3, P3-04) -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="24,20"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.advanced.wipe_title], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.advanced.wipe_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     TextWrapping="Wrap"
-                     Margin="0,0,0,16" />
-
-          <Border Background="{DynamicResource SurfaceMutedBrush}"
-                  CornerRadius="{DynamicResource CornerRadiusMedium}"
-                  Padding="12,8"
-                  Margin="0,0,0,16">
-            <TextBlock Text="{Binding DatabasePath}"
-                       FontSize="{DynamicResource FontSizeCaption}"
-                       Foreground="{DynamicResource TextSecondaryBrush}" />
+          <Border Style="{StaticResource InfoBannerStyle}" Margin="0,14,0,14">
+            <DockPanel>
+              <Ellipse DockPanel.Dock="Left" Width="10" Height="10" Fill="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+              <StackPanel>
+                <TextBlock Text="{loc:Loc Key=settings.account.testing_title}" FontSize="{DynamicResource FontSizeBodyStrong}"
+                           FontWeight="{DynamicResource FontWeightSemiBold}" Foreground="{DynamicResource AccentTextBrush}" TextWrapping="Wrap" />
+                <TextBlock Text="{loc:Loc Key=settings.account.testing_warning}" Margin="0,2,0,0" FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource TextBodyBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </DockPanel>
           </Border>
 
-          <Button Style="{StaticResource DangerBtnStyle}"
-                  Content="{Binding [settings.advanced.wipe_button], Source={StaticResource Loc}}"
-                  Command="{Binding WipeAllDataCommand}"
-                  HorizontalAlignment="Left"
-                  AutomationProperties.AutomationId="BtnWipeLocalData" />
+          <StackPanel Orientation="Horizontal">
+            <Button Content="{loc:Loc Key=settings.advanced.save_oauth}" Command="{Binding Advanced.SaveOAuthCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0" AutomationProperties.AutomationId="BtnSaveOAuth" />
+            <Button Content="{loc:Loc Key=settings.advanced.use_default_client}" Command="{Binding Advanced.UseDefaultClientCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="BtnUseDefaultClient" />
+          </StackPanel>
         </StackPanel>
-      </Border>
+      </StackPanel>
+    </Border>
 
-      <!-- Section 3: Logs (SEC-LOG-1, P3-01) -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="24,20"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.advanced.logs_title], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.advanced.logs_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,16" />
+    <!-- Section · Dữ liệu trên máy (34:393) — SEC-DATA-1..3 -->
+    <TextBlock Text="{loc:Loc Key=settings.advanced.data_title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.advanced.data_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.advanced.open_folder}" Command="{Binding Advanced.OpenDataFolderCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="BtnOpenDataFolder" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.data_location}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{Binding Advanced.DataLocationText}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <StackPanel>
+            <TextBlock Text="{loc:Loc Key=settings.advanced.data_size}" Style="{StaticResource SettingsRowTitleStyle}" />
+            <TextBlock Text="{Binding Advanced.StorageSizeText}" Style="{StaticResource SettingsRowDescStyle}" AutomationProperties.AutomationId="StorageSizeText" />
+          </StackPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsLastRowStyle}" Background="{DynamicResource DangerRowBrush}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.advanced.wipe_button}" Command="{Binding Advanced.WipeAllDataCommand}"
+                    Style="{StaticResource DangerButtonStyle}" IsEnabled="{Binding Advanced.IsWiping, Converter={StaticResource InverseBool}}"
+                    AutomationProperties.AutomationId="BtnWipeData" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.wipe_title}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.wipe_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
 
-          <Button Style="{StaticResource SecondaryBtnStyle}"
-                  Content="{Binding [settings.advanced.open_logs], Source={StaticResource Loc}}"
-                  Command="{Binding OpenLogsFolderCommand}"
-                  HorizontalAlignment="Left"
-                  AutomationProperties.AutomationId="BtnOpenLogsFolder" />
-        </StackPanel>
-      </Border>
-
-    </StackPanel>
-  </ScrollViewer>
+    <!-- Section · Nhật ký (34:413) — SEC-LOG-1 -->
+    <TextBlock Text="{loc:Loc Key=settings.advanced.logs_title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.advanced.logs_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Border DockPanel.Dock="Right" Style="{StaticResource SettingsSegmentTrackStyle}">
+              <StackPanel Orientation="Horizontal">
+                <RadioButton Content="{loc:Loc Key=settings.advanced.log_info}" GroupName="LogLevel" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding Advanced.IsDebugLogging, Mode=TwoWay, Converter={StaticResource InverseBool}}"
+                             AutomationProperties.AutomationId="LogLevelInfo" />
+                <RadioButton Content="{loc:Loc Key=settings.advanced.log_debug}" GroupName="LogLevel" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding Advanced.IsDebugLogging, Mode=TwoWay}" AutomationProperties.AutomationId="LogLevelDebug" />
+              </StackPanel>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.log_level}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.log_level_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.advanced.open_folder}" Command="{Binding Advanced.OpenLogsFolderCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="BtnOpenLogs" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.advanced.logs_folder}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.logs_folder_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+  </StackPanel>
 </UserControl>

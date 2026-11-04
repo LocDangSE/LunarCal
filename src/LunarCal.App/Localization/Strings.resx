@@ -444,13 +444,13 @@
     <value>Giao diện</value>
   </data>
   <data name="settings.appearance.desc" xml:space="preserve">
-    <value>Tuỳ chỉnh chủ đề, ngày đầu tuần, định dạng giờ và múi giờ hiển thị.</value>
+    <value>Áp dụng ngay, không cần khởi động lại</value>
   </data>
   <data name="settings.appearance.theme" xml:space="preserve">
     <value>Chủ đề</value>
   </data>
   <data name="settings.appearance.theme_desc" xml:space="preserve">
-    <value>Chọn màu giao diện ứng dụng</value>
+    <value>Theo hệ thống dùng chế độ Sáng/Tối của Windows; Tương phản cao tự bật theo Windows</value>
   </data>
   <data name="settings.appearance.theme_system" xml:space="preserve">
     <value>Theo hệ thống</value>
@@ -468,31 +468,31 @@
     <value>Ngày đầu tuần</value>
   </data>
   <data name="settings.appearance.week_start_desc" xml:space="preserve">
-    <value>Chọn thứ bắt đầu cho các cột trong lịch</value>
+    <value>Áp dụng cho lưới Tháng, Tuần và lịch nhỏ</value>
   </data>
   <data name="settings.appearance.week_start_monday" xml:space="preserve">
-    <value>Thứ Hai</value>
+    <value>Thứ 2</value>
   </data>
   <data name="settings.appearance.week_start_sunday" xml:space="preserve">
-    <value>Chủ Nhật</value>
+    <value>Chủ nhật</value>
   </data>
   <data name="settings.appearance.time_format" xml:space="preserve">
     <value>Định dạng giờ</value>
   </data>
   <data name="settings.appearance.time_format_desc" xml:space="preserve">
-    <value>Chọn hiển thị theo hệ 24 giờ hoặc 12 giờ AM/PM</value>
+    <value>Ví dụ: 14:00 hoặc 2:00 PM</value>
   </data>
   <data name="settings.appearance.time_format_24h" xml:space="preserve">
-    <value>24 giờ (14:00)</value>
+    <value>24 giờ</value>
   </data>
   <data name="settings.appearance.time_format_12h" xml:space="preserve">
-    <value>12 giờ (2:00 PM)</value>
+    <value>12 giờ</value>
   </data>
   <data name="settings.appearance.timezone" xml:space="preserve">
     <value>Múi giờ hiển thị</value>
   </data>
   <data name="settings.appearance.timezone_desc" xml:space="preserve">
-    <value>Múi giờ dùng để tính toán và hiển thị sự kiện</value>
+    <value>Mặc định theo hệ thống; có thể chọn múi giờ khác</value>
   </data>
   <data name="settings.appearance.timezone_system" xml:space="preserve">
     <value>Múi giờ hệ thống ({0})</value>
@@ -837,19 +837,19 @@
     <value>Tài khoản Google</value>
   </data>
   <data name="settings.account.desc" xml:space="preserve">
-    <value>Quản lý tài khoản Google Calendar và trạng thái đồng bộ hai chiều</value>
+    <value>Đồng bộ hai chiều với Google Calendar</value>
   </data>
   <data name="settings.account.status_connected" xml:space="preserve">
     <value>Đã kết nối</value>
   </data>
   <data name="settings.account.status_disconnected" xml:space="preserve">
-    <value>Chưa kết nối</value>
+    <value>Chưa kết nối Google Calendar</value>
   </data>
   <data name="settings.account.signin_button" xml:space="preserve">
-    <value>Đăng nhập bằng Google</value>
+    <value>Đăng nhập với Google</value>
   </data>
   <data name="settings.account.signout_button" xml:space="preserve">
-    <value>Đăng xuất</value>
+    <value>Ngắt kết nối</value>
   </data>
   <data name="settings.account.sync_now" xml:space="preserve">
     <value>Đồng bộ ngay</value>
@@ -864,7 +864,7 @@
     <value>Chưa đồng bộ</value>
   </data>
   <data name="settings.account.authorizing" xml:space="preserve">
-    <value>Đang mở trình duyệt để đăng nhập... (chờ tối đa 5 phút)</value>
+    <value>Đang chờ bạn đăng nhập trong trình duyệt (tối đa 5 phút)…</value>
   </data>
   <data name="settings.account.auth_cancelled" xml:space="preserve">
     <value>Đăng nhập đã bị hủy.</value>
@@ -873,7 +873,7 @@
     <value>Đăng nhập thất bại: {0}</value>
   </data>
   <data name="settings.account.testing_warning" xml:space="preserve">
-    <value>Màn hình đồng ý OAuth đang ở chế độ Testing: phiên đăng nhập sẽ tự động hết hạn sau 7 ngày.</value>
+    <value>Google cho phiên đăng nhập hết hạn sau 7 ngày. LunarCal sẽ nhắc bạn đăng nhập lại; dữ liệu trên máy không mất.</value>
   </data>
   <!-- Advanced Settings (Figma S20) -->
   <data name="settings.advanced.title" xml:space="preserve">
@@ -883,46 +883,46 @@
     <value>Cấu hình nâng cao dành cho nhà phát triển, kho lưu trữ và nhật ký</value>
   </data>
   <data name="settings.advanced.oauth_title" xml:space="preserve">
-    <value>OAuth Client ID riêng (FR-AUTH-6)</value>
+    <value>OAuth client</value>
   </data>
   <data name="settings.advanced.oauth_desc" xml:space="preserve">
-    <value>Sử dụng Client ID và Client Secret từ Google Cloud Project của riêng bạn</value>
+    <value>Thay đổi client sẽ đăng xuất mọi tài khoản và yêu cầu đăng nhập lại</value>
   </data>
   <data name="settings.advanced.client_id" xml:space="preserve">
-    <value>OAuth Client ID</value>
+    <value>Client ID</value>
   </data>
   <data name="settings.advanced.client_secret" xml:space="preserve">
-    <value>OAuth Client Secret (tuỳ chọn)</value>
+    <value>Client secret</value>
   </data>
   <data name="settings.advanced.save_oauth" xml:space="preserve">
-    <value>Lưu cấu hình</value>
+    <value>Lưu và đăng nhập lại</value>
   </data>
   <data name="settings.advanced.oauth_saved" xml:space="preserve">
-    <value>Đã lưu cấu hình OAuth. Thay đổi sẽ áp dụng cho lần đăng nhập kế tiếp.</value>
+    <value>Đã lưu OAuth client. Hãy đăng nhập lại ở mục Tài khoản Google.</value>
   </data>
   <data name="settings.advanced.wipe_title" xml:space="preserve">
-    <value>Xóa toàn bộ dữ liệu cục bộ (SEC-DATA-3)</value>
+    <value>Xoá toàn bộ dữ liệu cục bộ</value>
   </data>
   <data name="settings.advanced.wipe_desc" xml:space="preserve">
-    <value>Xóa sạch tất cả tài khoản, bộ nhớ đệm sự kiện, khóa bí mật DPAPI và cơ sở dữ liệu SQLite trên máy này</value>
+    <value>Xoá cache lịch, token Google, Gemini key, hàng chờ AI, outbox và cài đặt trên máy này. Không xoá sự kiện trên Google Calendar. Cần xác nhận lần nữa.</value>
   </data>
   <data name="settings.advanced.wipe_button" xml:space="preserve">
-    <value>Xóa toàn bộ dữ liệu</value>
+    <value>Xoá dữ liệu…</value>
   </data>
   <data name="settings.advanced.wipe_confirm_title" xml:space="preserve">
-    <value>Xóa toàn bộ dữ liệu cục bộ?</value>
+    <value>Xoá toàn bộ dữ liệu cục bộ?</value>
   </data>
   <data name="settings.advanced.wipe_confirm_message" xml:space="preserve">
-    <value>Mọi dữ liệu cục bộ bao gồm tài khoản Google, lịch và sự kiện sẽ bị xóa hoàn toàn khỏi máy này. Ứng dụng sẽ trở về trạng thái như khi mới cài đặt.</value>
+    <value>Cache lịch, token Google, khoá, hàng chờ, outbox và cài đặt trên máy này sẽ bị xoá vĩnh viễn và LunarCal sẽ đóng. Sự kiện trên Google Calendar không bị xoá; thay đổi chưa đồng bộ sẽ mất.</value>
   </data>
   <data name="settings.advanced.wipe_confirm_action" xml:space="preserve">
-    <value>Xóa sạch tất cả</value>
+    <value>Xoá vĩnh viễn</value>
   </data>
   <data name="settings.advanced.logs_title" xml:space="preserve">
-    <value>Nhật ký hoạt động (SEC-LOG-1)</value>
+    <value>Nhật ký</value>
   </data>
   <data name="settings.advanced.logs_desc" xml:space="preserve">
-    <value>Nhật ký ứng dụng xoay vòng 14 ngày và đã lọc sạch thông tin nhạy cảm</value>
+    <value>Nhật ký chỉ nằm trên máy, không tự gửi đi</value>
   </data>
   <data name="settings.advanced.open_logs" xml:space="preserve">
     <value>Mở thư mục nhật ký</value>
@@ -994,5 +994,131 @@
   </data>
   <data name="sidebar.sync_status_signed_out" xml:space="preserve">
     <value>Bấm để đăng nhập</value>
+  </data>
+  <data name="settings.nav.general" xml:space="preserve">
+    <value>Chung</value>
+  </data>
+  <data name="settings.nav.back" xml:space="preserve">
+    <value>← Quay lại lịch</value>
+  </data>
+  <data name="settings.general.title" xml:space="preserve">
+    <value>Chung</value>
+  </data>
+  <data name="settings.general.timezone" xml:space="preserve">
+    <value>Múi giờ</value>
+  </data>
+  <data name="settings.general.timezone_desc" xml:space="preserve">
+    <value>Dùng để hiểu “ngày mai”, “tuần sau” trong câu lệnh AI</value>
+  </data>
+  <data name="settings.account.sync_desc" xml:space="preserve">
+    <value>Nhận thay đổi từ Google gần như tức thì</value>
+  </data>
+  <data name="settings.account.testing_title" xml:space="preserve">
+    <value>Consent screen đang ở chế độ Testing?</value>
+  </data>
+  <data name="settings.account.signout_confirm_title" xml:space="preserve">
+    <value>Ngắt kết nối tài khoản Google?</value>
+  </data>
+  <data name="settings.account.signout_confirm_message" xml:space="preserve">
+    <value>LunarCal sẽ thu hồi quyền truy cập của {0} và xoá token cùng lịch đã lưu trên máy này. Sự kiện trên Google Calendar không bị xoá. Thay đổi chưa đồng bộ sẽ mất.</value>
+  </data>
+  <data name="settings.appearance.datetime_title" xml:space="preserve">
+    <value>Ngày và giờ</value>
+  </data>
+  <data name="settings.appearance.datetime_desc" xml:space="preserve">
+    <value>Mặc định theo ngôn ngữ: Thứ 2 và 24 giờ (vi-VN), Chủ nhật và 12 giờ (en-US)</value>
+  </data>
+  <data name="settings.advanced.accounts_desc" xml:space="preserve">
+    <value>Đăng nhập trong trình duyệt hệ thống; token chỉ lưu trên máy này</value>
+  </data>
+  <data name="settings.advanced.account_active" xml:space="preserve">
+    <value>Đang dùng</value>
+  </data>
+  <data name="settings.advanced.signout" xml:space="preserve">
+    <value>Đăng xuất</value>
+  </data>
+  <data name="settings.advanced.add_account_title" xml:space="preserve">
+    <value>Thêm tài khoản Google</value>
+  </data>
+  <data name="settings.advanced.add_account_desc" xml:space="preserve">
+    <value>Đăng nhập trong trình duyệt hệ thống. Mỗi tài khoản có cache và token riêng.</value>
+  </data>
+  <data name="settings.advanced.add_account" xml:space="preserve">
+    <value>Thêm tài khoản</value>
+  </data>
+  <data name="settings.advanced.custom_client" xml:space="preserve">
+    <value>Dùng OAuth client riêng</value>
+  </data>
+  <data name="settings.advanced.custom_client_desc" xml:space="preserve">
+    <value>Dùng Google Cloud project của bạn thay cho client đi kèm bản phát hành</value>
+  </data>
+  <data name="settings.advanced.client_id_help" xml:space="preserve">
+    <value>Loại "Ứng dụng dành cho máy tính" (Desktop app) trong Google Cloud Console</value>
+  </data>
+  <data name="settings.advanced.client_id_required" xml:space="preserve">
+    <value>Nhập Client ID trước khi lưu.</value>
+  </data>
+  <data name="settings.advanced.client_secret_stored" xml:space="preserve">
+    <value>Đã lưu một client secret. Để trống nếu không đổi.</value>
+  </data>
+  <data name="settings.advanced.client_secret_help" xml:space="preserve">
+    <value>Lưu mã hoá trên máy (DPAPI). Với app desktop, Google không coi giá trị này là bí mật</value>
+  </data>
+  <data name="settings.advanced.use_default_client" xml:space="preserve">
+    <value>Dùng client mặc định</value>
+  </data>
+  <data name="settings.advanced.oauth_reset" xml:space="preserve">
+    <value>Đã quay về client mặc định. Hãy đăng nhập lại ở mục Tài khoản Google.</value>
+  </data>
+  <data name="settings.advanced.oauth_confirm_title" xml:space="preserve">
+    <value>Đổi OAuth client?</value>
+  </data>
+  <data name="settings.advanced.oauth_confirm_message" xml:space="preserve">
+    <value>Mọi tài khoản Google sẽ bị đăng xuất và lịch đã lưu trên máy sẽ bị xoá; bạn cần đăng nhập lại. Sự kiện trên Google Calendar không bị ảnh hưởng.</value>
+  </data>
+  <data name="settings.advanced.data_title" xml:space="preserve">
+    <value>Dữ liệu trên máy</value>
+  </data>
+  <data name="settings.advanced.data_desc" xml:space="preserve">
+    <value>Cache lịch được mã hoá (SQLCipher), khoá bọc bằng DPAPI</value>
+  </data>
+  <data name="settings.advanced.data_location" xml:space="preserve">
+    <value>Vị trí dữ liệu</value>
+  </data>
+  <data name="settings.advanced.data_location_desc" xml:space="preserve">
+    <value>{0} · chỉ tài khoản Windows hiện tại đọc được</value>
+  </data>
+  <data name="settings.advanced.data_size" xml:space="preserve">
+    <value>Dung lượng</value>
+  </data>
+  <data name="settings.advanced.size_mb" xml:space="preserve">
+    <value>Dữ liệu trên máy {0} MB</value>
+  </data>
+  <data name="settings.advanced.size_kb" xml:space="preserve">
+    <value>Dữ liệu trên máy {0} KB</value>
+  </data>
+  <data name="settings.advanced.open_folder" xml:space="preserve">
+    <value>Mở thư mục</value>
+  </data>
+  <data name="settings.advanced.wipe_done" xml:space="preserve">
+    <value>Đã xoá dữ liệu cục bộ.</value>
+  </data>
+  <data name="settings.advanced.log_level" xml:space="preserve">
+    <value>Mức ghi nhật ký</value>
+  </data>
+  <data name="settings.advanced.log_level_desc" xml:space="preserve">
+    <value>Gỡ lỗi chỉ dùng khi cần báo lỗi; tự quay về Thông tin sau 24 giờ</value>
+  </data>
+  <data name="settings.advanced.log_info" xml:space="preserve">
+    <value>Thông tin</value>
+  </data>
+  <data name="settings.advanced.log_debug" xml:space="preserve">
+    <value>Gỡ lỗi</value>
+  </data>
+  <data name="settings.advanced.logs_folder" xml:space="preserve">
+    <value>Thư mục nhật ký</value>
+  </data>
+  <data name="settings.advanced.logs_folder_desc" xml:space="preserve">
+    <value>Giữ 14 ngày. Không ghi key, token hay tiêu đề sự kiện</value>
   </data>
 </root>

@@ -7,6 +7,7 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/LunarCal;component/Resources/Tokens.xaml" />
         <ResourceDictionary Source="/LunarCal;component/Themes/Light.xaml" />
+        <ResourceDictionary Source="/LunarCal;component/Resources/Controls.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

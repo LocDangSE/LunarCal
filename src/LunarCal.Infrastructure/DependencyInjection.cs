@@ -165,6 +165,9 @@ public static class DependencyInjection
                 logger);
         });
 
+        // User-supplied OAuth client from Settings > Advanced (FR-AUTH-6, P3-R4)
+        services.AddSingleton<IOAuthClientOverrideService, OAuthClientOverrideService>();
+
         // Phase 3: Google account sign-out and cache wipe service (FR-AUTH-4)
         services.AddSingleton<IGoogleSignOutService, GoogleSignOutService>();
 

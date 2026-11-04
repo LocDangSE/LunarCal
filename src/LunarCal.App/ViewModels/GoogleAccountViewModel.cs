@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
 using LunarCal.Infrastructure.Google;
@@ -19,6 +20,7 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
     private readonly ISyncScheduler? _syncScheduler;
     private readonly ILocalizationService _localization;
     private readonly GoogleOAuthOptions? _oauthOptions;
+    private readonly IConfirmationService? _confirmation;
 
     [ObservableProperty]
     private bool _isSignedIn;
@@ -64,7 +66,8 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
         IAccountStore accountStore,
         ILocalizationService localization,
         ISyncScheduler? syncScheduler = null,
-        GoogleOAuthOptions? oauthOptions = null)
+        GoogleOAuthOptions? oauthOptions = null,
+        IConfirmationService? confirmation = null)
     {
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _signOutService = signOutService ?? throw new ArgumentNullException(nameof(signOutService));
@@ -72,6 +75,7 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _syncScheduler = syncScheduler;
         _oauthOptions = oauthOptions;
+        _confirmation = confirmation;
 
         _isTestingMode = _oauthOptions?.IsTestingConsentMode ?? false;
 
@@ -249,12 +253,23 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Signs out the active account with user confirmation (FR-AUTH-4).
+    /// Signs out the active account after the user confirms (FR-AUTH-4): revoke the token, delete the token and the
+    /// account's cache. Without a confirmation service nothing is deleted.
     /// </summary>
     [RelayCommand]
     public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         if (!IsSignedIn || string.IsNullOrWhiteSpace(AccountId))
+        {
+            return;
+        }
+
+        var confirmed = _confirmation is not null && await _confirmation.ConfirmAsync(new ConfirmationRequest(
+            _localization["settings.account.signout_confirm_title"],
+            _localization.Format("settings.account.signout_confirm_message", AccountEmail),
+            _localization["settings.account.signout_button"],
+            IsDestructive: true)).ConfigureAwait(true);
+        if (!confirmed)
         {
             return;
         }

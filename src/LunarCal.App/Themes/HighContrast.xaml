@@ -71,4 +71,9 @@
   <SolidColorBrush x:Key="SuccessBorderBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
   <SolidColorBrush x:Key="ScrimBrush" Color="{x:Static SystemColors.WindowColor}" />
 
+
+  <!-- Settings and dialogs (Figma 04, S10, S20; P3-R3): info banner border, danger button border, danger row tint -->
+  <SolidColorBrush x:Key="AccentBorderBrush" Color="{x:Static SystemColors.HighlightColor}" />
+  <SolidColorBrush x:Key="DangerBorderBrush" Color="{x:Static SystemColors.HighlightColor}" />
+  <SolidColorBrush x:Key="DangerRowBrush" Color="{x:Static SystemColors.WindowColor}" />
 </ResourceDictionary>

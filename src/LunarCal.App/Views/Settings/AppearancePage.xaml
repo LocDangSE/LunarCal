@@ -7,201 +7,92 @@
              xmlns:loc="clr-namespace:LunarCal.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:AppearanceSettingsViewModel}"
-             Background="{DynamicResource WindowBackgroundBrush}"
              AutomationProperties.AutomationId="AppearanceSettingsPage"
              AutomationProperties.Name="{loc:Loc Key=settings.appearance.title}">
-
-  <UserControl.Resources>
-    <!-- Localization source for the indexer bindings below; refreshes on culture change (FR-I18N-1). -->
-    <x:Static x:Key="Loc" Member="loc:LocalizationService.Instance" />
-  </UserControl.Resources>
-
-  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32,24,32,32" MaxWidth="720" HorizontalAlignment="Left">
-
-      <!-- Header Section -->
-      <TextBlock Text="{Binding [settings.appearance.title], Source={StaticResource Loc}}"
-                 FontSize="{DynamicResource FontSizeDisplay}"
-                 FontWeight="{DynamicResource FontWeightBold}"
-                 Foreground="{DynamicResource TextPrimaryBrush}"
-                 Margin="0,0,0,4" />
-
-      <TextBlock Text="{Binding [settings.appearance.desc], Source={StaticResource Loc}}"
-                 FontSize="{DynamicResource FontSizeBody}"
-                 Foreground="{DynamicResource TextSecondaryBrush}"
-                 Margin="0,0,0,24" />
-
-      <!-- Section 1: Theme -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="20,18"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.appearance.theme], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.appearance.theme_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,14" />
-
-          <StackPanel Orientation="Horizontal">
-            <RadioButton Content="{Binding [settings.appearance.theme_system], Source={StaticResource Loc}}"
-                         IsChecked="{Binding IsThemeSystem, Mode=TwoWay}"
-                         GroupName="ThemeGroup"
-                         Margin="0,0,20,0"
-                         AutomationProperties.AutomationId="ThemeRadioSystem" />
-            <RadioButton Content="{Binding [settings.appearance.theme_light], Source={StaticResource Loc}}"
-                         IsChecked="{Binding IsThemeLight, Mode=TwoWay}"
-                         GroupName="ThemeGroup"
-                         Margin="0,0,20,0"
-                         AutomationProperties.AutomationId="ThemeRadioLight" />
-            <RadioButton Content="{Binding [settings.appearance.theme_dark], Source={StaticResource Loc}}"
-                         IsChecked="{Binding IsThemeDark, Mode=TwoWay}"
-                         GroupName="ThemeGroup"
-                         Margin="0,0,20,0"
-                         AutomationProperties.AutomationId="ThemeRadioDark" />
-            <RadioButton Content="{Binding [settings.appearance.theme_high_contrast], Source={StaticResource Loc}}"
-                         IsChecked="{Binding IsThemeHighContrast, Mode=TwoWay}"
-                         GroupName="ThemeGroup"
-                         AutomationProperties.AutomationId="ThemeRadioHighContrast" />
+  <!-- Figma S13 (23:1966). High contrast follows Windows ("Theo hệ thống"), as the theme subtitle says. The
+       "Mật độ" and "Chi tiết âm lịch" rows have no requirement or setting yet (spec §4.3) and are not shown. -->
+  <StackPanel>
+    <TextBlock Text="{loc:Loc Key=settings.appearance.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.appearance.desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <Border Style="{StaticResource SettingsLastRowStyle}">
+        <DockPanel>
+          <Border DockPanel.Dock="Right" Style="{StaticResource SettingsSegmentTrackStyle}">
+            <StackPanel Orientation="Horizontal">
+              <RadioButton Content="{loc:Loc Key=settings.appearance.theme_light}" GroupName="Theme" Style="{StaticResource SettingsSegmentStyle}"
+                           IsChecked="{Binding IsThemeLight, Mode=TwoWay}" AutomationProperties.AutomationId="ThemeRadioLight" />
+              <RadioButton Content="{loc:Loc Key=settings.appearance.theme_dark}" GroupName="Theme" Style="{StaticResource SettingsSegmentStyle}"
+                           IsChecked="{Binding IsThemeDark, Mode=TwoWay}" AutomationProperties.AutomationId="ThemeRadioDark" />
+              <RadioButton Content="{loc:Loc Key=settings.appearance.theme_system}" GroupName="Theme" Style="{StaticResource SettingsSegmentStyle}"
+                           IsChecked="{Binding IsThemeSystem, Mode=TwoWay}" AutomationProperties.AutomationId="ThemeRadioSystem" />
+            </StackPanel>
+          </Border>
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="{loc:Loc Key=settings.appearance.theme}" Style="{StaticResource SettingsRowTitleStyle}" />
+            <TextBlock Text="{loc:Loc Key=settings.appearance.theme_desc}" Style="{StaticResource SettingsRowDescStyle}" />
           </StackPanel>
-        </StackPanel>
+        </DockPanel>
       </Border>
+    </Border>
 
-      <!-- Section 2: First Day of Week -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="20,18"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.appearance.week_start], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.appearance.week_start_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,14" />
+    <TextBlock Text="{loc:Loc Key=settings.appearance.datetime_title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.appearance.datetime_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Border DockPanel.Dock="Right" Style="{StaticResource SettingsSegmentTrackStyle}">
+              <StackPanel Orientation="Horizontal">
+                <RadioButton Content="{loc:Loc Key=settings.appearance.week_start_monday}" GroupName="WeekStart" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding IsMondayStart, Mode=TwoWay}" AutomationProperties.AutomationId="WeekStartRadioMonday" />
+                <RadioButton Content="{loc:Loc Key=settings.appearance.week_start_sunday}" GroupName="WeekStart" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding IsSundayStart, Mode=TwoWay}" AutomationProperties.AutomationId="WeekStartRadioSunday" />
+              </StackPanel>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.appearance.week_start}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.appearance.week_start_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Border DockPanel.Dock="Right" Style="{StaticResource SettingsSegmentTrackStyle}">
+              <StackPanel Orientation="Horizontal">
+                <RadioButton Content="{loc:Loc Key=settings.appearance.time_format_24h}" GroupName="TimeFormat" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding Is24Hours, Mode=TwoWay}" AutomationProperties.AutomationId="TimeFormatRadio24h" />
+                <RadioButton Content="{loc:Loc Key=settings.appearance.time_format_12h}" GroupName="TimeFormat" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding Is12Hours, Mode=TwoWay}" AutomationProperties.AutomationId="TimeFormatRadio12h" />
+              </StackPanel>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.appearance.time_format}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.appearance.time_format_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <ComboBox DockPanel.Dock="Right"
+                      ItemsSource="{Binding AvailableTimezones}"
+                      SelectedValue="{Binding SelectedTimezone, Mode=TwoWay}"
+                      SelectedValuePath="Id"
+                      DisplayMemberPath="DisplayName"
+                      MaxWidth="340"
+                      MaxDropDownHeight="360"
+                      Style="{StaticResource InlineDropdownStyle}"
+                      AutomationProperties.AutomationId="TimezoneComboBox"
+                      AutomationProperties.Name="{loc:Loc Key=settings.appearance.timezone}" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.appearance.timezone}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.appearance.timezone_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
 
-          <StackPanel Orientation="Horizontal">
-            <RadioButton Content="{Binding [settings.appearance.week_start_monday], Source={StaticResource Loc}}"
-                         IsChecked="{Binding IsMondayStart, Mode=TwoWay}"
-                         GroupName="WeekStartGroup"
-                         Margin="0,0,24,0"
-                         AutomationProperties.AutomationId="WeekStartRadioMonday" />
-            <RadioButton Content="{Binding [settings.appearance.week_start_sunday], Source={StaticResource Loc}}"
-                         IsChecked="{Binding IsSundayStart, Mode=TwoWay}"
-                         GroupName="WeekStartGroup"
-                         AutomationProperties.AutomationId="WeekStartRadioSunday" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <!-- Section 3: Time Format (24h / 12h) -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="20,18"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.appearance.time_format], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.appearance.time_format_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,14" />
-
-          <StackPanel Orientation="Horizontal">
-            <RadioButton Content="{Binding [settings.appearance.time_format_24h], Source={StaticResource Loc}}"
-                         IsChecked="{Binding Is24Hours, Mode=TwoWay}"
-                         GroupName="TimeFormatGroup"
-                         Margin="0,0,24,0"
-                         AutomationProperties.AutomationId="TimeFormatRadio24h" />
-            <RadioButton Content="{Binding [settings.appearance.time_format_12h], Source={StaticResource Loc}}"
-                         IsChecked="{Binding Is12Hours, Mode=TwoWay}"
-                         GroupName="TimeFormatGroup"
-                         AutomationProperties.AutomationId="TimeFormatRadio12h" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <!-- Section 4: Display Timezone -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="20,18"
-              Margin="0,0,0,16">
-        <StackPanel>
-          <TextBlock Text="{Binding [settings.appearance.timezone], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,4" />
-          <TextBlock Text="{Binding [settings.appearance.timezone_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Margin="0,0,0,12" />
-
-          <ComboBox ItemsSource="{Binding AvailableTimezones}"
-                    SelectedValue="{Binding SelectedTimezone, Mode=TwoWay}"
-                    SelectedValuePath="Id"
-                    DisplayMemberPath="DisplayName"
-                    Height="36"
-                    MinWidth="320"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,0,8"
-                    AutomationProperties.AutomationId="TimezoneComboBox" />
-
-          <TextBlock Text="{Binding SystemTimezoneText}"
-                     FontSize="{DynamicResource FontSizeCaption}"
-                     Foreground="{DynamicResource TextTertiaryBrush}" />
-        </StackPanel>
-      </Border>
-
-      <!-- Section 5: Vietnamese Lunar Calendar -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="20,18"
-              Margin="0,0,0,16">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-
-          <StackPanel Grid.Column="0">
-            <TextBlock Text="{Binding [settings.appearance.lunar_title], Source={StaticResource Loc}}"
-                       FontSize="{DynamicResource FontSizeSection}"
-                       FontWeight="{DynamicResource FontWeightSemiBold}"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       Margin="0,0,0,4" />
-            <TextBlock Text="{Binding [settings.appearance.lunar_desc], Source={StaticResource Loc}}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       Foreground="{DynamicResource TextSecondaryBrush}" />
-          </StackPanel>
-
-          <CheckBox Grid.Column="1"
-                    IsChecked="{Binding IsLunarEnabled, Mode=TwoWay}"
-                    VerticalAlignment="Center"
-                    AutomationProperties.AutomationId="LunarEnabledCheckBox" />
-        </Grid>
-      </Border>
-
-    </StackPanel>
-  </ScrollViewer>
+    <TextBlock Text="{Binding SaveErrorText}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap"
+               FontSize="{DynamicResource FontSizeBody}" />
+  </StackPanel>
 </UserControl>

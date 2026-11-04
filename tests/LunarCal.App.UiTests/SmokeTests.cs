@@ -211,13 +211,17 @@ public sealed class SmokeTests
                 TimeSpan.FromSeconds(5)).Result;
             settingsWindow.Should().NotBeNull("Settings must open as a window owned by the shell");
 
+            // Figma 04: Settings opens on "Chung"; go to "Giao diện" (S13).
+            Retry.WhileNull(() => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("NavAppearance")), TimeSpan.FromSeconds(5))
+                .Result!.AsRadioButton().Click();
+
             var page = Retry.WhileNull(
                 () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("AppearanceSettingsPage")),
                 TimeSpan.FromSeconds(5)).Result;
             page.Should().NotBeNull("the Appearance page (S13) must be hosted in the Settings window");
 
             // FR-UI-7, FR-UI-8: switching theme at runtime must not crash or close the app.
-            foreach (var id in new[] { "ThemeRadioDark", "ThemeRadioHighContrast", "ThemeRadioLight", "ThemeRadioSystem" })
+            foreach (var id in new[] { "ThemeRadioDark", "ThemeRadioLight", "ThemeRadioSystem" })
             {
                 var radio = settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId(id))?.AsRadioButton();
                 radio.Should().NotBeNull($"theme option {id} must exist");

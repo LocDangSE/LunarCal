@@ -14,6 +14,9 @@ public static class KnownSecretKeys
     /// <summary>SQLCipher database encryption key (SEC-DATA-1).</summary>
     public const string DatabaseKey = "sqlite.database_key";
 
+    /// <summary>Client secret of a user-supplied OAuth client (FR-AUTH-6, Settings > Advanced).</summary>
+    public const string GoogleOAuthClientSecretOverride = "google.oauth_client_secret_override";
+
     /// <summary>Data lake contributor device encryption secret (P6a-06, SEC-CLOUD-2).</summary>
     public const string DataLakeDeviceSecret = "datalake.device_secret";
 

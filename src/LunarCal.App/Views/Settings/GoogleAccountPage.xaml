@@ -4,283 +4,107 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
-             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:GoogleAccountViewModel}"
-             Background="{DynamicResource WindowBackgroundBrush}"
-             AutomationProperties.AutomationId="GoogleAccountPage"
-             AutomationProperties.Name="{loc:Loc Key=settings.account.title}">
-
+             AutomationProperties.AutomationId="GoogleAccountSettingsPage">
   <UserControl.Resources>
-    <x:Static x:Key="Loc" Member="loc:LocalizationService.Instance" />
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
-
-    <Style x:Key="PrimaryBtnStyle" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Padding" Value="16,8" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="{DynamicResource AccentPrimaryBrush}"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{TemplateBinding Padding}">
-              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource OnAccentBrush}"
-                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
-                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
-
-    <Style x:Key="DangerBtnStyle" TargetType="Button">
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Padding" Value="16,8" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border Background="Transparent"
-                    BorderBrush="{DynamicResource DangerBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{DynamicResource CornerRadiusMedium}"
-                    Padding="{TemplateBinding Padding}">
-              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                TextElement.Foreground="{DynamicResource DangerTextBrush}"
-                                TextElement.FontWeight="{DynamicResource FontWeightSemiBold}"
-                                TextElement.FontSize="{DynamicResource FontSizeBody}" />
-            </Border>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
   </UserControl.Resources>
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32,24,32,32" MaxWidth="720" HorizontalAlignment="Left">
-
-      <!-- Header Section -->
-      <TextBlock Text="{Binding [settings.account.title], Source={StaticResource Loc}}"
-                 FontSize="{DynamicResource FontSizeDisplay}"
-                 FontWeight="{DynamicResource FontWeightBold}"
-                 Foreground="{DynamicResource TextPrimaryBrush}"
-                 Margin="0,0,0,4" />
-
-      <TextBlock Text="{Binding [settings.account.desc], Source={StaticResource Loc}}"
-                 FontSize="{DynamicResource FontSizeBody}"
-                 Foreground="{DynamicResource TextSecondaryBrush}"
-                 Margin="0,0,0,24" />
-
-      <!-- Error Banner -->
-      <Border Background="{DynamicResource DangerSubtleBrush}"
-              BorderBrush="{DynamicResource DangerBorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusMedium}"
-              Padding="14,10"
-              Margin="0,0,0,16"
-              Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}"
-              AutomationProperties.AutomationId="AccountErrorBanner">
-        <TextBlock Text="{Binding ErrorMessage}"
-                   FontSize="{DynamicResource FontSizeBody}"
-                   Foreground="{DynamicResource DangerTextBrush}"
-                   TextWrapping="Wrap" />
-      </Border>
-
-      <!-- Status Banner -->
-      <Border Background="{DynamicResource SuccessSubtleBrush}"
-              BorderBrush="{DynamicResource SuccessBorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusMedium}"
-              Padding="14,10"
-              Margin="0,0,0,16"
-              Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}}"
-              AutomationProperties.AutomationId="AccountStatusBanner">
-        <TextBlock Text="{Binding StatusMessage}"
-                   FontSize="{DynamicResource FontSizeBody}"
-                   Foreground="{DynamicResource SuccessTextBrush}"
-                   TextWrapping="Wrap" />
-      </Border>
-
-      <!-- Connected State Card (Figma 04 4:2) -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="24,20"
-              Margin="0,0,0,16"
-              AutomationProperties.AutomationId="ConnectedAccountCard">
-        <Border.Style>
-          <Style TargetType="Border">
-            <Setter Property="Visibility" Value="Collapsed" />
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding IsSignedIn}" Value="True">
-                <Setter Property="Visibility" Value="Visible" />
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Border.Style>
-
-        <StackPanel>
-          <Grid Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <!-- User Avatar -->
-            <Border Grid.Column="0"
-                    Width="48" Height="48"
-                    CornerRadius="{DynamicResource CornerRadiusFull}"
-                    Background="{DynamicResource AvatarBackgroundBrush}"
-                    Margin="0,0,16,0">
-              <TextBlock Text="{Binding AccountInitials}"
-                         FontSize="{DynamicResource FontSizeSection}"
-                         FontWeight="{DynamicResource FontWeightBold}"
-                         Foreground="{DynamicResource AvatarTextBrush}"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center" />
-            </Border>
-
-            <!-- User Info -->
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-              <TextBlock Text="{Binding AccountDisplayName}"
-                         FontSize="{DynamicResource FontSizeSection}"
-                         FontWeight="{DynamicResource FontWeightSemiBold}"
-                         Foreground="{DynamicResource TextPrimaryBrush}"
-                         Margin="0,0,0,2" />
-              <TextBlock Text="{Binding AccountEmail}"
-                         FontSize="{DynamicResource FontSizeBody}"
-                         Foreground="{DynamicResource TextSecondaryBrush}" />
-            </StackPanel>
-
-            <!-- Connected Chip -->
-            <Border Grid.Column="2"
-                    Background="{DynamicResource SuccessSubtleBrush}"
-                    BorderBrush="{DynamicResource SuccessBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{DynamicResource CornerRadiusPill}"
-                    Padding="10,4"
-                    VerticalAlignment="Center">
-              <StackPanel Orientation="Horizontal">
-                <Ellipse Width="6" Height="6" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <TextBlock Text="{Binding [settings.account.status_connected], Source={StaticResource Loc}}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           FontWeight="{DynamicResource FontWeightSemiBold}"
-                           Foreground="{DynamicResource SuccessTextBrush}" />
-              </StackPanel>
-            </Border>
-          </Grid>
-
-          <!-- Sync status information -->
-          <Border Background="{DynamicResource SurfaceMutedBrush}"
-                  CornerRadius="{DynamicResource CornerRadiusMedium}"
-                  Padding="14,10"
-                  Margin="0,0,0,16">
-            <TextBlock Text="{Binding LastSyncText}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       AutomationProperties.AutomationId="AccountLastSyncText" />
-          </Border>
-
-          <!-- Testing consent mode notice if applicable (FR-AUTH-6, P3-06) -->
-          <Border Background="{DynamicResource WarningSubtleBrush}"
-                  BorderBrush="{DynamicResource WarningBorderBrush}"
-                  BorderThickness="1"
-                  CornerRadius="{DynamicResource CornerRadiusMedium}"
-                  Padding="14,10"
-                  Margin="0,0,0,16">
-            <Border.Style>
-              <Style TargetType="Border">
-                <Setter Property="Visibility" Value="Collapsed" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsTestingMode}" Value="True">
-                    <Setter Property="Visibility" Value="Visible" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </Border.Style>
-            <TextBlock Text="{Binding [settings.account.testing_warning], Source={StaticResource Loc}}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       Foreground="{DynamicResource WarningTextBrush}"
-                       TextWrapping="Wrap" />
-          </Border>
-
-          <!-- Action Buttons -->
-          <StackPanel Orientation="Horizontal">
-            <Button Style="{StaticResource PrimaryBtnStyle}"
-                    Content="{Binding [settings.account.sync_now], Source={StaticResource Loc}}"
-                    Command="{Binding SyncNowCommand}"
-                    Margin="0,0,12,0"
-                    AutomationProperties.AutomationId="BtnAccountSyncNow" />
-
-            <Button Style="{StaticResource DangerBtnStyle}"
-                    Content="{Binding [settings.account.signout_button], Source={StaticResource Loc}}"
+  <!-- Figma 04 · Section "Tài khoản Google" (4:43): account row + last sync row (FR-AUTH-1, FR-AUTH-4, FR-UI-10) -->
+  <StackPanel>
+    <TextBlock Text="{loc:Loc Key=settings.account.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.account.desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}" Margin="0,10,0,16">
+      <StackPanel>
+        <!-- Account row (4:56) -->
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.account.signout_button}"
                     Command="{Binding SignOutCommand}"
-                    AutomationProperties.AutomationId="BtnAccountSignOut" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
+                    Style="{StaticResource DangerOutlineButtonStyle}"
+                    Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}"
+                    AutomationProperties.AutomationId="BtnSignOut" />
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.account.signin_button}"
+                    Command="{Binding SignInCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding IsAuthorizing, Converter={StaticResource InverseBool}}"
+                    Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}"
+                    AutomationProperties.AutomationId="BtnSignIn" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <Border Width="36" Height="36" CornerRadius="{DynamicResource CornerRadiusFull}"
+                      Background="{DynamicResource AvatarBackgroundBrush}">
+                <TextBlock Text="{Binding AccountInitials}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="{DynamicResource FontSizeBodyStrong}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource AvatarTextBrush}" />
+              </Border>
+              <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding AccountEmail}" Style="{StaticResource SettingsRowTitleStyle}"
+                           Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}"
+                           AutomationProperties.AutomationId="AccountEmailText" />
+                <TextBlock Text="{loc:Loc Key=settings.account.status_disconnected}" Style="{StaticResource SettingsRowTitleStyle}"
+                           Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}" />
+                <StackPanel Orientation="Horizontal" Margin="0,2,0,0"
+                            Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}">
+                  <Ellipse Width="7" Height="7" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
+                  <TextBlock Text="{loc:Loc Key=settings.account.status_connected}" Margin="6,0,0,0"
+                             FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource SuccessTextBrush}" />
+                </StackPanel>
+                <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource SettingsRowDescStyle}"
+                           Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}" />
+              </StackPanel>
+            </StackPanel>
+          </DockPanel>
+        </Border>
 
-      <!-- Disconnected State Card (Figma 04) -->
-      <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="1"
-              CornerRadius="{DynamicResource CornerRadiusLarge}"
-              Padding="24,24"
-              Margin="0,0,0,16"
-              AutomationProperties.AutomationId="DisconnectedAccountCard">
-        <Border.Style>
-          <Style TargetType="Border">
-            <Setter Property="Visibility" Value="Collapsed" />
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding IsSignedIn}" Value="False">
-                <Setter Property="Visibility" Value="Visible" />
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Border.Style>
+        <!-- Last sync row (4:63) -->
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Command="{Binding SyncNowCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    IsEnabled="{Binding IsSignedIn}"
+                    AutomationProperties.AutomationId="BtnSyncNow"
+                    AutomationProperties.Name="{loc:Loc Key=settings.account.sync_now}">
+              <StackPanel Orientation="Horizontal">
+                <Path Width="16" Height="16" Data="{DynamicResource IconRefresh16}" Stretch="None"
+                      Stroke="{DynamicResource TextBodyBrush}" StrokeThickness="1.33"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                <TextBlock Text="{loc:Loc Key=settings.account.sync_now}" Margin="8,0,0,0"
+                           FontWeight="{DynamicResource FontWeightSemiBold}" />
+              </StackPanel>
+            </Button>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{Binding LastSyncText}" Style="{StaticResource SettingsRowTitleStyle}"
+                         AutomationProperties.AutomationId="LastSyncText" />
+              <TextBlock Text="{loc:Loc Key=settings.account.sync_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
 
+    <!-- Error from sign-in, sign-out or sync -->
+    <TextBlock Text="{Binding ErrorMessage}" Margin="0,0,0,16" TextWrapping="Wrap"
+               FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource DangerBrush}"
+               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}"
+               AutomationProperties.AutomationId="AccountErrorText" />
+
+    <!-- Banner/Info: consent screen in Testing (FR-AUTH-6, ADR-0026) -->
+    <Border Style="{StaticResource InfoBannerStyle}" Visibility="{Binding IsTestingMode, Converter={StaticResource BoolToVis}}"
+            AutomationProperties.AutomationId="TestingModeBanner">
+      <DockPanel>
+        <Ellipse DockPanel.Dock="Left" Width="10" Height="10" Fill="{DynamicResource AccentPrimaryBrush}"
+                 VerticalAlignment="Center" Margin="0,0,12,0" />
         <StackPanel>
-          <TextBlock Text="{Binding [settings.account.status_disconnected], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeSection}"
-                     FontWeight="{DynamicResource FontWeightSemiBold}"
-                     Foreground="{DynamicResource TextPrimaryBrush}"
-                     Margin="0,0,0,6" />
-
-          <TextBlock Text="{Binding [firstrun.step2_desc], Source={StaticResource Loc}}"
-                     FontSize="{DynamicResource FontSizeBody}"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     TextWrapping="Wrap"
-                     Margin="0,0,0,20" />
-
-          <!-- Authorizing indicator -->
-          <StackPanel Margin="0,0,0,16">
-            <StackPanel.Style>
-              <Style TargetType="StackPanel">
-                <Setter Property="Visibility" Value="Collapsed" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsAuthorizing}" Value="True">
-                    <Setter Property="Visibility" Value="Visible" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </StackPanel.Style>
-            <TextBlock Text="{Binding [settings.account.authorizing], Source={StaticResource Loc}}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       Foreground="{DynamicResource AccentPrimaryBrush}"
-                       FontWeight="{DynamicResource FontWeightMedium}" />
-          </StackPanel>
-
-          <Button Style="{StaticResource PrimaryBtnStyle}"
-                  Content="{Binding [settings.account.signin_button], Source={StaticResource Loc}}"
-                  Command="{Binding SignInCommand}"
-                  HorizontalAlignment="Left"
-                  AutomationProperties.AutomationId="BtnGoogleSignIn" />
+          <TextBlock Text="{loc:Loc Key=settings.account.testing_title}" FontSize="{DynamicResource FontSizeBodyStrong}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}" Foreground="{DynamicResource AccentTextBrush}" TextWrapping="Wrap" />
+          <TextBlock Text="{loc:Loc Key=settings.account.testing_warning}" Margin="0,2,0,0" FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextBodyBrush}" TextWrapping="Wrap" />
         </StackPanel>
-      </Border>
-
-    </StackPanel>
-  </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </StackPanel>
 </UserControl>

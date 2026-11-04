@@ -1,4 +1,5 @@
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace LunarCal.Infrastructure.Security;
@@ -31,7 +32,8 @@ public static class SerilogConfiguration
         this LoggerConfiguration loggerConfiguration,
         string? logDirectory = null,
         LogEventLevel minimumLevel = LogEventLevel.Information,
-        bool redactEmail = false)
+        bool redactEmail = false,
+        LoggingLevelSwitch? levelSwitch = null)
     {
         ArgumentNullException.ThrowIfNull(loggerConfiguration);
 
@@ -42,8 +44,12 @@ public static class SerilogConfiguration
         var logFilePath = Path.Combine(directory, "lunarcal-.log");
         var formatter = new RedactingTextFormatter(DefaultOutputTemplate, redactEmail: redactEmail);
 
-        return loggerConfiguration
-            .MinimumLevel.Is(minimumLevel)
+        // A level switch lets Settings > Advanced change Information/Debug at runtime (S20, SEC-LOG-1).
+        var configured = levelSwitch is null
+            ? loggerConfiguration.MinimumLevel.Is(minimumLevel)
+            : loggerConfiguration.MinimumLevel.ControlledBy(levelSwitch);
+
+        return configured
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning)
             .Enrich.FromLogContext()

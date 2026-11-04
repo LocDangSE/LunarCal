@@ -164,8 +164,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         Save(ct => _preferences.SetTimeFormatAsync(value, ct), () => TimeFormatChanged?.Invoke(this, value));
     }
 
+    /// <summary>Display name of the selected zone, e.g. "(UTC+07:00) Bangkok, Hanoi, Jakarta" (Figma 04 "Múi giờ").</summary>
+    public string SelectedTimezoneDisplay =>
+        AvailableTimezones.FirstOrDefault(z => z.Id == SelectedTimezone)?.DisplayName ?? SelectedTimezone;
+
     partial void OnSelectedTimezoneChanged(string value)
     {
+        OnPropertyChanged(nameof(SelectedTimezoneDisplay));
         if (_isInitializing || string.IsNullOrWhiteSpace(value))
         {
             return;

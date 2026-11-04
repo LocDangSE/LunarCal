@@ -187,12 +187,15 @@ public sealed class NetworkAndSyncStatusViewModelTests
         signOutService.SignOutAsync("google-1", true, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(GoogleSignOutResult.Succeeded()));
 
+        var confirmation = Substitute.For<LunarCal.App.Services.IConfirmationService>();
+        confirmation.ConfirmAsync(Arg.Any<LunarCal.App.Services.ConfirmationRequest>()).Returns(true);
         var vm = new GoogleAccountViewModel(
             oauthClient,
             signOutService,
             accountStore,
             _localizationService,
-            syncScheduler)
+            syncScheduler,
+            confirmation: confirmation)
         {
             AccountId = "google-1",
             AccountEmail = "user@example.com",
@@ -241,39 +244,6 @@ public sealed class NetworkAndSyncStatusViewModelTests
     }
 
     [Fact]
-    public async Task FR_AUTH_6_AdvancedSettingsViewModel_SaveOAuth_persists_settings()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var store = Substitute.For<ISettingsStore>();
-        var wipeService = Substitute.For<ILocalDataWipeService>();
-        var vm = new AdvancedSettingsViewModel(store, _localizationService, wipeService)
-        {
-            ClientId = " custom-client-id ",
-            ClientSecret = " custom-secret "
-        };
-
-        await vm.SaveOAuthAsync(ct);
-
-        await store.Received(1).SetStringAsync(SettingKeys.GoogleOAuthClientId, "custom-client-id", Arg.Any<CancellationToken>());
-        await store.Received(1).SetStringAsync(SettingKeys.GoogleOAuthClientSecret, "custom-secret", Arg.Any<CancellationToken>());
-        vm.StatusMessage.Should().Be(_localizationService["settings.advanced.oauth_saved"]);
-    }
-
-    [Fact]
-    public async Task SEC_DATA_3_AdvancedSettingsViewModel_WipeAllData_invokes_wipe_service()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var store = Substitute.For<ISettingsStore>();
-        var wipeService = Substitute.For<ILocalDataWipeService>();
-        var vm = new AdvancedSettingsViewModel(store, _localizationService, wipeService);
-
-        await vm.WipeAllDataAsync(ct);
-
-        await wipeService.Received(1).WipeAllDataAsync(Arg.Any<CancellationToken>());
-        vm.StatusMessage.Should().Be(_localizationService["settings.advanced.wipe_button"]);
-    }
-
-    [Fact]
     public async Task FR_UI_9_FR_AUTH_1_FirstRunViewModel_steps_flow()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -317,11 +287,11 @@ public sealed class NetworkAndSyncStatusViewModelTests
     {
         var appearance = new AppearanceSettingsViewModel(Substitute.For<ISettingsStore>(), _themeService, _localizationService, _preferences);
         var account = new GoogleAccountViewModel(Substitute.For<IGoogleOAuthClient>(), Substitute.For<IGoogleSignOutService>(), Substitute.For<IAccountStore>(), _localizationService, Substitute.For<ISyncScheduler>());
-        var advanced = new AdvancedSettingsViewModel(Substitute.For<ISettingsStore>(), _localizationService, Substitute.For<ILocalDataWipeService>());
+        var advanced = new AdvancedSettingsViewModel(_localizationService, Substitute.For<ILocalDataWipeService>());
 
         var vm = new SettingsViewModel(appearance, account, advanced);
 
-        vm.ActiveTab.Should().Be(SettingsTab.Appearance);
+        vm.ActiveTab.Should().Be(SettingsTab.General, "Figma 04 opens on \"Chung\"");
         vm.SelectTab(SettingsTab.GoogleAccount);
         vm.ActiveTab.Should().Be(SettingsTab.GoogleAccount);
         vm.SelectTab(SettingsTab.Advanced);

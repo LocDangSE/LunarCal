@@ -3,7 +3,6 @@ using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
 using LunarCal.App.Views;
-using LunarCal.App.Views.Settings;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Settings;
 using LunarCal.Infrastructure;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace LunarCal.App;
@@ -46,11 +46,14 @@ public partial class App : Application
                 ? parsedLevel
                 : LogEventLevel.Information;
 
+            var levelSwitch = new LoggingLevelSwitch(minLevel);
             var loggerConfig = new LoggerConfiguration()
-                .ConfigureLunarCalLogging(logDir, minLevel, redactEmail);
+                .ConfigureLunarCalLogging(logDir, minLevel, redactEmail, levelSwitch);
 
             Log.Logger = loggerConfig.CreateLogger();
             builder.Services.AddSerilog(Log.Logger, dispose: true);
+            builder.Services.AddSingleton(sp => new LogLevelService(levelSwitch, sp.GetRequiredService<ISettingsStore>()));
+            builder.Services.AddSingleton<IConfirmationService, DialogConfirmationService>();
 
             builder.Services.AddLunarCalInfrastructure(builder.Configuration);
 
@@ -64,11 +67,8 @@ public partial class App : Application
             builder.Services.AddSingleton<MainWindow>();
 
             builder.Services.AddTransient<AppearanceSettingsViewModel>();
-            builder.Services.AddTransient<AppearancePage>();
             builder.Services.AddTransient<GoogleAccountViewModel>();
-            builder.Services.AddTransient<GoogleAccountPage>();
             builder.Services.AddTransient<AdvancedSettingsViewModel>();
-            builder.Services.AddTransient<AdvancedPage>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsWindow>();
             builder.Services.AddTransient<FirstRunViewModel>();
@@ -85,6 +85,8 @@ public partial class App : Application
             var themeService = _host.Services.GetRequiredService<IThemeService>();
             themeService.ApplyTheme(await settingsStore.GetThemeAsync().ConfigureAwait(true));
             var uiLanguage = await settingsStore.GetUiLanguageAsync().ConfigureAwait(true);
+            await _host.Services.GetRequiredService<LogLevelService>().LoadAsync().ConfigureAwait(true);
+            await _host.Services.GetRequiredService<IOAuthClientOverrideService>().LoadAsync().ConfigureAwait(true);
             LocalizationService.Instance.SetCulture(uiLanguage);
 
             // First run (S14, FR-AUTH-1): shown until the wizard is finished or skipped once, and on demand.

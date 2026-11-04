@@ -444,16 +444,16 @@
     <value>Appearance</value>
   </data>
   <data name="settings.appearance.desc" xml:space="preserve">
-    <value>Customize theme, first day of week, time format, and display timezone.</value>
+    <value>Applied immediately, no restart needed</value>
   </data>
   <data name="settings.appearance.theme" xml:space="preserve">
     <value>Theme</value>
   </data>
   <data name="settings.appearance.theme_desc" xml:space="preserve">
-    <value>Select application appearance theme</value>
+    <value>System follows the Windows light/dark mode; high contrast follows Windows</value>
   </data>
   <data name="settings.appearance.theme_system" xml:space="preserve">
-    <value>System default</value>
+    <value>System</value>
   </data>
   <data name="settings.appearance.theme_light" xml:space="preserve">
     <value>Light</value>
@@ -468,7 +468,7 @@
     <value>First day of week</value>
   </data>
   <data name="settings.appearance.week_start_desc" xml:space="preserve">
-    <value>Choose which day begins calendar columns</value>
+    <value>Applies to the Month and Week grids and the mini calendar</value>
   </data>
   <data name="settings.appearance.week_start_monday" xml:space="preserve">
     <value>Monday</value>
@@ -480,19 +480,19 @@
     <value>Time format</value>
   </data>
   <data name="settings.appearance.time_format_desc" xml:space="preserve">
-    <value>Choose 24-hour or 12-hour AM/PM display</value>
+    <value>Example: 14:00 or 2:00 PM</value>
   </data>
   <data name="settings.appearance.time_format_24h" xml:space="preserve">
-    <value>24-hour (14:00)</value>
+    <value>24-hour</value>
   </data>
   <data name="settings.appearance.time_format_12h" xml:space="preserve">
-    <value>12-hour (2:00 PM)</value>
+    <value>12-hour</value>
   </data>
   <data name="settings.appearance.timezone" xml:space="preserve">
-    <value>Display timezone</value>
+    <value>Display time zone</value>
   </data>
   <data name="settings.appearance.timezone_desc" xml:space="preserve">
-    <value>Timezone used to calculate and display calendar events</value>
+    <value>Defaults to the system; you can pick another zone</value>
   </data>
   <data name="settings.appearance.timezone_system" xml:space="preserve">
     <value>System timezone ({0})</value>
@@ -834,22 +834,22 @@
   </data>
   <!-- Google Account Settings (Figma 04, S14) -->
   <data name="settings.account.title" xml:space="preserve">
-    <value>Google Account</value>
+    <value>Google account</value>
   </data>
   <data name="settings.account.desc" xml:space="preserve">
-    <value>Manage your Google Calendar account and two-way sync state</value>
+    <value>Two-way sync with Google Calendar</value>
   </data>
   <data name="settings.account.status_connected" xml:space="preserve">
     <value>Connected</value>
   </data>
   <data name="settings.account.status_disconnected" xml:space="preserve">
-    <value>Not connected</value>
+    <value>Not connected to Google Calendar</value>
   </data>
   <data name="settings.account.signin_button" xml:space="preserve">
     <value>Sign in with Google</value>
   </data>
   <data name="settings.account.signout_button" xml:space="preserve">
-    <value>Sign out</value>
+    <value>Disconnect</value>
   </data>
   <data name="settings.account.sync_now" xml:space="preserve">
     <value>Sync now</value>
@@ -864,7 +864,7 @@
     <value>Never synced</value>
   </data>
   <data name="settings.account.authorizing" xml:space="preserve">
-    <value>Opening browser for sign-in... (up to 5 min)</value>
+    <value>Waiting for you to sign in in the browser (up to 5 minutes)…</value>
   </data>
   <data name="settings.account.auth_cancelled" xml:space="preserve">
     <value>Sign-in was cancelled.</value>
@@ -873,7 +873,7 @@
     <value>Sign-in failed: {0}</value>
   </data>
   <data name="settings.account.testing_warning" xml:space="preserve">
-    <value>OAuth consent screen is in Testing mode: session automatically expires after 7 days.</value>
+    <value>Google ends the sign-in after 7 days. LunarCal will ask you to sign in again; data on this computer is kept.</value>
   </data>
   <!-- Advanced Settings (Figma S20) -->
   <data name="settings.advanced.title" xml:space="preserve">
@@ -883,46 +883,46 @@
     <value>Advanced configuration for developers, storage, and diagnostics</value>
   </data>
   <data name="settings.advanced.oauth_title" xml:space="preserve">
-    <value>Custom OAuth Client ID (FR-AUTH-6)</value>
+    <value>OAuth client</value>
   </data>
   <data name="settings.advanced.oauth_desc" xml:space="preserve">
-    <value>Use your own Google Cloud project Client ID and Client Secret</value>
+    <value>Changing the client signs out every account and asks you to sign in again</value>
   </data>
   <data name="settings.advanced.client_id" xml:space="preserve">
-    <value>OAuth Client ID</value>
+    <value>Client ID</value>
   </data>
   <data name="settings.advanced.client_secret" xml:space="preserve">
-    <value>OAuth Client Secret (optional)</value>
+    <value>Client secret</value>
   </data>
   <data name="settings.advanced.save_oauth" xml:space="preserve">
-    <value>Save configuration</value>
+    <value>Save and sign in again</value>
   </data>
   <data name="settings.advanced.oauth_saved" xml:space="preserve">
-    <value>OAuth configuration saved. Changes will take effect on next sign-in.</value>
+    <value>OAuth client saved. Sign in again under Google account.</value>
   </data>
   <data name="settings.advanced.wipe_title" xml:space="preserve">
-    <value>Wipe all local data (SEC-DATA-3)</value>
+    <value>Delete all local data</value>
   </data>
   <data name="settings.advanced.wipe_desc" xml:space="preserve">
-    <value>Clears all account metadata, event caches, DPAPI keys, and local SQLite database files on this device</value>
+    <value>Deletes the calendar cache, Google token, Gemini key, AI queue, outbox and settings on this computer. Events in Google Calendar are not deleted. You confirm once more.</value>
   </data>
   <data name="settings.advanced.wipe_button" xml:space="preserve">
-    <value>Wipe all data</value>
+    <value>Delete data…</value>
   </data>
   <data name="settings.advanced.wipe_confirm_title" xml:space="preserve">
-    <value>Wipe all local data?</value>
+    <value>Delete all local data?</value>
   </data>
   <data name="settings.advanced.wipe_confirm_message" xml:space="preserve">
-    <value>All local data including Google account, calendars, and events will be permanently deleted from this machine. The application will reset to its initial state.</value>
+    <value>The calendar cache, Google token, keys, queue, outbox and settings on this computer are permanently deleted and LunarCal closes. Events in Google Calendar are not deleted; changes not yet synced are lost.</value>
   </data>
   <data name="settings.advanced.wipe_confirm_action" xml:space="preserve">
-    <value>Wipe all data</value>
+    <value>Delete permanently</value>
   </data>
   <data name="settings.advanced.logs_title" xml:space="preserve">
-    <value>Activity logs (SEC-LOG-1)</value>
+    <value>Logs</value>
   </data>
   <data name="settings.advanced.logs_desc" xml:space="preserve">
-    <value>Application logs are retained for 14 days and sanitized of sensitive details</value>
+    <value>Logs stay on this computer and are never sent</value>
   </data>
   <data name="settings.advanced.open_logs" xml:space="preserve">
     <value>Open logs folder</value>
@@ -994,5 +994,131 @@
   </data>
   <data name="sidebar.sync_status_signed_out" xml:space="preserve">
     <value>Click to sign in</value>
+  </data>
+  <data name="settings.nav.general" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="settings.nav.back" xml:space="preserve">
+    <value>← Back to calendar</value>
+  </data>
+  <data name="settings.general.title" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="settings.general.timezone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+  <data name="settings.general.timezone_desc" xml:space="preserve">
+    <value>Used to understand “tomorrow” and “next week” in AI commands</value>
+  </data>
+  <data name="settings.account.sync_desc" xml:space="preserve">
+    <value>Get changes from Google almost instantly</value>
+  </data>
+  <data name="settings.account.testing_title" xml:space="preserve">
+    <value>Consent screen in Testing mode?</value>
+  </data>
+  <data name="settings.account.signout_confirm_title" xml:space="preserve">
+    <value>Disconnect the Google account?</value>
+  </data>
+  <data name="settings.account.signout_confirm_message" xml:space="preserve">
+    <value>LunarCal will revoke access for {0} and delete its token and the calendars stored on this computer. Events in Google Calendar are not deleted. Changes not yet synced will be lost.</value>
+  </data>
+  <data name="settings.appearance.datetime_title" xml:space="preserve">
+    <value>Date and time</value>
+  </data>
+  <data name="settings.appearance.datetime_desc" xml:space="preserve">
+    <value>Defaults by language: Monday and 24-hour (vi-VN), Sunday and 12-hour (en-US)</value>
+  </data>
+  <data name="settings.advanced.accounts_desc" xml:space="preserve">
+    <value>Sign in in the system browser; tokens stay on this computer</value>
+  </data>
+  <data name="settings.advanced.account_active" xml:space="preserve">
+    <value>In use</value>
+  </data>
+  <data name="settings.advanced.signout" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="settings.advanced.add_account_title" xml:space="preserve">
+    <value>Add a Google account</value>
+  </data>
+  <data name="settings.advanced.add_account_desc" xml:space="preserve">
+    <value>Sign in in the system browser. Each account has its own cache and token.</value>
+  </data>
+  <data name="settings.advanced.add_account" xml:space="preserve">
+    <value>Add account</value>
+  </data>
+  <data name="settings.advanced.custom_client" xml:space="preserve">
+    <value>Use my own OAuth client</value>
+  </data>
+  <data name="settings.advanced.custom_client_desc" xml:space="preserve">
+    <value>Use your Google Cloud project instead of the client shipped with the release</value>
+  </data>
+  <data name="settings.advanced.client_id_help" xml:space="preserve">
+    <value>Type "Desktop app" in the Google Cloud Console</value>
+  </data>
+  <data name="settings.advanced.client_id_required" xml:space="preserve">
+    <value>Enter a Client ID before saving.</value>
+  </data>
+  <data name="settings.advanced.client_secret_stored" xml:space="preserve">
+    <value>A client secret is stored. Leave empty to keep it.</value>
+  </data>
+  <data name="settings.advanced.client_secret_help" xml:space="preserve">
+    <value>Stored encrypted on this computer (DPAPI). For desktop apps Google does not treat this value as secret</value>
+  </data>
+  <data name="settings.advanced.use_default_client" xml:space="preserve">
+    <value>Use the default client</value>
+  </data>
+  <data name="settings.advanced.oauth_reset" xml:space="preserve">
+    <value>Back to the default client. Sign in again under Google account.</value>
+  </data>
+  <data name="settings.advanced.oauth_confirm_title" xml:space="preserve">
+    <value>Change the OAuth client?</value>
+  </data>
+  <data name="settings.advanced.oauth_confirm_message" xml:space="preserve">
+    <value>Every Google account is signed out and the calendars stored on this computer are deleted; you need to sign in again. Events in Google Calendar are not affected.</value>
+  </data>
+  <data name="settings.advanced.data_title" xml:space="preserve">
+    <value>Data on this computer</value>
+  </data>
+  <data name="settings.advanced.data_desc" xml:space="preserve">
+    <value>The calendar cache is encrypted (SQLCipher) with a DPAPI-protected key</value>
+  </data>
+  <data name="settings.advanced.data_location" xml:space="preserve">
+    <value>Data location</value>
+  </data>
+  <data name="settings.advanced.data_location_desc" xml:space="preserve">
+    <value>{0} · readable only by the current Windows user</value>
+  </data>
+  <data name="settings.advanced.data_size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="settings.advanced.size_mb" xml:space="preserve">
+    <value>Local data {0} MB</value>
+  </data>
+  <data name="settings.advanced.size_kb" xml:space="preserve">
+    <value>Local data {0} KB</value>
+  </data>
+  <data name="settings.advanced.open_folder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="settings.advanced.wipe_done" xml:space="preserve">
+    <value>Local data deleted.</value>
+  </data>
+  <data name="settings.advanced.log_level" xml:space="preserve">
+    <value>Log level</value>
+  </data>
+  <data name="settings.advanced.log_level_desc" xml:space="preserve">
+    <value>Use Debug only to report a problem; it returns to Information after 24 hours</value>
+  </data>
+  <data name="settings.advanced.log_info" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="settings.advanced.log_debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="settings.advanced.logs_folder" xml:space="preserve">
+    <value>Log folder</value>
+  </data>
+  <data name="settings.advanced.logs_folder_desc" xml:space="preserve">
+    <value>Kept for 14 days. Keys, tokens and event titles are never written</value>
   </data>
 </root>
