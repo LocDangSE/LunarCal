@@ -212,8 +212,12 @@ public sealed class SmokeTests
             settingsWindow.Should().NotBeNull("Settings must open as a window owned by the shell");
 
             // Figma 04: Settings opens on "Chung"; go to "Giao diện" (S13).
-            Retry.WhileNull(() => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("NavAppearance")), TimeSpan.FromSeconds(5))
-                .Result!.AsRadioButton().Click();
+            // Select through the UIA SelectionItem pattern, not a mouse click: right after the window opens the
+            // radio is in the tree before layout gives it a clickable point (NoClickablePointException).
+            var navAppearance = Retry.WhileNull(
+                () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("NavAppearance")), TimeSpan.FromSeconds(5)).Result;
+            navAppearance.Should().NotBeNull("the Settings navigation must list the Appearance page");
+            SelectRadioButton(navAppearance!.AsRadioButton());
 
             var page = Retry.WhileNull(
                 () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("AppearanceSettingsPage")),
