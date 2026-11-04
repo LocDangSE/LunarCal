@@ -28,7 +28,21 @@
       <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
       <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
       <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+      <!-- Focus ring only for keyboard navigation; a mouse click shows the filled state alone (Figma 04). -->
+      <Setter Property="FocusVisualStyle">
+        <Setter.Value>
+          <Style>
+            <Setter Property="Control.Template">
+              <Setter.Value>
+                <ControlTemplate>
+                  <Border BorderThickness="1" BorderBrush="{DynamicResource AccentPrimaryBrush}"
+                          CornerRadius="{DynamicResource CornerRadiusMedium}" />
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+        </Setter.Value>
+      </Setter>
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="RadioButton">
@@ -43,9 +57,6 @@
               <Trigger Property="IsChecked" Value="True">
                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
                 <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
-              </Trigger>
-              <Trigger Property="IsKeyboardFocused" Value="True">
-                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>

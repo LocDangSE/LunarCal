@@ -156,6 +156,14 @@ Giữ nguyên giá trị đang hiển thị ở Phase 2, chỉ đặt tên. Khi 
 | `AiCommandInputHeight` | 59 | Ô nhập lệnh AI trong thanh 92 px |
 | `FontFamilyIcon`, `IconGlyphCalendar` | Segoe Fluent Icons / MDL2 | Chỉ cho icon Figma chưa vẽ (trạng thái rỗng) |
 
+### Token bổ sung cho lần chạy đầu S14 (P3-R3, Claude Code, 2026-11-04)
+
+| Key | Giá trị | Dùng cho |
+| --- | --- | --- |
+| `FontSizeWizardTitle` | 22 | Tiêu đề từng bước của wizard lần chạy đầu (S14 `39:280`) |
+| `WarningBorderBrush` | Sáng `#FEDF89`, Tối `#6B4E12`, HC `WindowTextColor` | Viền banner cảnh báo "Ứng dụng chưa được xác minh" (S14 `39:336`) |
+| `AccentFaintBrush` | Sáng `#F5F8FF`, Tối `#1A2436`, HC `WindowColor` | Nền thẻ ngôn ngữ đang chọn (S14 `39:280`) |
+
 - Icon lấy đúng path SVG của Figma (bảng dưới), không dùng emoji hoặc ký tự mũi tên; test `UiRegressionTests.FR_UI_11_Icons_do_not_use_emoji_or_symbol_characters`.
 - Chữ trên nền `AccentPrimaryBrush` dùng `OnAccentBrush`; `AccentTextBrush` chỉ dùng trên nền nhạt (`AccentSubtleBrush`).
 - Không dùng `ConverterParameter` với `BooleanToVisibilityConverter` (WPF bỏ qua tham số này); muốn ẩn ngược thì dùng `DataTrigger` trong style và không đặt `Visibility` local.

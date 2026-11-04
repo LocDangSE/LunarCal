@@ -1121,4 +1121,74 @@
   <data name="settings.advanced.logs_folder_desc" xml:space="preserve">
     <value>Giữ 14 ngày. Không ghi key, token hay tiêu đề sự kiện</value>
   </data>
+  <!-- First run wizard (Figma S14 39:280, 39:336; P3-R3) -->
+  <data name="firstrun.step_of" xml:space="preserve">
+    <value>Bước {0} / {1}</value>
+  </data>
+  <data name="firstrun.welcome_title" xml:space="preserve">
+    <value>Chào mừng đến LunarCal · Welcome to LunarCal</value>
+  </data>
+  <data name="firstrun.welcome_desc" xml:space="preserve">
+    <value>Ngôn ngữ giao diện · Interface language. Đổi ngôn ngữ UI không làm thay đổi dữ liệu lịch.</value>
+  </data>
+  <data name="firstrun.nav_language" xml:space="preserve">
+    <value>Ngôn ngữ</value>
+  </data>
+  <data name="firstrun.nav_google" xml:space="preserve">
+    <value>Tài khoản Google</value>
+  </data>
+  <data name="firstrun.nav_gemini" xml:space="preserve">
+    <value>Gemini API key</value>
+  </data>
+  <data name="firstrun.optional" xml:space="preserve">
+    <value>Tuỳ chọn</value>
+  </data>
+  <data name="firstrun.footer_note" xml:space="preserve">
+    <value>Có thể đổi mọi lựa chọn sau trong Cài đặt.</value>
+  </data>
+  <data name="firstrun.lang_vi_desc" xml:space="preserve">
+    <value>vi-VN · tuần bắt đầu Thứ 2 · 24 giờ · {0}</value>
+  </data>
+  <data name="firstrun.lang_en_desc" xml:space="preserve">
+    <value>en-US · week starts Sunday · 12-hour · {0}</value>
+  </data>
+  <data name="firstrun.connect_title" xml:space="preserve">
+    <value>Kết nối Google Calendar</value>
+  </data>
+  <data name="firstrun.connect_desc" xml:space="preserve">
+    <value>LunarCal mở trình duyệt mặc định để bạn đăng nhập. Ứng dụng không bao giờ thấy mật khẩu của bạn.</value>
+  </data>
+  <data name="firstrun.perm_title" xml:space="preserve">
+    <value>LunarCal sẽ xin quyền</value>
+  </data>
+  <data name="firstrun.perm_events" xml:space="preserve">
+    <value>Xem và sửa sự kiện trong các lịch của bạn</value>
+  </data>
+  <data name="firstrun.perm_calendars" xml:space="preserve">
+    <value>Xem danh sách lịch (tên, màu)</value>
+  </data>
+  <data name="firstrun.perm_none" xml:space="preserve">
+    <value>Không đọc Gmail, Drive hay danh bạ</value>
+  </data>
+  <data name="firstrun.signin_google" xml:space="preserve">
+    <value>Đăng nhập bằng Google</value>
+  </data>
+  <data name="firstrun.waiting" xml:space="preserve">
+    <value>Đang chờ bạn đăng nhập trong trình duyệt… (tự huỷ sau 5 phút)</value>
+  </data>
+  <data name="firstrun.unverified_title" xml:space="preserve">
+    <value>Google có thể hiện &quot;Ứng dụng chưa được xác minh&quot;</value>
+  </data>
+  <data name="firstrun.unverified_desc" xml:space="preserve">
+    <value>LunarCal đang dùng chế độ Testing của Google. Chọn Nâng cao → Tiếp tục để đăng nhập. Ở chế độ này Google yêu cầu đăng nhập lại sau 7 ngày.</value>
+  </data>
+  <data name="firstrun.back" xml:space="preserve">
+    <value>Quay lại</value>
+  </data>
+  <data name="firstrun.skip_lunar_only" xml:space="preserve">
+    <value>Để sau, chỉ xem âm lịch</value>
+  </data>
+  <data name="firstrun.signed_in" xml:space="preserve">
+    <value>Đã kết nối {0}</value>
+  </data>
 </root>

@@ -1121,4 +1121,74 @@
   <data name="settings.advanced.logs_folder_desc" xml:space="preserve">
     <value>Kept for 14 days. Keys, tokens and event titles are never written</value>
   </data>
+  <!-- First run wizard (Figma S14 39:280, 39:336; P3-R3) -->
+  <data name="firstrun.step_of" xml:space="preserve">
+    <value>Step {0} / {1}</value>
+  </data>
+  <data name="firstrun.welcome_title" xml:space="preserve">
+    <value>Chào mừng đến LunarCal · Welcome to LunarCal</value>
+  </data>
+  <data name="firstrun.welcome_desc" xml:space="preserve">
+    <value>Ngôn ngữ giao diện · Interface language. Changing the UI language does not change your calendar data.</value>
+  </data>
+  <data name="firstrun.nav_language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="firstrun.nav_google" xml:space="preserve">
+    <value>Google account</value>
+  </data>
+  <data name="firstrun.nav_gemini" xml:space="preserve">
+    <value>Gemini API key</value>
+  </data>
+  <data name="firstrun.optional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="firstrun.footer_note" xml:space="preserve">
+    <value>You can change every choice later in Settings.</value>
+  </data>
+  <data name="firstrun.lang_vi_desc" xml:space="preserve">
+    <value>vi-VN · tuần bắt đầu Thứ 2 · 24 giờ · {0}</value>
+  </data>
+  <data name="firstrun.lang_en_desc" xml:space="preserve">
+    <value>en-US · week starts Sunday · 12-hour · {0}</value>
+  </data>
+  <data name="firstrun.connect_title" xml:space="preserve">
+    <value>Connect Google Calendar</value>
+  </data>
+  <data name="firstrun.connect_desc" xml:space="preserve">
+    <value>LunarCal opens your default browser for you to sign in. The app never sees your password.</value>
+  </data>
+  <data name="firstrun.perm_title" xml:space="preserve">
+    <value>LunarCal will ask to</value>
+  </data>
+  <data name="firstrun.perm_events" xml:space="preserve">
+    <value>See and edit events in your calendars</value>
+  </data>
+  <data name="firstrun.perm_calendars" xml:space="preserve">
+    <value>See your calendar list (names, colours)</value>
+  </data>
+  <data name="firstrun.perm_none" xml:space="preserve">
+    <value>Never read Gmail, Drive or contacts</value>
+  </data>
+  <data name="firstrun.signin_google" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+  <data name="firstrun.waiting" xml:space="preserve">
+    <value>Waiting for you to sign in in the browser… (gives up after 5 minutes)</value>
+  </data>
+  <data name="firstrun.unverified_title" xml:space="preserve">
+    <value>Google may say &quot;Google hasn&apos;t verified this app&quot;</value>
+  </data>
+  <data name="firstrun.unverified_desc" xml:space="preserve">
+    <value>LunarCal uses Google&apos;s Testing mode. Choose Advanced → Continue to sign in. In this mode Google asks you to sign in again after 7 days.</value>
+  </data>
+  <data name="firstrun.back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="firstrun.skip_lunar_only" xml:space="preserve">
+    <value>Later, lunar calendar only</value>
+  </data>
+  <data name="firstrun.signed_in" xml:space="preserve">
+    <value>Connected as {0}</value>
+  </data>
 </root>

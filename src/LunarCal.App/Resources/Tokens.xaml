@@ -10,6 +10,8 @@
 
   <!-- Typography: Sizes (measured from Figma 01-05 & .agents/rules/ui.md) -->
   <sys:Double x:Key="FontSizeDisplay">24</sys:Double>
+  <!-- First run wizard step title (S14 39:280, P3-R3) -->
+  <sys:Double x:Key="FontSizeWizardTitle">22</sys:Double>
   <sys:Double x:Key="FontSizeTitle">20</sys:Double>
   <sys:Double x:Key="FontSizeSection">16</sys:Double>
   <sys:Double x:Key="FontSizeSubtitle">14</sys:Double>
