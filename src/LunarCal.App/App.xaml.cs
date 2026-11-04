@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
@@ -20,6 +21,7 @@ namespace LunarCal.App;
 public partial class App : Application
 {
     private IHost? _host;
+    private bool _hostStopped;
 
     /// <summary>Initializes the application and hooks the asynchronous startup handler.</summary>
     public App()
@@ -104,6 +106,7 @@ public partial class App : Application
             var window = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = window;
             ShutdownMode = ShutdownMode.OnMainWindowClose;
+            window.Closing += OnMainWindowClosing;
             window.Show();
 
             // Start hosted services after the window exists: the sync scheduler runs its startup sync and then polls
@@ -116,6 +119,32 @@ public partial class App : Application
             MessageBox.Show(ex.Message, "LunarCal", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
+    }
+
+    /// <summary>
+    /// Stops hosted services (the sync scheduler, FR-SYNC-3) before the shell closes, so an in-flight sync is
+    /// cancelled and awaited instead of being cut off by <see cref="IDisposable.Dispose"/>. The first close is
+    /// deferred until <see cref="IHost.StopAsync"/> finishes (at most 5 seconds), then the window closes for real.
+    /// </summary>
+    private async void OnMainWindowClosing(object? sender, CancelEventArgs e)
+    {
+        if (_hostStopped || _host is null || sender is not Window window)
+        {
+            return;
+        }
+
+        e.Cancel = true;
+        _hostStopped = true;
+        try
+        {
+            await _host.StopAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(true);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Log.Warning(ex, "Hosted services did not stop cleanly.");
+        }
+
+        window.Close();
     }
 
     /// <inheritdoc />
