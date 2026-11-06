@@ -118,22 +118,27 @@ public static class DependencyInjection
         {
             var options = new GoogleOAuthOptions();
 
-            // Client ID fallback: LunarCal:Google:OAuthClientId -> Google:ClientId -> LunarCal:Google:ClientId
-            var clientId = configuration["LunarCal:Google:OAuthClientId"]
-                ?? configuration["Google:ClientId"]
-                ?? configuration["LunarCal:Google:ClientId"];
+            // Client ID fallback: LunarCal:Google:OAuthClientId -> Google:ClientId -> LunarCal:Google:ClientId.
+            // appsettings.json ships an empty OAuthClientId, so empty values must fall through, not win (`??` would stop at "").
+            var clientId = FirstNonBlank(
+                configuration,
+                "LunarCal:Google:OAuthClientId",
+                "Google:ClientId",
+                "LunarCal:Google:ClientId");
 
-            if (!string.IsNullOrWhiteSpace(clientId))
+            if (clientId is not null)
             {
                 options.ClientId = clientId;
             }
 
             // Client Secret fallback: LunarCal:Google:OAuthClientSecret -> Google:ClientSecret -> LunarCal:Google:ClientSecret
-            var clientSecret = configuration["LunarCal:Google:OAuthClientSecret"]
-                ?? configuration["Google:ClientSecret"]
-                ?? configuration["LunarCal:Google:ClientSecret"];
+            var clientSecret = FirstNonBlank(
+                configuration,
+                "LunarCal:Google:OAuthClientSecret",
+                "Google:ClientSecret",
+                "LunarCal:Google:ClientSecret");
 
-            if (!string.IsNullOrWhiteSpace(clientSecret))
+            if (clientSecret is not null)
             {
                 options.ClientSecret = clientSecret;
             }
@@ -243,5 +248,20 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    /// <summary>Returns the first configuration value that is not null, empty or whitespace, or null when none is set.</summary>
+    internal static string? FirstNonBlank(IConfiguration configuration, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var value = configuration[key];
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 }

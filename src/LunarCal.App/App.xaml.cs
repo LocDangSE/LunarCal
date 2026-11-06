@@ -40,6 +40,12 @@ public partial class App : Application
                 ContentRootPath = AppContext.BaseDirectory,
             });
 
+#if DEBUG
+            // Host only loads user-secrets when DOTNET_ENVIRONMENT=Development, which `dotnet run` does not set.
+            // Debug builds load the dev OAuth client id/secret (AGENTS.md, SEC-KEY-5) regardless of environment.
+            builder.Configuration.AddUserSecrets<App>(optional: true);
+#endif
+
             // Configure Serilog file sink with redaction and 14-day rotation (SEC-LOG-1, SEC-LOG-2, ADR-0019)
             var logDir = builder.Configuration.GetValue<string>("LunarCal:Logging:LogDirectory");
             var redactEmail = builder.Configuration.GetValue<bool>("LunarCal:Logging:RedactEmail");
