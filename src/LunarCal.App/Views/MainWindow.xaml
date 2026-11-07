@@ -90,22 +90,17 @@
         </views:AgendaView>
       </Grid>
 
-      <!-- AI command bar (Figma 1:483, FR-UI-5): white bar, top border, 24/16 padding -->
-      <Grid Grid.Row="2" Height="{DynamicResource AiCommandBarHeight}">
-        <Border Background="{DynamicResource SurfaceBackgroundBrush}"
-                BorderBrush="{DynamicResource ShellBorderBrush}"
-                BorderThickness="0,1,0,0" />
-        <Grid Margin="24,16" AutomationProperties.AutomationId="AiCommandBar">
-          <!-- Shadow layer kept separate so the effect does not blur the text -->
-          <Border Background="{DynamicResource AiSubtleBrush}"
-                  CornerRadius="{DynamicResource CornerRadiusAiCard}"
-                  Effect="{DynamicResource ShadowAiInput}" />
-          <Border Background="{DynamicResource AiSubtleBrush}"
-                  BorderBrush="{DynamicResource AiAccentBrush}"
-                  BorderThickness="1.5"
-                  CornerRadius="{DynamicResource CornerRadiusAiCard}"
-                  Padding="16,0,8,0">
-            <Grid VerticalAlignment="Center">
+      <!-- AI command bar (Figma 1:198, FR-UI-5): 92 px row, 24 px padding, pill input with sparkle + hint + send -->
+      <Grid Grid.Row="2" Height="92" Background="{DynamicResource WindowBackgroundBrush}">
+        <Grid Margin="24,18,24,20" VerticalAlignment="Center">
+          <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusPill}"
+                  Height="54"
+                  Padding="16,8,8,8"
+                  Effect="{DynamicResource ShadowAiBar}">
+            <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -113,8 +108,8 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
 
+              <!-- Figma 1:203 icon: SVG sparkle with fill -->
               <Path Grid.Column="0"
-                    Width="20" Height="20"
                     Data="{DynamicResource IconSparkle20}"
                     Fill="{DynamicResource AiAccentBrush}"
                     Stretch="None"
@@ -160,8 +155,118 @@
         </Grid>
       </Grid>
 
-      <!-- Top bar (Figma 1:197, FR-UI-9) -->
-      <controls:TopBar Grid.Row="0" DataContext="{Binding}" />
+      <!-- Top bar and status banners (Figma 1:197, S18, FR-UI-9) -->
+      <StackPanel Grid.Row="0">
+        <controls:TopBar DataContext="{Binding}" />
+
+        <!-- Offline Banner (Figma S18, FR-UI-9) -->
+        <Border Background="{DynamicResource WarningSubtleBrush}"
+                BorderBrush="{DynamicResource WarningBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,8"
+                AutomationProperties.AutomationId="OfflineBanner">
+          <Border.Style>
+            <Style TargetType="Border">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsOfflineBannerVisible}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <DockPanel LastChildFill="True">
+            <Button DockPanel.Dock="Right"
+                    Command="{Binding DismissOfflineBannerCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="4"
+                    Cursor="Hand"
+                    Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="BtnDismissOfflineBanner">
+              <Path Data="{DynamicResource IconClose32}"
+                    Stroke="{DynamicResource WarningTextBrush}"
+                    StrokeThickness="1.5"
+                    Width="12" Height="12" />
+            </Button>
+            <Button DockPanel.Dock="Right"
+                    Command="{Binding SyncNowCommand}"
+                    Content="{loc:Loc Key=sidebar.sync_now}"
+                    Padding="12,4"
+                    FontSize="{DynamicResource FontSizeCaption}"
+                    FontWeight="{DynamicResource FontWeightSemiBold}"
+                    Foreground="{DynamicResource WarningTextBrush}"
+                    Background="Transparent"
+                    BorderBrush="{DynamicResource WarningBorderBrush}"
+                    BorderThickness="1"
+                    Cursor="Hand"
+                    AutomationProperties.AutomationId="BtnRetrySync" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <Ellipse Width="8" Height="8" Fill="{DynamicResource WarningBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+              <TextBlock Text="{loc:Loc Key=banner.offline}"
+                         FontSize="{DynamicResource FontSizeBody}"
+                         FontWeight="{DynamicResource FontWeightMedium}"
+                         Foreground="{DynamicResource WarningTextBrush}"
+                         TextTrimming="CharacterEllipsis"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <!-- Re-auth Banner (Figma S14, S18, FR-AUTH-3, FR-AUTH-6) -->
+        <Border Background="{DynamicResource WarningSubtleBrush}"
+                BorderBrush="{DynamicResource WarningBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,8"
+                AutomationProperties.AutomationId="ReauthBanner">
+          <Border.Style>
+            <Style TargetType="Border">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsReauthBannerVisible}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <DockPanel LastChildFill="True">
+            <Button DockPanel.Dock="Right"
+                    Command="{Binding DismissReauthBannerCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="4"
+                    Cursor="Hand"
+                    Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="BtnDismissReauthBanner">
+              <Path Data="{DynamicResource IconClose32}"
+                    Stroke="{DynamicResource WarningTextBrush}"
+                    StrokeThickness="1.5"
+                    Width="12" Height="12" />
+            </Button>
+            <Button DockPanel.Dock="Right"
+                    Command="{Binding ReauthCommand}"
+                    Content="{loc:Loc Key=banner.btn_reauth}"
+                    Padding="12,4"
+                    FontSize="{DynamicResource FontSizeCaption}"
+                    FontWeight="{DynamicResource FontWeightSemiBold}"
+                    Foreground="{DynamicResource WarningTextBrush}"
+                    Background="Transparent"
+                    BorderBrush="{DynamicResource WarningBorderBrush}"
+                    BorderThickness="1"
+                    Cursor="Hand"
+                    AutomationProperties.AutomationId="BtnBannerReauth" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <Ellipse Width="8" Height="8" Fill="{DynamicResource WarningBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+              <TextBlock Text="{loc:Loc Key=banner.reauth}"
+                         FontSize="{DynamicResource FontSizeBody}"
+                         FontWeight="{DynamicResource FontWeightMedium}"
+                         Foreground="{DynamicResource WarningTextBrush}"
+                         TextTrimming="CharacterEllipsis"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
     </Grid>
 
     <!-- Sidebar (Figma 1:3, FR-UI-10), drawn last so its shadow falls on the main column -->

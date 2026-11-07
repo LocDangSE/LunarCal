@@ -12,6 +12,24 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
   </ItemGroup>
 
+  <ItemGroup Label="Logging">
+    <!-- Serilog logging with file sink and redaction (SEC-LOG-1, SEC-LOG-2, ADR-0019). -->
+    <PackageVersion Include="Serilog" Version="4.3.0" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Security">
+    <!-- Windows DPAPI secret storage (SEC-KEY-1, SEC-OAUTH-3, ADR-0018) -->
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="10.0.14" />
+  </ItemGroup>
+
+  <ItemGroup Label="Storage">
+    <!-- Encrypted local storage using SQLCipher (SEC-DATA-1, ADR-0013) -->
+    <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="10.0.14" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11" />
+  </ItemGroup>
+
   <ItemGroup Label="UI">
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
@@ -29,6 +47,11 @@
   <ItemGroup Label="SourceLink">
     <!-- SourceLink for GitHub (SEC-SC-4) -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.403" />
+  </ItemGroup>
+
+  <ItemGroup Label="Network">
+    <!-- HTTP resilience and retry pipeline (SEC-NET-1, SEC-NET-2) -->
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
   </ItemGroup>
 
 </Project>

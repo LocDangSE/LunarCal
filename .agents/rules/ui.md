@@ -156,6 +156,14 @@ Giữ nguyên giá trị đang hiển thị ở Phase 2, chỉ đặt tên. Khi 
 | `AiCommandInputHeight` | 59 | Ô nhập lệnh AI trong thanh 92 px |
 | `FontFamilyIcon`, `IconGlyphCalendar` | Segoe Fluent Icons / MDL2 | Chỉ cho icon Figma chưa vẽ (trạng thái rỗng) |
 
+### Token bổ sung cho lần chạy đầu S14 (P3-R3, Claude Code, 2026-11-04)
+
+| Key | Giá trị | Dùng cho |
+| --- | --- | --- |
+| `FontSizeWizardTitle` | 22 | Tiêu đề từng bước của wizard lần chạy đầu (S14 `39:280`) |
+| `WarningBorderBrush` | Sáng `#FEDF89`, Tối `#6B4E12`, HC `WindowTextColor` | Viền banner cảnh báo "Ứng dụng chưa được xác minh" (S14 `39:336`) |
+| `AccentFaintBrush` | Sáng `#F5F8FF`, Tối `#1A2436`, HC `WindowColor` | Nền thẻ ngôn ngữ đang chọn (S14 `39:280`) |
+
 - Icon lấy đúng path SVG của Figma (bảng dưới), không dùng emoji hoặc ký tự mũi tên; test `UiRegressionTests.FR_UI_11_Icons_do_not_use_emoji_or_symbol_characters`.
 - Chữ trên nền `AccentPrimaryBrush` dùng `OnAccentBrush`; `AccentTextBrush` chỉ dùng trên nền nhạt (`AccentSubtleBrush`).
 - Không dùng `ConverterParameter` với `BooleanToVisibilityConverter` (WPF bỏ qua tham số này); muốn ẩn ngược thì dùng `DataTrigger` trong style và không đặt `Visibility` local.
@@ -179,6 +187,19 @@ Màu sự kiện theo lịch: `CalendarColors.Palette` trả cặp (nền nhạt
 Lưới Tuần/Ngày: vạch giờ nằm dưới đầu nhãn 8 px; khối sự kiện cách vạch cột 3 px, cách cột sau 5 px, hai làn cách 2 px (Tuần) hoặc 8/16 px (Ngày); khối cao = thời lượng × 48 − 2. Mở ra ở 07:00 (`ScrollViewerBehavior.InitialVerticalOffset`).
 
 Hình tròn (chấm màu, ô mini-calendar, avatar, nút gửi) dùng `CornerRadiusFull`. WPF không kẹp bán kính như CSS: `CornerRadiusFull` trên khung không vuông sẽ thành hình elip, nên chỉ dùng cho khung có Width = Height. Màu mặc định cho calendar không có màu: hằng `CalendarColors.DefaultHex` (= `AccentPrimaryBrush` sáng). Test `ThemeDictionaryTests.FR_UI_11_Views_and_controls_use_tokens_instead_of_literal_sizes_and_colors` chặn literal mới trong `Views/` và `Controls/`.
+
+## Quy tắc kiểm thử giao diện bắt buộc cho Antigravity
+
+Đối với bất kỳ task nào có sửa, cập nhật hoặc dựng giao diện (View, ViewModel, Control, DataTemplate, Style, Token, XAML):
+1. **Khởi động app thực tế:** Phải khởi chạy app (chạy `dotnet run --project src/LunarCal.App` để kiểm tra trực quan và chạy bộ test UI FlaUI trong `tests/LunarCal.App.UiTests`) để kiểm tra toàn bộ hiển thị trên app thật đang chạy.
+2. **So sánh trực tiếp với Figma:** Đối chiếu tỉ mỉ từng chi tiết với frame Figma nguồn (file `4vwWjHGoSu9naj5ou86QYs`):
+   - Bố cục (Layout), kích thước khung, lề (margin/padding) và khoảng cách giữa các thành phần.
+   - Design tokens: màu nền, màu chữ, viền, shadow (`Tokens.xaml`, palette 3 theme). Tuyệt đối không dùng literal màu/cỡ chữ.
+   - Typography: cỡ chữ (`FontSize*`), độ đậm (`FontWeight*`), font Inter fallback Segoe UI.
+   - Bo góc (`CornerRadius*`): chú ý hình tròn chỉ dùng `CornerRadiusFull` cho khung vuông; không để bo góc elip.
+   - Icon: dùng đúng path SVG từ Figma, không dùng emoji hoặc glyph thay thế khi Figma đã có SVG.
+   - Trạng thái: hiển thị đầy đủ các trạng thái bình thường, hover, active, empty state, và đang tải.
+3. **Tiêu chí Pass (Khớp 100%):** Chỉ khi giao diện thực tế của app **khớp 100% với Figma** thì task mới được coi là Pass và được phép chuyển sang trạng thái `[x]`. Nếu còn bất kỳ điểm lệch nào so với Figma, phải sửa cho khớp hoàn toàn trước khi hoàn thành task.
 
 ## Quy ước component (WPF + MVVM)
 

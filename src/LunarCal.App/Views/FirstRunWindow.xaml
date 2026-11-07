@@ -1,0 +1,425 @@
+<!--
+  First run wizard (Figma S14: step 1 39:280, step 2 39:336; FR-AUTH-1, FR-I18N-1, FR-LUNAR-6; P3-R3).
+  960x640: left stepper rail 280 (logo, steps 1-3, footnote), content with "Bước n / 3", step body and a footer
+  with a divider. Step 3 (Gemini API key) is drawn in the stepper only; it ships with Phase 4 (P4-00, P4-03).
+  Colours and sizes are tokens (FR-UI-11); shared styles come from Resources/Controls.xaml.
+-->
+<Window x:Class="LunarCal.App.Views.FirstRunWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+        xmlns:loc="clr-namespace:LunarCal.App.Localization"
+        xmlns:conv="clr-namespace:LunarCal.App.Converters"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:FirstRunViewModel}"
+        Title="{loc:Loc Key=firstrun.title}"
+        AutomationProperties.AutomationId="FirstRunWindow"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{DynamicResource FontFamilyBase}"
+        Background="{DynamicResource SurfaceBackgroundBrush}">
+
+  <Window.Resources>
+    <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+    <!-- Visible only on one step: Tag holds the step number -->
+    <Style x:Key="StepPanelStyle" TargetType="FrameworkElement">
+      <Setter Property="Visibility" Value="Collapsed" />
+      <Style.Triggers>
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Binding="{Binding CurrentStep}" Value="1" />
+            <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="1" />
+          </MultiDataTrigger.Conditions>
+          <Setter Property="Visibility" Value="Visible" />
+        </MultiDataTrigger>
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Binding="{Binding CurrentStep}" Value="2" />
+            <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="2" />
+          </MultiDataTrigger.Conditions>
+          <Setter Property="Visibility" Value="Visible" />
+        </MultiDataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <!-- Stepper item (39:283): 40 high, radius 8, number circle 22; Tag = step number -->
+    <Style x:Key="StepItemStyle" TargetType="ContentControl">
+      <Setter Property="Margin" Value="0,0,0,6" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSubtitle}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ContentControl">
+            <Border x:Name="Bd" MinHeight="40" Padding="10,8" CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Background="Transparent">
+              <StackPanel Orientation="Horizontal">
+                <Grid Width="22" Height="22" VerticalAlignment="Top">
+                  <Ellipse x:Name="Circle" Fill="{DynamicResource SurfaceBackgroundBrush}"
+                           Stroke="{DynamicResource BorderStrongBrush}" StrokeThickness="1" />
+                  <TextBlock x:Name="Num" Text="{TemplateBinding Tag}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                             FontSize="{DynamicResource FontSizeBody}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                             Foreground="{DynamicResource TextSecondaryBrush}" />
+                  <Path x:Name="Check" Data="{DynamicResource IconCheck11}" Width="11" Height="11" Stretch="None"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                        Stroke="{DynamicResource OnAccentBrush}" StrokeThickness="1.5"
+                        StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                </Grid>
+                <ContentPresenter x:Name="Label" Margin="12,2,0,0" VerticalAlignment="Center" />
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <!-- Active step -->
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding CurrentStep}" Value="1" />
+                  <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="1" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                <Setter TargetName="Circle" Property="Fill" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Circle" Property="Stroke" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Num" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+              </MultiDataTrigger>
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding CurrentStep}" Value="2" />
+                  <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="2" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                <Setter TargetName="Circle" Property="Fill" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Circle" Property="Stroke" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Num" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+              </MultiDataTrigger>
+              <!-- Done step (39:339): green circle with a check -->
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding CurrentStep}" Value="2" />
+                  <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="1" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="Circle" Property="Fill" Value="{DynamicResource SuccessBrush}" />
+                <Setter TargetName="Circle" Property="Stroke" Value="{DynamicResource SuccessBrush}" />
+                <Setter TargetName="Num" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+              </MultiDataTrigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Language card (39:296): radio dot, name 15 SemiBold, description 12; selected = accent border 2 -->
+    <Style x:Key="LanguageCardStyle" TargetType="RadioButton">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Margin" Value="0,0,0,14" />
+      <Setter Property="GroupName" Value="FirstRunLang" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Border x:Name="Bd" Padding="16,12" CornerRadius="{DynamicResource CornerRadiusLarge}"
+                    Background="{DynamicResource SurfaceBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+              <StackPanel Orientation="Horizontal">
+                <Grid Width="16" Height="16" VerticalAlignment="Top" Margin="0,2,0,0">
+                  <Ellipse x:Name="Ring" Stroke="{DynamicResource BorderStrongBrush}" StrokeThickness="1"
+                           Fill="{DynamicResource SurfaceBackgroundBrush}" />
+                  <Ellipse x:Name="Dot" Width="6" Height="6" Fill="{DynamicResource OnAccentBrush}" Visibility="Collapsed" />
+                </Grid>
+                <ContentPresenter Margin="14,0,0,0" />
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Bd" Property="BorderThickness" Value="2" />
+                <Setter TargetName="Bd" Property="Padding" Value="15,11" />
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentFaintBrush}" />
+                <Setter TargetName="Ring" Property="Fill" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="LanguageNameStyle" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSection}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style x:Key="LanguageDescStyle" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Margin" Value="0,3,0,0" />
+    </Style>
+    <Style x:Key="BulletStyle" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeBodyStrong}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
+      <Setter Property="Margin" Value="0,10,0,0" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+  </Window.Resources>
+
+  <Grid Width="960" Height="640">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="280" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <!-- Stepper rail (39:281) -->
+    <Border Grid.Column="0" Background="{DynamicResource WindowBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+      <DockPanel Margin="24,28,24,24" LastChildFill="False">
+        <StackPanel DockPanel.Dock="Top">
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,28">
+            <Border Width="34" Height="34" Background="{DynamicResource AccentPrimaryBrush}"
+                    CornerRadius="{DynamicResource CornerRadiusLogo}">
+              <Path Width="18" Height="18" Data="{DynamicResource IconSparkle18}"
+                    Fill="{DynamicResource OnAccentBrush}" Stretch="None" />
+            </Border>
+            <TextBlock Text="LunarCal" Margin="10,0,0,0" VerticalAlignment="Center"
+                       FontSize="{DynamicResource FontSizeBrand}" FontWeight="{DynamicResource FontWeightBold}"
+                       Foreground="{DynamicResource TextPrimaryBrush}" />
+          </StackPanel>
+
+          <ContentControl Style="{StaticResource StepItemStyle}" Tag="1"
+                          Content="{loc:Loc Key=firstrun.nav_language}" />
+          <ContentControl Style="{StaticResource StepItemStyle}" Tag="2"
+                          Content="{loc:Loc Key=firstrun.nav_google}" />
+          <ContentControl Style="{StaticResource StepItemStyle}" Tag="3">
+            <StackPanel>
+              <TextBlock Text="{loc:Loc Key=firstrun.nav_gemini}" />
+              <TextBlock Text="{loc:Loc Key=firstrun.optional}" FontSize="{DynamicResource FontSizeCaption}"
+                         FontWeight="{DynamicResource FontWeightRegular}"
+                         Foreground="{DynamicResource TextTertiaryBrush}" />
+            </StackPanel>
+          </ContentControl>
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{loc:Loc Key=firstrun.footer_note}" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeCaption}" Foreground="{DynamicResource TextTertiaryBrush}" />
+      </DockPanel>
+    </Border>
+
+    <!-- Content (39:290) -->
+    <Grid Grid.Column="1" Margin="48,40,48,24">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <TextBlock Grid.Row="0" Text="{Binding StepLabel}" AutomationProperties.AutomationId="FirstRunStepLabel"
+                 FontSize="{DynamicResource FontSizeBody}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                 Foreground="{DynamicResource AccentPrimaryBrush}" />
+
+      <!-- Step 1: language and lunar calendar (39:280) -->
+      <StackPanel Grid.Row="1" Tag="1" Style="{StaticResource StepPanelStyle}">
+        <TextBlock Text="{loc:Loc Key=firstrun.welcome_title}" Margin="0,6,0,0" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeWizardTitle}" FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}" />
+        <TextBlock Text="{loc:Loc Key=firstrun.welcome_desc}" Margin="0,6,0,16" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextSecondaryBrush}" />
+
+        <RadioButton Style="{StaticResource LanguageCardStyle}"
+                     IsChecked="{Binding IsVietnamese, Mode=OneWay}"
+                     Command="{Binding SelectLanguageCommand}" CommandParameter="vi"
+                     AutomationProperties.AutomationId="RadioFirstRunVi" AutomationProperties.Name="Tiếng Việt">
+          <StackPanel>
+            <TextBlock Text="Tiếng Việt" Style="{StaticResource LanguageNameStyle}" />
+            <TextBlock Text="{Binding VietnameseDescription}" Style="{StaticResource LanguageDescStyle}" />
+          </StackPanel>
+        </RadioButton>
+        <RadioButton Style="{StaticResource LanguageCardStyle}"
+                     IsChecked="{Binding IsEnglish, Mode=OneWay}"
+                     Command="{Binding SelectLanguageCommand}" CommandParameter="en"
+                     AutomationProperties.AutomationId="RadioFirstRunEn" AutomationProperties.Name="English">
+          <StackPanel>
+            <TextBlock Text="English" Style="{StaticResource LanguageNameStyle}" />
+            <TextBlock Text="{Binding EnglishDescription}" Style="{StaticResource LanguageDescStyle}" />
+          </StackPanel>
+        </RadioButton>
+
+        <Border Padding="16,12" CornerRadius="{DynamicResource CornerRadiusLarge}"
+                Background="{DynamicResource SurfaceBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitchStyle}"
+                      IsChecked="{Binding IsLunarEnabled, Mode=TwoWay}"
+                      AutomationProperties.AutomationId="CheckFirstRunLunar"
+                      AutomationProperties.Name="{loc:Loc Key=settings.lunar.title}" />
+            <StackPanel>
+              <TextBlock Text="{loc:Loc Key=settings.lunar.title}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.lunar.desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- Step 2: connect Google Calendar (39:336) -->
+      <StackPanel Grid.Row="1" Tag="2" Style="{StaticResource StepPanelStyle}">
+        <TextBlock Text="{loc:Loc Key=firstrun.connect_title}" Margin="0,6,0,0" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeWizardTitle}" FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}" />
+        <TextBlock Text="{loc:Loc Key=firstrun.connect_desc}" Margin="0,6,0,16" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextSecondaryBrush}" />
+
+        <!-- Requested permissions (SEC-OAUTH-2: calendar.events + calendar.readonly only) -->
+        <Border Padding="16,14" CornerRadius="{DynamicResource CornerRadiusLarge}"
+                Background="{DynamicResource SurfaceBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+          <StackPanel>
+            <TextBlock Text="{loc:Loc Key=firstrun.perm_title}" FontSize="{DynamicResource FontSizeBodyStrong}"
+                       FontWeight="{DynamicResource FontWeightSemiBold}" Foreground="{DynamicResource TextPrimaryBrush}" />
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Left" Text="•" Style="{StaticResource BulletStyle}" Margin="2,10,10,0" />
+              <TextBlock Text="{loc:Loc Key=firstrun.perm_events}" Style="{StaticResource BulletStyle}" />
+            </DockPanel>
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Left" Text="•" Style="{StaticResource BulletStyle}" Margin="2,10,10,0" />
+              <TextBlock Text="{loc:Loc Key=firstrun.perm_calendars}" Style="{StaticResource BulletStyle}" />
+            </DockPanel>
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Left" Text="•" Style="{StaticResource BulletStyle}" Margin="2,10,10,0" />
+              <TextBlock Text="{loc:Loc Key=firstrun.perm_none}" Style="{StaticResource BulletStyle}" />
+            </DockPanel>
+          </StackPanel>
+        </Border>
+
+        <Button Style="{StaticResource SecondaryButtonStyle}" Margin="0,14,0,0" Padding="18,10"
+                HorizontalAlignment="Left"
+                Command="{Binding SignInCommand}"
+                Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}"
+                AutomationProperties.AutomationId="BtnFirstRunSignIn"
+                AutomationProperties.Name="{loc:Loc Key=firstrun.signin_google}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="G" FontSize="{DynamicResource FontSizeSection}" FontWeight="{DynamicResource FontWeightBold}"
+                       Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+            <TextBlock Text="{loc:Loc Key=firstrun.signin_google}" Margin="10,0,0,0" VerticalAlignment="Center"
+                       FontSize="{DynamicResource FontSizeSubtitle}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                       Foreground="{DynamicResource TextPrimaryBrush}" />
+          </StackPanel>
+        </Button>
+
+        <!-- Waiting for the browser, with "Huỷ" -->
+        <StackPanel Orientation="Horizontal" Margin="0,14,0,0"
+                    Visibility="{Binding IsAuthorizing, Converter={StaticResource BoolToVis}}">
+          <Path Width="14" Height="14" Stretch="None" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"
+                Data="M7 1 A6 6 0 1 1 1 7" Stroke="{DynamicResource AccentPrimaryBrush}" StrokeThickness="1.5"
+                StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.RenderTransform>
+              <RotateTransform x:Name="SpinnerRotation" />
+            </Path.RenderTransform>
+            <Path.Triggers>
+              <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                  <Storyboard RepeatBehavior="Forever">
+                    <DoubleAnimation Storyboard.TargetName="SpinnerRotation" Storyboard.TargetProperty="Angle"
+                                     From="0" To="360" Duration="0:0:1" />
+                  </Storyboard>
+                </BeginStoryboard>
+              </EventTrigger>
+            </Path.Triggers>
+          </Path>
+          <TextBlock Text="{loc:Loc Key=firstrun.waiting}" Margin="10,0,10,0" VerticalAlignment="Center"
+                     FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource TextBodyBrush}" />
+          <Button Style="{StaticResource LinkButtonStyle}" FontSize="{DynamicResource FontSizeBody}"
+                  FontWeight="{DynamicResource FontWeightSemiBold}" VerticalAlignment="Center"
+                  Content="{loc:Loc Key=common.cancel}" Command="{Binding SignInCancelCommand}"
+                  AutomationProperties.AutomationId="BtnFirstRunCancelSignIn" />
+        </StackPanel>
+
+        <!-- Signed in -->
+        <StackPanel Orientation="Horizontal" Margin="0,14,0,0"
+                    Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}">
+          <Grid Width="18" Height="18">
+            <Ellipse Fill="{DynamicResource SuccessBrush}" />
+            <Path Data="{DynamicResource IconCheck11}" Width="11" Height="11" Stretch="None"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Stroke="{DynamicResource OnAccentBrush}" StrokeThickness="1.5"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+          </Grid>
+          <TextBlock Text="{Binding SignedInText}" Margin="10,0,0,0" VerticalAlignment="Center"
+                     AutomationProperties.AutomationId="FirstRunSignedInText"
+                     FontSize="{DynamicResource FontSizeBodyStrong}" FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource SuccessTextBrush}" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding ErrorMessage}" Margin="0,12,0,0" TextWrapping="Wrap"
+                   Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}"
+                   FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource DangerBrush}" />
+
+        <!-- Consent screen in Testing: "unverified app" warning (ADR-0026) -->
+        <Border Margin="0,16,0,0" Padding="16,12" CornerRadius="{DynamicResource CornerRadiusLarge}"
+                Background="{DynamicResource WarningSubtleBrush}"
+                BorderBrush="{DynamicResource WarningBorderBrush}" BorderThickness="1"
+                Visibility="{Binding IsTestingMode, Converter={StaticResource BoolToVis}}"
+                AutomationProperties.AutomationId="FirstRunTestingBanner">
+          <DockPanel>
+            <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,0,14,0" VerticalAlignment="Center"
+                     Fill="{DynamicResource WarningBrush}" />
+            <StackPanel>
+              <TextBlock Text="{loc:Loc Key=firstrun.unverified_title}" TextWrapping="Wrap"
+                         FontSize="{DynamicResource FontSizeBodyStrong}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                         Foreground="{DynamicResource WarningTextBrush}" />
+              <TextBlock Text="{loc:Loc Key=firstrun.unverified_desc}" Margin="0,2,0,0" TextWrapping="Wrap"
+                         FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource TextBodyBrush}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- Footer with divider -->
+      <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,16,0,0">
+        <Grid>
+          <!-- Step 1 -->
+          <Button Tag="1" HorizontalAlignment="Right" Padding="14,9"
+                  Content="{loc:Loc Key=firstrun.btn_continue}" Command="{Binding ContinueStep1Command}"
+                  AutomationProperties.AutomationId="BtnFirstRunContinue">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding CurrentStep}" Value="1">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+          </Button>
+
+          <!-- Step 2 -->
+          <DockPanel Tag="2" Style="{StaticResource StepPanelStyle}">
+            <Button DockPanel.Dock="Left" Style="{StaticResource LinkButtonStyle}" Margin="14,0,0,0"
+                    FontSize="{DynamicResource FontSizeBodyStrong}" VerticalAlignment="Center"
+                    Content="{loc:Loc Key=firstrun.back}" Command="{Binding BackCommand}"
+                    AutomationProperties.AutomationId="BtnFirstRunBack" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+              <Button Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                      Content="{loc:Loc Key=firstrun.skip_lunar_only}" Command="{Binding SkipCommand}"
+                      AutomationProperties.AutomationId="BtnFirstRunSkip" />
+              <Button Style="{StaticResource PrimaryButtonStyle}"
+                      Content="{loc:Loc Key=firstrun.btn_continue}" Command="{Binding FinishCommand}"
+                      AutomationProperties.AutomationId="BtnFirstRunFinish" />
+            </StackPanel>
+          </DockPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

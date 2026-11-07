@@ -3,19 +3,22 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-02 19:40 +07:00, Claude Code (Opus 5.5). Đổi quy trình review sang theo phase, có cổng `P<N>-REVIEW` bắt buộc (ADR-0027, chủ dự án yêu cầu).
+**Cập nhật lần cuối:** 2026-11-07 21:20 +07:00, Claude Code (Sonnet 5.5). Chủ dự án đăng nhập Google thật, xác nhận lịch Google hiện trên lưới và trang Tài khoản ổn. Đóng cổng `P3-REVIEW` `[x]` (8 bug đã sửa qua hai lần review), merge `phase/3` vào `main`. 493/493 test Release, format sạch, coverage Lunar 99,38%, Core 97%. Chưa push, chưa chạy CI trên `main`.
 
-**Trước đó:** 2026-11-02 19:15 +07:00, Claude Code (Opus 5.5). Hoàn thành P2-R11..P2-R15: dựng lại giao diện Phase 2 theo Figma 01, S06–S09.
+**Phiên trước:** 2026-11-04 23:02 +07:00, Claude Code (Sonnet 5.5). Chủ dự án yêu cầu review hết Phase 3 và cho Claude sửa trực tiếp. Xong P3-R2 (dựng lại S10) và sửa các lỗi tìm thấy khi dựng. Commit phiên này: 37dcf37, 8690fc7 (chưa push). 490/490 test Release, format sạch, coverage Lunar 100%, Core 97%. Cổng `P3-REVIEW` vẫn `[f]`, chưa merge vào `main`: còn hai bước DoD cần đăng nhập Google thật.
+
+**Trước đó:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Phase 0, 1, 2 hoàn thành (gồm 9 task sửa sau review P2-R1..P2-R9). P3-00a và P3-00b xong; Figma S10, S14, S18, S20 là bản nháp chờ chủ dự án duyệt.
+- **Phase hiện tại:** Phase 3 đã đóng: cổng `P3-REVIEW` `[x]`, `phase/3` đã merge vào `main` (cục bộ, chưa push). Phase 4 được phép bắt đầu theo ADR-0027.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ task nào. Vừa đổi quy trình sang review theo phase (ADR-0027; `progress-sync.md`, `review.md`, `AGENTS.md`, `CLAUDE.md`, `TASKS.md` có cổng `P3-REVIEW`..`P8-REVIEW`). File đang sửa dở: không có. Bước tiếp theo: chờ cổng `P3-REVIEW` chuyển `[r]` (Antigravity xong P3-01..P3-16), rồi review `git diff main...phase/3`.
-  - **Antigravity:** không giữ task nào. Vừa hoàn thành P2-13 (kết thúc Phase 2). Bước tiếp theo: bắt đầu Phase 3 (chủ dự án chuẩn bị OAuth Client ID ở P3-00, và agent triển khai P3-01 Serilog logging với redaction).
+  - **Claude Code:** không giữ branch hay task nào. Review Phase 3 đã `Duyệt` (`docs/reviews/PHASE3.md`, mục "Lần 3"). Việc còn lại sau merge: push `main` (và `phase/3`) rồi xem CI xanh trên GitHub.
+  - **Antigravity:** hoàn thành Phase 3; nay được bắt đầu Phase 4 (task `[ ]` đầu tiên của Phase 4 trong `docs/TASKS.md`).
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: tạo branch `phase/3` từ `main`, làm P3-01 (Serilog, redaction) trên `task/P3-01` tách từ `phase/3`, rồi lần lượt các task Phase 3; xong task nào merge vào `phase/3` và đặt `[x]`. Xong P3-16 thì chuyển `P3-REVIEW` sang `[r]` và dừng: **không bắt đầu Phase 4 khi `P3-REVIEW` chưa `[x]`** (ADR-0027). Task UI mới phải theo bảng icon/token ở `.agents/rules/ui.md` (mục P2-R11..R15).
-  2. Chủ dự án: xem lại giao diện mới so với Figma; duyệt các frame S10, S14, S18, S20 trước P3-14.
+  1. Claude Code (hoặc chủ dự án): push `main`, xem CI xanh (cổng "CI xanh trên `main`" của `P3-REVIEW`).
+  2. Chủ dự án: chốt hai việc chưa quyết từ review Phase 3: (a) đổi khoá chính `Event` sang `(calendar_id, id)` kèm migration (đề xuất làm sớm ở Phase 4/5); (b) hành vi S10 mà Figma chưa vẽ (tần suất Dương lịch, ngày kết thúc cho sự kiện có giờ, múi giờ).
+  3. Antigravity: bắt đầu Phase 4 (SecretStore, BYOK, Gemini, chat một sự kiện, hàng chờ AI, hộp thoại xác nhận).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -24,20 +27,22 @@
 | 0 | Hoàn thành 100% (P0-00, P0-01, P0-02, P0-03, P0-04); CodeQL nâng lên 4.39.1; CI xanh trên GitHub | `LunarCal.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `.editorconfig`, `.github/workflows/ci.yml`, `codeql.yml`, ADR-0001..0005, ADR-0023, `.gitleaks.toml`, SourceLink trong PDB |
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
 | 2 | Hoàn thành 100%: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms), P2-08 (WeekView, DayView, timed event grid, now line, lane clustering), P2-09 (AgendaView, date grouping, calendar filters), P2-10 (DayDetailPanel, Can Chi, solar terms, glosses), P2-11 (AppearancePage, week start, 12h/24h, timezone), P2-12 (FlaUI UI smoke tests out-of-process), P2-13 (kết thúc Phase 2, cập nhật tài liệu, kiểm tra gates) | `tests/LunarCal.App.UiTests/SmokeTests.cs`, `src/LunarCal.App/Views/Settings/AppearancePage.xaml`, `DayDetailPanel.xaml`, `AgendaView.xaml`, `WeekView.xaml`, `DayView.xaml`, `MonthView.xaml`, `MainWindow.xaml`, `tests/`, `docs/TRACEABILITY.md`, `CHANGELOG.md` |
-| 3 | Đang làm: P3-00a xong (Client ID trong user-secrets, consent Testing); P3-00b xong (Figma S10, S14, S18, S20, chờ duyệt) | ADR-0026, `.agents/rules/ui.md`, `docs/TASKS.md` |
+| 3 | Hoàn thành 100% (P3-00a..P3-16): P3-00a xong (Client ID trong user-secrets, consent Testing); P3-00b xong (Figma S10, S14, S18, S20); P3-01 xong (Serilog file sink xoay vòng 14 ngày, LogRedactor che bí mật, SEC-LOG-1, SEC-LOG-2); P3-02 xong (ISecretStore, DpapiSecretStore, SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018); P3-03 xong (SQLCipher encrypted storage, migration runner V1, 9 bảng spec §6, index, SEC-DATA-1, ADR-0013); P3-04 xong (ACL thư mục SEC-DATA-2, LocalDataWipeService SEC-DATA-3); P3-05 xong (Google OAuth desktop PKCE S256, loopback 127.0.0.1, state, timeout 5 phút, scope tối thiểu, ADR-0017 Accepted, FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2); P3-06 xong (Tự động refresh token, invalid_grant đăng nhập lại, hướng dẫn consent Testing hết hạn sau 7 ngày, FR-AUTH-3, FR-AUTH-6); P3-07 xong (Đăng xuất Google account: revoke endpoint, xoá refresh token DPAPI, purge toàn bộ cache Account/CalendarInfo/Event/ReminderState/LunarRule khỏi SQLite có xác nhận, FR-AUTH-4); P3-08 xong (HttpClient resilience pipeline, allow-list host, HTTPS only, timeout, circuit breaker, retry idempotency filter, SEC-NET-1, SEC-NET-2); P3-09 xong (Google Calendar API v3 Gateway và SyncEngine: đồng bộ lần đầu calendar list và events [-12m, +24m], singleEvents=true, SQLite persistence, extended_json, FR-SYNC-1, FR-SYNC-6, ADR-0028); P3-10 xong (Incremental sync bằng syncToken, xử lý sự kiện bị huỷ, upsert, tự động kích hoạt full resync khi 410 Gone, FR-SYNC-2); P3-11 xong (Quota management và throttling <= 5 req/s via IClock, exponential backoff và jitter cho 429 và 403 rateLimitExceeded, FR-SYNC-5); P3-12 xong (Hosted background sync scheduler, polling thích ứng 2m active / 10m tray, trigger tức thời focus / post-mutation / thủ công, coalescing, FR-SYNC-3); P3-13 xong (PendingMutation queue, optimistic UI, retry khi offline, ETag/If-Match concurrency control, server-wins conflict resolution khi gặp HTTP 412, FR-SYNC-4, NFR-REL); P3-14 xong (EventEditorDialog Figma S10, EventEditorViewModel, context menus cho sự kiện và ô trống với Shift+F10, kéo thả/điều chỉnh thời gian lưới 15 phút trong Tuần/Ngày, clipboard copy/paste, CRUD tích hợp PendingMutation và optimistic UI, FR-UI-4); P3-15 xong (Settings > Tài khoản Google Figma 04, chip Online/Offline, banner cảnh báo offline và hết hạn token, khối đồng bộ "Đồng bộ ngay", format relative sync time, custom OAuth overrides, local data wipe, onboarding wizard S14, FR-UI-9, FR-UI-10, FR-AUTH-1); P3-16 xong (SqliteSettingsStore persistent SQLite AppSetting store, seeding defaults, DI update, spec §6, spec §9, spec §13) | ADR-0013, ADR-0017, ADR-0018, ADR-0019, ADR-0026, ADR-0028, `src/LunarCal.Infrastructure/`, `tests/LunarCal.Infrastructure.Tests/`, `src/LunarCal.App/`, `tests/LunarCal.App.Tests/`, `docs/TASKS.md` |
 | 4–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
-## Build, test, format (chạy ngày 2026-11-02, Windows 11, .NET SDK 10.0.403, Release)
+## Build, test, format (chạy ngày 2026-11-07, Windows 11, .NET SDK 10.0.403, Release)
+
+Lần chạy mới nhất 2026-11-07 21:20 (Release, `phase/3` trước merge): build 0 warning, format pass, 493 test, 493 pass, 0 skip (gồm UI smoke 3/3). Coverage: Lunar 99,38%, Core 97% (cổng CI: `dotnet test --solution LunarCal.slnx --coverage ...` rồi `eng/Test-Coverage.ps1`). Hai test đo thời gian/cache từng đỏ khi chạy cả solution song song và đã sửa ở lần này (xem `docs/reviews/PHASE3.md` Lần 3): `FR_LUNAR_2_Year_tables_are_cached` so instance thay cho `CachedCount` toàn cục; `NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` giữ ngưỡng 100 ms nhưng cho tối đa 3 lượt đo (chạy riêng: median 33 ms, max 55 ms; chạy cả suite: ~70/130 ms do tranh CPU).
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 235 test: 235 pass, 0 fail, 0 skip (P2-R11..R15, 2 lần liên tiếp). Test NFR-PERF MonthView: chạy riêng median 19–28 ms, max 38–62 ms; 1 lần max 112 ms khi chạy song song cả solution; theo dõi trên CI |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 99.22% (ngưỡng 95% và 85%; đo 2026-11-01, P2-R10..R15 không đổi Core) |
-| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 5/5 lần liên tiếp ở máy local (P2-R8) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 493 test: 493 pass, 0 fail, 0 skip (2026-11-07 21:20) |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99,38%, Core 97% (ngưỡng 95% và 85%; đo 2026-11-07 21:20) |
+| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution 2026-11-07 |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
 - **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Lần đo đầu (code P2-07): median 132 ms, max 166 ms, **không đạt**. Sau khi tái sử dụng ô và khe chip, 5 lượt: median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms. Chưa đo lần render đầu tiên lúc khởi động app (thuộc NFR khởi động nguội).

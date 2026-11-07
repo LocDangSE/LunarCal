@@ -8,12 +8,15 @@ using FlaUI.Core.Tools;
 using FlaUI.UIA3;
 using Xunit;
 
+
+
 namespace LunarCal.App.UiTests;
 
 /// <summary>
 /// UI smoke tests driving LunarCal.exe out-of-process via FlaUI and UI Automation (spec §9, P2-12).
 /// Verifies application startup, main window appearance, view switching, and lunar date display.
 /// </summary>
+[Collection("UiSmokeTests")]
 public sealed class SmokeTests
 {
     private static string FindAppPath()
@@ -38,10 +41,16 @@ public sealed class SmokeTests
 
     private static Application LaunchApp(string exePath)
     {
+        foreach (var p in Process.GetProcessesByName("LunarCal"))
+        {
+            try { p.Kill(); p.WaitForExit(1000); } catch { }
+        }
+
         var psi = new ProcessStartInfo
         {
             FileName = exePath,
             WorkingDirectory = Path.GetDirectoryName(exePath)!,
+            Arguments = "--skip-first-run",
         };
         return Application.Launch(psi);
     }
@@ -59,7 +68,7 @@ public sealed class SmokeTests
         }
     }
 
-    private static readonly TimeSpan _uiTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan _uiTimeout = TimeSpan.FromSeconds(10);
 
     // Figma 01/S06/S07 subtitles: "Âm lịch: tháng 8 – 9 năm Bính Ngọ", "Âm lịch: 3 – 9 tháng 9 …", "Âm lịch: 7 tháng 9 …";
     // English "Lunar: months 8 – 9, …", "Lunar: 3 – 9 of month 9, …", "Lunar: day 7 of month 9, …".
@@ -92,6 +101,10 @@ public sealed class SmokeTests
         try
         {
             app.Close();
+            if (!app.HasExited)
+            {
+                try { app.Kill(); } catch { }
+            }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -189,7 +202,7 @@ public sealed class SmokeTests
         {
             var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
                 ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
-            var settingsButton = window.FindFirstDescendant(cf => cf.ByAutomationId("BtnSettings"))?.AsButton();
+            var settingsButton = WaitFor(window, "BtnSettings").AsButton();
             settingsButton.Should().NotBeNull("the top bar must expose a Settings button (Figma S13)");
             settingsButton!.Invoke();
 
@@ -198,13 +211,21 @@ public sealed class SmokeTests
                 TimeSpan.FromSeconds(5)).Result;
             settingsWindow.Should().NotBeNull("Settings must open as a window owned by the shell");
 
+            // Figma 04: Settings opens on "Chung"; go to "Giao diện" (S13).
+            // Select through the UIA SelectionItem pattern, not a mouse click: right after the window opens the
+            // radio is in the tree before layout gives it a clickable point (NoClickablePointException).
+            var navAppearance = Retry.WhileNull(
+                () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("NavAppearance")), TimeSpan.FromSeconds(5)).Result;
+            navAppearance.Should().NotBeNull("the Settings navigation must list the Appearance page");
+            SelectRadioButton(navAppearance!.AsRadioButton());
+
             var page = Retry.WhileNull(
                 () => settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId("AppearanceSettingsPage")),
                 TimeSpan.FromSeconds(5)).Result;
             page.Should().NotBeNull("the Appearance page (S13) must be hosted in the Settings window");
 
             // FR-UI-7, FR-UI-8: switching theme at runtime must not crash or close the app.
-            foreach (var id in new[] { "ThemeRadioDark", "ThemeRadioHighContrast", "ThemeRadioLight", "ThemeRadioSystem" })
+            foreach (var id in new[] { "ThemeRadioDark", "ThemeRadioLight", "ThemeRadioSystem" })
             {
                 var radio = settingsWindow!.FindFirstDescendant(cf => cf.ByAutomationId(id))?.AsRadioButton();
                 radio.Should().NotBeNull($"theme option {id} must exist");

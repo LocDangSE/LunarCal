@@ -1,0 +1,190 @@
+<Window x:Class="LunarCal.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+        xmlns:settings="clr-namespace:LunarCal.App.Views.Settings"
+        xmlns:conv="clr-namespace:LunarCal.App.Converters"
+        xmlns:loc="clr-namespace:LunarCal.App.Localization"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+        Title="{loc:Loc Key=topbar.settings}"
+        AutomationProperties.AutomationId="SettingsWindow"
+        Width="1180" Height="800"
+        MinWidth="960" MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="{DynamicResource FontFamilyBase}"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+  <Window.Resources>
+    <conv:EnumToBooleanConverter x:Key="EnumToBool" />
+
+    <!-- "Settings navigation / …" (Figma 34:199): 42 px, padding 12, radius 8, 14 Medium; selected = accent tint -->
+    <Style x:Key="SettingsNavItemStyle" TargetType="RadioButton">
+      <Setter Property="Height" Value="{DynamicResource SettingsNavItemHeight}" />
+      <Setter Property="Margin" Value="0,0,0,16" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSubtitle}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <!-- Focus ring only for keyboard navigation; a mouse click shows the filled state alone (Figma 04). -->
+      <Setter Property="FocusVisualStyle">
+        <Setter.Value>
+          <Style>
+            <Setter Property="Control.Template">
+              <Setter.Value>
+                <ControlTemplate>
+                  <Border BorderThickness="1" BorderBrush="{DynamicResource AccentPrimaryBrush}"
+                          CornerRadius="{DynamicResource CornerRadiusMedium}" />
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Border x:Name="Bd" Background="Transparent" CornerRadius="{DynamicResource CornerRadiusMedium}"
+                    Padding="12,0" BorderThickness="1" BorderBrush="Transparent">
+              <ContentPresenter VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="PageHostStyle" TargetType="ContentControl">
+      <Setter Property="Visibility" Value="Collapsed" />
+      <Setter Property="Focusable" Value="False" />
+    </Style>
+  </Window.Resources>
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <!-- 280 = SidebarWidth token; GridLength cannot take the double resource -->
+      <ColumnDefinition Width="280" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <!-- Settings nav (34:192): white, right border, sidebar shadow, padding 16/20/16/16 -->
+    <Border Grid.Column="0"
+            Background="{DynamicResource SidebarBackgroundBrush}"
+            BorderBrush="{DynamicResource ShellBorderBrush}"
+            BorderThickness="0,0,1,0"
+            Effect="{DynamicResource ShadowSidebar}"
+            Panel.ZIndex="1">
+      <DockPanel Margin="16,20,16,16" LastChildFill="False">
+        <StackPanel DockPanel.Dock="Top">
+          <!-- Logo (34:193) -->
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+            <Border Width="34" Height="34"
+                    Background="{DynamicResource AccentPrimaryBrush}"
+                    CornerRadius="{DynamicResource CornerRadiusLogo}">
+              <Path Width="18" Height="18" Data="{DynamicResource IconSparkle18}"
+                    Fill="{DynamicResource OnAccentBrush}" Stretch="None" />
+            </Border>
+            <TextBlock Text="LunarCal" Margin="10,0,0,0"
+                       FontSize="{DynamicResource FontSizeBrand}"
+                       FontWeight="{DynamicResource FontWeightBold}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center" />
+          </StackPanel>
+
+          <TextBlock Text="{loc:Loc Key=topbar.settings}"
+                     Margin="0,0,0,16"
+                     FontSize="{DynamicResource FontSizeDisplay}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}" />
+
+          <RadioButton Content="{loc:Loc Key=settings.nav.general}" GroupName="SettingsNav"
+                       Style="{StaticResource SettingsNavItemStyle}"
+                       IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=General}"
+                       AutomationProperties.AutomationId="NavGeneral" />
+          <RadioButton Content="{loc:Loc Key=settings.nav.account}" GroupName="SettingsNav"
+                       Style="{StaticResource SettingsNavItemStyle}"
+                       IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=GoogleAccount}"
+                       AutomationProperties.AutomationId="NavGoogleAccount" />
+          <RadioButton Content="{loc:Loc Key=settings.nav.appearance}" GroupName="SettingsNav"
+                       Style="{StaticResource SettingsNavItemStyle}"
+                       IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=Appearance}"
+                       AutomationProperties.AutomationId="NavAppearance" />
+          <RadioButton Content="{loc:Loc Key=settings.nav.advanced}" GroupName="SettingsNav"
+                       Style="{StaticResource SettingsNavItemStyle}"
+                       IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=Advanced}"
+                       AutomationProperties.AutomationId="NavAdvanced" />
+        </StackPanel>
+
+        <Button DockPanel.Dock="Bottom"
+                Content="{loc:Loc Key=settings.nav.back}"
+                Command="{Binding CloseCommand}"
+                Style="{StaticResource LinkButtonStyle}"
+                AutomationProperties.AutomationId="BtnSettingsBack" />
+      </DockPanel>
+    </Border>
+
+    <!-- Content (4:18): sections 720 wide, 60 from the nav, 40 from the top -->
+    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+      <Grid Margin="60,40,40,40" Width="{DynamicResource SettingsContentWidth}" HorizontalAlignment="Left">
+        <ContentControl>
+          <ContentControl.Style>
+            <Style TargetType="ContentControl" BasedOn="{StaticResource PageHostStyle}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveTab}" Value="{x:Static vm:SettingsTab.General}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </ContentControl.Style>
+          <settings:GeneralPage />
+        </ContentControl>
+        <ContentControl>
+          <ContentControl.Style>
+            <Style TargetType="ContentControl" BasedOn="{StaticResource PageHostStyle}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveTab}" Value="{x:Static vm:SettingsTab.GoogleAccount}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </ContentControl.Style>
+          <settings:GoogleAccountPage DataContext="{Binding Account}" />
+        </ContentControl>
+        <ContentControl>
+          <ContentControl.Style>
+            <Style TargetType="ContentControl" BasedOn="{StaticResource PageHostStyle}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveTab}" Value="{x:Static vm:SettingsTab.Appearance}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </ContentControl.Style>
+          <settings:AppearancePage DataContext="{Binding Appearance}" />
+        </ContentControl>
+        <ContentControl>
+          <ContentControl.Style>
+            <Style TargetType="ContentControl" BasedOn="{StaticResource PageHostStyle}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveTab}" Value="{x:Static vm:SettingsTab.Advanced}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </ContentControl.Style>
+          <settings:AdvancedPage />
+        </ContentControl>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
+</Window>

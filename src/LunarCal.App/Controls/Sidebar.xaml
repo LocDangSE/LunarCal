@@ -189,6 +189,12 @@
                 <Style TargetType="Ellipse">
                   <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
                   <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsSignedIn}" Value="False">
+                      <Setter Property="Fill" Value="{DynamicResource TextTertiaryBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsSyncError}" Value="True">
+                      <Setter Property="Fill" Value="{DynamicResource DangerBrush}" />
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding IsOnline}" Value="False">
                       <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
                     </DataTrigger>
@@ -196,7 +202,8 @@
                 </Style>
               </Ellipse.Style>
             </Ellipse>
-            <TextBlock Text="{loc:Loc Key=sidebar.sync_title}"
+            <TextBlock Text="{Binding SyncTitleText}"
+                       AutomationProperties.AutomationId="SyncTitleText"
                        Margin="8,0,0,0"
                        FontSize="{DynamicResource FontSizeBody}"
                        FontWeight="{DynamicResource FontWeightMedium}"

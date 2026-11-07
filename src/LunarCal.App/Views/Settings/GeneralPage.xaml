@@ -1,0 +1,58 @@
+<UserControl x:Class="LunarCal.App.Views.Settings.GeneralPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+             AutomationProperties.AutomationId="GeneralSettingsPage">
+  <!-- Figma 04 · Section "Chung" (4:19): language, time zone, lunar calendar (FR-I18N-1, FR-UI-7, FR-LUNAR-6) -->
+  <StackPanel>
+    <TextBlock Text="{loc:Loc Key=settings.general.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Border DockPanel.Dock="Right" Style="{StaticResource SettingsSegmentTrackStyle}">
+              <StackPanel Orientation="Horizontal">
+                <RadioButton Content="Tiếng Việt" GroupName="UiLanguage" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding IsVietnamese, Mode=TwoWay}" AutomationProperties.AutomationId="LanguageVi" />
+                <RadioButton Content="English" GroupName="UiLanguage" Style="{StaticResource SettingsSegmentStyle}"
+                             IsChecked="{Binding IsEnglish, Mode=TwoWay}" AutomationProperties.AutomationId="LanguageEn" />
+              </StackPanel>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.language.title}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.language.desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Text="{Binding Appearance.SelectedTimezoneDisplay}" VerticalAlignment="Center"
+                       FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextPrimaryBrush}"
+                       AutomationProperties.AutomationId="GeneralTimezoneText" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.general.timezone}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.general.timezone_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" Style="{StaticResource ToggleSwitchStyle}"
+                      IsChecked="{Binding Appearance.IsLunarEnabled, Mode=TwoWay}"
+                      AutomationProperties.AutomationId="LunarEnabledToggle"
+                      AutomationProperties.Name="{loc:Loc Key=settings.lunar.title}" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.lunar.title}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.lunar.desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

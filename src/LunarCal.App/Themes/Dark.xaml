@@ -71,4 +71,12 @@
   <SolidColorBrush x:Key="SuccessBorderBrush" Color="#155E3B" />
   <SolidColorBrush x:Key="ScrimBrush" Color="#A6000000" />
 
+
+  <!-- Settings and dialogs (Figma 04, S10, S20; P3-R3): info banner border, danger button border, danger row tint -->
+  <SolidColorBrush x:Key="AccentBorderBrush" Color="#2C4A7A" />
+  <SolidColorBrush x:Key="DangerBorderBrush" Color="#7A2E28" />
+  <!-- S14 (39:336) warning banner border; S14 (39:280) selected language card fill (P3-R3) -->
+  <SolidColorBrush x:Key="WarningBorderBrush" Color="#6B4E12" />
+  <SolidColorBrush x:Key="AccentFaintBrush" Color="#1A2436" />
+  <SolidColorBrush x:Key="DangerRowBrush" Color="#80381615" />
 </ResourceDictionary>

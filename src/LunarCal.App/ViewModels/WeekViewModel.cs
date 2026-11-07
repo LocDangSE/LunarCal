@@ -18,6 +18,7 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
     private readonly IEventStore _eventStore;
     private readonly ILocalizationService _localizationService;
     private readonly IDisplayPreferences _preferences;
+    private readonly IMutationService? _mutationService;
 
     // Incremented by every load request; a load whose version is no longer current drops its result, so the
     // latest request always wins even when earlier store calls complete later.
@@ -64,11 +65,13 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
     public WeekViewModel(
         IEventStore eventStore,
         ILocalizationService localizationService,
-        IDisplayPreferences preferences)
+        IDisplayPreferences preferences,
+        IMutationService? mutationService = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
+        _mutationService = mutationService;
 
         _displayDate = CalendarTime.ToLocalDate(DateTimeOffset.UtcNow, _preferences.TimeZone);
         _isLunarVisible = _preferences.LunarEnabled;
@@ -209,6 +212,194 @@ public sealed partial class WeekViewModel : ObservableObject, IDisposable
 
         sw.Stop();
         RenderDuration = sw.Elapsed;
+    }
+
+    /// <summary>Raised when the user asks to open the event editor dialog (Figma S10).</summary>
+    public event EventHandler<EventEditorRequest>? EventEditorRequested;
+
+    /// <summary>
+    /// Adjusts an event's start and end times by a time delta (drag and drop time adjustment, FR-UI-4).
+    /// </summary>
+    public async Task<CalendarEvent?> AdjustEventTimeAsync(
+        string eventId,
+        TimeSpan timeDelta,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        if (_mutationService is null)
+        {
+            return null;
+        }
+
+        var ev = await _eventStore.GetEventByIdAsync(eventId, cancellationToken).ConfigureAwait(false);
+        if (ev is null)
+        {
+            return null;
+        }
+
+        var updated = ev with
+        {
+            StartUtc = ev.StartUtc + timeDelta,
+            EndUtc = ev.EndUtc + timeDelta
+        };
+
+        var accountId = "primary";
+        var result = await _mutationService.UpdateEventOptimisticAsync(accountId, updated.CalendarId, updated, cancellationToken).ConfigureAwait(false);
+        await PopulateWeekAsync(DisplayDate, cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>
+    /// Sets an event's explicit start and end times (FR-UI-4).
+    /// </summary>
+    public async Task<CalendarEvent?> SetEventTimeAsync(
+        string eventId,
+        DateTimeOffset newStartUtc,
+        DateTimeOffset newEndUtc,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        if (_mutationService is null)
+        {
+            return null;
+        }
+
+        var ev = await _eventStore.GetEventByIdAsync(eventId, cancellationToken).ConfigureAwait(false);
+        if (ev is null)
+        {
+            return null;
+        }
+
+        var updated = ev with
+        {
+            StartUtc = newStartUtc,
+            EndUtc = newEndUtc
+        };
+
+        var accountId = "primary";
+        var result = await _mutationService.UpdateEventOptimisticAsync(accountId, updated.CalendarId, updated, cancellationToken).ConfigureAwait(false);
+        await PopulateWeekAsync(DisplayDate, cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>Opens the editor dialog for an existing event (Figma S10).</summary>
+    public void OpenEvent(CalendarEvent calendarEvent)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Edit, Event: calendarEvent));
+    }
+
+    /// <summary>Opens the editor dialog for a new event at the specified date and time.</summary>
+    public void CreateEventAt(DateOnly date, TimeOnly time)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Create, Date: date, Time: time));
+    }
+
+    /// <summary>Opens the editor dialog for an all-day event.</summary>
+    public void CreateEventAllDay(DateOnly date)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.Create, Date: date, IsAllDay: true));
+    }
+
+    /// <summary>Opens the editor dialog for creating a lunar rule.</summary>
+    public void CreateLunarRule(DateOnly date)
+    {
+        EventEditorRequested?.Invoke(this, new EventEditorRequest(EventEditorMode.CreateLunarRule, Date: date, IsAllDay: true));
+    }
+
+    /// <summary>Duplicates an event (Figma S10 context menu).</summary>
+    public async Task<CalendarEvent?> DuplicateEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(calendarEvent);
+        if (_mutationService is null)
+        {
+            return null;
+        }
+
+        var copy = calendarEvent with
+        {
+            Id = Guid.NewGuid().ToString("D"),
+            GoogleId = null,
+            Etag = null,
+            StartUtc = calendarEvent.AllDay ? calendarEvent.StartUtc.AddDays(1) : calendarEvent.StartUtc.AddHours(1),
+            EndUtc = calendarEvent.AllDay ? calendarEvent.EndUtc.AddDays(1) : calendarEvent.EndUtc.AddHours(1)
+        };
+
+        var accountId = "primary";
+        var result = await _mutationService.CreateEventOptimisticAsync(accountId, copy.CalendarId, copy, cancellationToken).ConfigureAwait(false);
+        await PopulateWeekAsync(DisplayDate, cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>Moves an event to another calendar (Figma S10 context menu).</summary>
+    public async Task MoveEventToCalendarAsync(CalendarEvent calendarEvent, string targetCalendarId, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(calendarEvent);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetCalendarId);
+        if (_mutationService is null)
+        {
+            return;
+        }
+
+        var updated = calendarEvent with { CalendarId = targetCalendarId };
+        var accountId = "primary";
+        await _mutationService.UpdateEventOptimisticAsync(accountId, targetCalendarId, updated, cancellationToken).ConfigureAwait(false);
+        await PopulateWeekAsync(DisplayDate, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Deletes an event (Figma S10 context menu).</summary>
+    public async Task DeleteEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(calendarEvent);
+        if (_mutationService is null)
+        {
+            return;
+        }
+
+        var accountId = "primary";
+        await _mutationService.DeleteEventOptimisticAsync(accountId, calendarEvent.CalendarId, calendarEvent.Id, calendarEvent.Etag, cancellationToken).ConfigureAwait(false);
+        await PopulateWeekAsync(DisplayDate, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Pastes the copied event from clipboard at the specified date and time.</summary>
+    public async Task<CalendarEvent?> PasteEventAsync(DateOnly date, TimeOnly? time = null, CancellationToken cancellationToken = default)
+    {
+        if (!EventClipboard.HasEvent || EventClipboard.Current is null || _mutationService is null)
+        {
+            return null;
+        }
+
+        var source = EventClipboard.Current;
+        var timeZone = _preferences.TimeZone;
+        DateTimeOffset startUtc;
+        DateTimeOffset endUtc;
+
+        if (source.AllDay)
+        {
+            startUtc = CalendarTime.StartOfDayUtc(date, timeZone);
+            endUtc = CalendarTime.StartOfDayUtc(date.AddDays(1), timeZone);
+        }
+        else
+        {
+            var targetTime = time ?? new TimeOnly(9, 0);
+            var duration = source.EndUtc - source.StartUtc;
+            startUtc = CalendarTime.ToUtc(date, targetTime, timeZone);
+            endUtc = startUtc + (duration > TimeSpan.Zero ? duration : TimeSpan.FromHours(1));
+        }
+
+        var pasted = source with
+        {
+            Id = Guid.NewGuid().ToString("D"),
+            GoogleId = null,
+            Etag = null,
+            StartUtc = startUtc,
+            EndUtc = endUtc,
+            AllDay = source.AllDay
+        };
+
+        var accountId = "primary";
+        var result = await _mutationService.CreateEventOptimisticAsync(accountId, pasted.CalendarId, pasted, cancellationToken).ConfigureAwait(false);
+        await PopulateWeekAsync(DisplayDate, cancellationToken).ConfigureAwait(false);
+        return result;
     }
 
     private void OnLocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -1,8 +1,8 @@
 using System.Windows;
-using System.Windows.Automation;
 using LunarCal.App.Localization;
+using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
-using LunarCal.App.Views.Settings;
+using LunarCal.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LunarCal.App.Views;
@@ -21,24 +21,57 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
         viewModel.SettingsRequested += OnSettingsRequested;
+        viewModel.EventEditorRequested += OnEventEditorRequested;
+
+        // FR-SYNC-3: sync on focus; poll less often while minimized.
+        Activated += (_, _) => viewModel.OnWindowActivated();
+        StateChanged += (_, _) => viewModel.OnWindowMinimizedChanged(WindowState == WindowState.Minimized);
     }
 
-    // Opens Settings > Appearance (Figma S13) as a modal window owned by the shell.
+    // Opens Settings Window (Figma 04, S13, S20) as a modal window owned by the shell.
     private void OnSettingsRequested(object? sender, EventArgs e)
     {
+        var settingsWindow = _services.GetRequiredService<SettingsWindow>();
+        settingsWindow.Owner = this;
+        settingsWindow.ShowDialog();
+
+        // Sign-in, sign-out or a data wipe may have happened in Settings: refresh account, calendars and views.
+        if (DataContext is MainWindowViewModel vm)
+        {
+            _ = RefreshAfterSettingsAsync(vm);
+        }
+    }
+
+    private static async Task RefreshAfterSettingsAsync(MainWindowViewModel vm)
+    {
+        await vm.LoadAccountAsync().ConfigureAwait(true);
+        await vm.LoadCalendarsAsync().ConfigureAwait(true);
+        await vm.ReloadAllViewsAsync().ConfigureAwait(true);
+    }
+
+    // Opens Event Editor Dialog (Figma S10) as a modal dialog owned by the shell.
+    // Event handler: async void is allowed here (AGENTS.md §7); the calendars must be loaded before the form is
+    // initialised, otherwise the calendar picker is empty and the event has no calendar to be written to.
+    private async void OnEventEditorRequested(object? sender, EventEditorRequest request)
+    {
+        var eventStore = _services.GetRequiredService<IEventStore>();
         var localization = _services.GetRequiredService<ILocalizationService>();
-        var page = _services.GetRequiredService<AppearancePage>();
-        var window = new Window
+        var preferences = _services.GetRequiredService<IDisplayPreferences>();
+        var mutationService = _services.GetService<IMutationService>();
+
+        var editorVm = new EventEditorViewModel(eventStore, localization, preferences, mutationService);
+        await editorVm.LoadCalendarsAsync().ConfigureAwait(true);
+        editorVm.Initialize(request);
+
+        var dialog = new EventEditorDialog(editorVm)
         {
             Owner = this,
-            Title = localization["topbar.settings"],
-            Content = page,
-            Width = 760,
-            Height = 720,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
-        window.SetResourceReference(BackgroundProperty, "WindowBackgroundBrush");
-        AutomationProperties.SetAutomationId(window, "SettingsWindow");
-        window.ShowDialog();
+
+        if (dialog.ShowDialog() == true && DataContext is MainWindowViewModel mwVm)
+        {
+            _ = mwVm.ReloadActiveViewAsync();
+        }
     }
 }

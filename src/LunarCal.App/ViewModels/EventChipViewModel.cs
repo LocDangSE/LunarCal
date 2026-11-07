@@ -10,6 +10,9 @@ namespace LunarCal.App.ViewModels;
 /// </summary>
 public sealed partial class EventChipViewModel : ObservableObject
 {
+    /// <summary>The underlying calendar event domain model if active.</summary>
+    public CalendarEvent? Event { get; private set; }
+
     [ObservableProperty]
     private string _title = string.Empty;
 
@@ -32,6 +35,7 @@ public sealed partial class EventChipViewModel : ObservableObject
     public void Show(CalendarEvent calendarEvent, string label, string? calendarColor)
     {
         ArgumentNullException.ThrowIfNull(calendarEvent);
+        Event = calendarEvent;
         var palette = CalendarColors.Palette(calendarColor);
         Title = label;
         Background = palette.Subtle;
@@ -43,6 +47,7 @@ public sealed partial class EventChipViewModel : ObservableObject
     /// <summary>Hides this chip slot.</summary>
     public void Hide()
     {
+        Event = null;
         Title = string.Empty;
         IsAi = false;
         IsVisible = false;

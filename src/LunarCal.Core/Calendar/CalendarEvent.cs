@@ -76,6 +76,18 @@ public sealed record CalendarEvent
     public string? Status { get; init; }
 
     /// <summary>
+    /// Popup reminder offsets in minutes before the start (FR-UI-4). <see langword="null"/> means the calendar's
+    /// default reminders (Google <c>reminders.useDefault = true</c>); an empty list means no reminder.
+    /// </summary>
+    public IReadOnlyList<int>? ReminderMinutes { get; init; }
+
+    /// <summary>
+    /// RFC 5545 recurrence lines (for example <c>RRULE:FREQ=WEEKLY</c>) of a recurring master event (FR-UI-4).
+    /// <see langword="null"/> for single events and for expanded instances (<c>singleEvents=true</c>).
+    /// </summary>
+    public IReadOnlyList<string>? Recurrence { get; init; }
+
+    /// <summary>
     /// Extended properties dictionary (spec §6 extended_json, FR-SYNC-6 private extendedProperties).
     /// </summary>
     public IReadOnlyDictionary<string, string> ExtendedProperties { get; init; } =

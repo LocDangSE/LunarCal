@@ -246,7 +246,9 @@
                 <Border Background="{DynamicResource SurfaceMutedBrush}"
                         CornerRadius="{DynamicResource CornerRadiusListItem}"
                         Padding="12,10"
-                        Margin="0,0,0,8">
+                        Margin="0,0,0,8"
+                        Cursor="Hand"
+                        MouseLeftButtonUp="OnEventItemClick">
                   <DockPanel>
                     <Border DockPanel.Dock="Left"
                             Width="3" Height="34"

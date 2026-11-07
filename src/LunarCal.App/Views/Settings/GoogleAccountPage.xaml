@@ -1,0 +1,110 @@
+<UserControl x:Class="LunarCal.App.Views.Settings.GoogleAccountPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:GoogleAccountViewModel}"
+             AutomationProperties.AutomationId="GoogleAccountSettingsPage">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
+  </UserControl.Resources>
+
+  <!-- Figma 04 · Section "Tài khoản Google" (4:43): account row + last sync row (FR-AUTH-1, FR-AUTH-4, FR-UI-10) -->
+  <StackPanel>
+    <TextBlock Text="{loc:Loc Key=settings.account.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.account.desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}" Margin="0,10,0,16">
+      <StackPanel>
+        <!-- Account row (4:56) -->
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.account.signout_button}"
+                    Command="{Binding SignOutCommand}"
+                    Style="{StaticResource DangerOutlineButtonStyle}"
+                    Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}"
+                    AutomationProperties.AutomationId="BtnSignOut" />
+            <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.account.signin_button}"
+                    Command="{Binding SignInCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding IsAuthorizing, Converter={StaticResource InverseBool}}"
+                    Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}"
+                    AutomationProperties.AutomationId="BtnSignIn" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <Border Width="36" Height="36" CornerRadius="{DynamicResource CornerRadiusFull}"
+                      Background="{DynamicResource AvatarBackgroundBrush}">
+                <TextBlock Text="{Binding AccountInitials}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="{DynamicResource FontSizeBodyStrong}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource AvatarTextBrush}" />
+              </Border>
+              <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding AccountEmail}" Style="{StaticResource SettingsRowTitleStyle}"
+                           Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}"
+                           AutomationProperties.AutomationId="AccountEmailText" />
+                <TextBlock Text="{loc:Loc Key=settings.account.status_disconnected}" Style="{StaticResource SettingsRowTitleStyle}"
+                           Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}" />
+                <StackPanel Orientation="Horizontal" Margin="0,2,0,0"
+                            Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVis}}">
+                  <Ellipse Width="7" Height="7" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
+                  <TextBlock Text="{loc:Loc Key=settings.account.status_connected}" Margin="6,0,0,0"
+                             FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource SuccessTextBrush}" />
+                </StackPanel>
+                <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource SettingsRowDescStyle}"
+                           Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVis}}" />
+              </StackPanel>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <!-- Last sync row (4:63) -->
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Command="{Binding SyncNowCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    IsEnabled="{Binding IsSignedIn}"
+                    AutomationProperties.AutomationId="BtnSyncNow"
+                    AutomationProperties.Name="{loc:Loc Key=settings.account.sync_now}">
+              <StackPanel Orientation="Horizontal">
+                <Path Width="16" Height="16" Data="{DynamicResource IconRefresh16}" Stretch="None"
+                      Stroke="{DynamicResource TextBodyBrush}" StrokeThickness="1.33"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                <TextBlock Text="{loc:Loc Key=settings.account.sync_now}" Margin="8,0,0,0"
+                           FontWeight="{DynamicResource FontWeightSemiBold}" />
+              </StackPanel>
+            </Button>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{Binding LastSyncText}" Style="{StaticResource SettingsRowTitleStyle}"
+                         AutomationProperties.AutomationId="LastSyncText" />
+              <TextBlock Text="{loc:Loc Key=settings.account.sync_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Error from sign-in, sign-out or sync -->
+    <TextBlock Text="{Binding ErrorMessage}" Margin="0,0,0,16" TextWrapping="Wrap"
+               FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource DangerBrush}"
+               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVis}}"
+               AutomationProperties.AutomationId="AccountErrorText" />
+
+    <!-- Banner/Info: consent screen in Testing (FR-AUTH-6, ADR-0026) -->
+    <Border Style="{StaticResource InfoBannerStyle}" Visibility="{Binding IsTestingMode, Converter={StaticResource BoolToVis}}"
+            AutomationProperties.AutomationId="TestingModeBanner">
+      <DockPanel>
+        <Ellipse DockPanel.Dock="Left" Width="10" Height="10" Fill="{DynamicResource AccentPrimaryBrush}"
+                 VerticalAlignment="Center" Margin="0,0,12,0" />
+        <StackPanel>
+          <TextBlock Text="{loc:Loc Key=settings.account.testing_title}" FontSize="{DynamicResource FontSizeBodyStrong}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}" Foreground="{DynamicResource AccentTextBrush}" TextWrapping="Wrap" />
+          <TextBlock Text="{loc:Loc Key=settings.account.testing_warning}" Margin="0,2,0,0" FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextBodyBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

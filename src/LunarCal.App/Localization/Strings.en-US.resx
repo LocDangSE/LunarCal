@@ -58,7 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-
   <!-- Spec §4.11 (FR-I18N-7) Settings -->
   <data name="settings.language.title" xml:space="preserve">
     <value>Interface language</value>
@@ -102,7 +101,6 @@
   <data name="settings.gemini.desc" xml:space="preserve">
     <value>Only the command text is sent, never your calendar</value>
   </data>
-
   <!-- Spec §4.11 (FR-I18N-7) Confirm & Consent Dialogs -->
   <data name="confirm.privacy.off" xml:space="preserve">
     <value>Opt-in is off: no training data is sent when you confirm.</value>
@@ -122,12 +120,10 @@
   <data name="consent.decline" xml:space="preserve">
     <value>No thanks</value>
   </data>
-
   <!-- Spec §4.11 (FR-I18N-7) Lunar Title Range -->
   <data name="lunar.title.range" xml:space="preserve">
     <value>Lunar: months 8 – 9, year of Bính Ngọ (Fire Horse)</value>
   </data>
-
   <!-- Spec §4.11 Toast Notifications (FR-NOTIFY) -->
   <data name="Toast_Header_Reminder" xml:space="preserve">
     <value>{0} · Reminder</value>
@@ -171,7 +167,6 @@
   <data name="Toast_Hidden_Content" xml:space="preserve">
     <value>You have an event at {0}</value>
   </data>
-
   <!-- Views & Navigation (FR-I18N-4) -->
   <data name="view.day" xml:space="preserve">
     <value>Day</value>
@@ -188,7 +183,6 @@
   <data name="topbar.today" xml:space="preserve">
     <value>Today</value>
   </data>
-
   <!-- Common UI actions -->
   <data name="common.close" xml:space="preserve">
     <value>Close</value>
@@ -214,7 +208,6 @@
   <data name="lunar.leap" xml:space="preserve">
     <value>leap</value>
   </data>
-
   <!-- Heavenly Stems (Can) -->
   <data name="can.giap" xml:space="preserve">
     <value>Yang Wood</value>
@@ -246,7 +239,6 @@
   <data name="can.quy" xml:space="preserve">
     <value>Yin Water</value>
   </data>
-
   <!-- Earthly Branches (Chi) -->
   <data name="chi.ty" xml:space="preserve">
     <value>Rat</value>
@@ -284,7 +276,6 @@
   <data name="chi.hoi" xml:space="preserve">
     <value>Pig</value>
   </data>
-
   <!-- 24 Solar Terms (Tiết khí) -->
   <data name="solarterm.xuan_phan" xml:space="preserve">
     <value>Spring Equinox</value>
@@ -448,22 +439,21 @@
   <data name="day_detail.lunar_disabled" xml:space="preserve">
     <value>Lunar calendar is disabled in Settings</value>
   </data>
-
   <!-- Spec §4.3 (FR-UI-7), §4.11 (FR-I18N-4) Appearance Settings (Figma S13) -->
   <data name="settings.appearance.title" xml:space="preserve">
     <value>Appearance</value>
   </data>
   <data name="settings.appearance.desc" xml:space="preserve">
-    <value>Customize theme, first day of week, time format, and display timezone.</value>
+    <value>Applied immediately, no restart needed</value>
   </data>
   <data name="settings.appearance.theme" xml:space="preserve">
     <value>Theme</value>
   </data>
   <data name="settings.appearance.theme_desc" xml:space="preserve">
-    <value>Select application appearance theme</value>
+    <value>System follows the Windows light/dark mode; high contrast follows Windows</value>
   </data>
   <data name="settings.appearance.theme_system" xml:space="preserve">
-    <value>System default</value>
+    <value>System</value>
   </data>
   <data name="settings.appearance.theme_light" xml:space="preserve">
     <value>Light</value>
@@ -478,7 +468,7 @@
     <value>First day of week</value>
   </data>
   <data name="settings.appearance.week_start_desc" xml:space="preserve">
-    <value>Choose which day begins calendar columns</value>
+    <value>Applies to the Month and Week grids and the mini calendar</value>
   </data>
   <data name="settings.appearance.week_start_monday" xml:space="preserve">
     <value>Monday</value>
@@ -490,19 +480,19 @@
     <value>Time format</value>
   </data>
   <data name="settings.appearance.time_format_desc" xml:space="preserve">
-    <value>Choose 24-hour or 12-hour AM/PM display</value>
+    <value>Example: 14:00 or 2:00 PM</value>
   </data>
   <data name="settings.appearance.time_format_24h" xml:space="preserve">
-    <value>24-hour (14:00)</value>
+    <value>24-hour</value>
   </data>
   <data name="settings.appearance.time_format_12h" xml:space="preserve">
-    <value>12-hour (2:00 PM)</value>
+    <value>12-hour</value>
   </data>
   <data name="settings.appearance.timezone" xml:space="preserve">
-    <value>Display timezone</value>
+    <value>Display time zone</value>
   </data>
   <data name="settings.appearance.timezone_desc" xml:space="preserve">
-    <value>Timezone used to calculate and display calendar events</value>
+    <value>Defaults to the system; you can pick another zone</value>
   </data>
   <data name="settings.appearance.timezone_system" xml:space="preserve">
     <value>System timezone ({0})</value>
@@ -701,5 +691,571 @@
   </data>
   <data name="day_detail.close" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="auth.reauth.required" xml:space="preserve">
+    <value>Your Google session has expired or was revoked. Please sign in again.</value>
+  </data>
+  <data name="auth.reauth.testing_notice" xml:space="preserve">
+    <value>The OAuth consent screen is in Testing mode, so refresh tokens expire automatically after 7 days. When published to In production, sessions remain valid indefinitely.</value>
+  </data>
+  <data name="auth.signout.confirm_title" xml:space="preserve">
+    <value>Sign out of Google account?</value>
+  </data>
+  <data name="auth.signout.confirm_message" xml:space="preserve">
+    <value>All cached calendar data and events on this device for account {0} will be deleted.</value>
+  </data>
+  <data name="auth.signout.confirm_action" xml:space="preserve">
+    <value>Sign out &amp; delete data</value>
+  </data>
+  <!-- Event Editor & Context Menu (FR-UI-4, Figma S10) -->
+  <data name="event.dialog.create_title" xml:space="preserve">
+    <value>New event</value>
+  </data>
+  <data name="event.dialog.edit_title" xml:space="preserve">
+    <value>Edit event</value>
+  </data>
+  <data name="event.title.placeholder" xml:space="preserve">
+    <value>Add title</value>
+  </data>
+  <data name="event.location.placeholder" xml:space="preserve">
+    <value>Add location</value>
+  </data>
+  <data name="event.description.placeholder" xml:space="preserve">
+    <value>Add description</value>
+  </data>
+  <data name="event.calendar" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="event.start_time" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="event.end_time" xml:space="preserve">
+    <value>Ends</value>
+  </data>
+  <data name="event.recurrence" xml:space="preserve">
+    <value>Repeat</value>
+  </data>
+  <data name="recurrence.none" xml:space="preserve">
+    <value>Does not repeat</value>
+  </data>
+  <data name="recurrence.daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="recurrence.weekly" xml:space="preserve">
+    <value>Weekly</value>
+  </data>
+  <data name="recurrence.monthly" xml:space="preserve">
+    <value>Monthly</value>
+  </data>
+  <data name="recurrence.yearly" xml:space="preserve">
+    <value>Yearly</value>
+  </data>
+  <data name="recurrence.lunar" xml:space="preserve">
+    <value>Lunar recurrence</value>
+  </data>
+  <data name="lunar_rule.day" xml:space="preserve">
+    <value>Lunar day</value>
+  </data>
+  <data name="lunar_rule.month" xml:space="preserve">
+    <value>Lunar month</value>
+  </data>
+  <data name="lunar_rule.leap_policy" xml:space="preserve">
+    <value>Include leap month</value>
+  </data>
+  <data name="lunar_rule.sync_google" xml:space="preserve">
+    <value>Sync to Google Calendar</value>
+  </data>
+  <data name="lunar_rule.years_ahead" xml:space="preserve">
+    <value>Years ahead</value>
+  </data>
+  <data name="reminder.title" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="reminder.minutes_before" xml:space="preserve">
+    <value>{0} minutes before</value>
+  </data>
+  <data name="reminder.hours_before" xml:space="preserve">
+    <value>{0} hours before</value>
+  </data>
+  <data name="reminder.days_before" xml:space="preserve">
+    <value>{0} days before</value>
+  </data>
+  <data name="reminder.at_start" xml:space="preserve">
+    <value>At start time</value>
+  </data>
+  <data name="reminder.add" xml:space="preserve">
+    <value>Add reminder</value>
+  </data>
+  <data name="common.title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="reminder.label" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="lunar_rule.annual_on" xml:space="preserve">
+    <value>Every year on lunar day {0} of month {1}</value>
+  </data>
+  <data name="lunar_rule.is_leap" xml:space="preserve">
+    <value>Leap month</value>
+  </data>
+  <data name="recurrence.solar" xml:space="preserve">
+    <value>Solar</value>
+  </data>
+  <data name="recurrence.lunar_short" xml:space="preserve">
+    <value>Lunar</value>
+  </data>
+  <data name="reminder.chip" xml:space="preserve">
+    <value>Notification · {0}</value>
+  </data>
+  <data name="reminder.add_button" xml:space="preserve">
+    <value>+ Add reminder</value>
+  </data>
+  <data name="format.date_weekday" xml:space="preserve">
+    <value>{0:ddd}, {0:MMM d, yyyy}</value>
+  </data>
+  <data name="lunar.abbrev" xml:space="preserve">
+    <value>Lunar</value>
+  </data>
+  <data name="lunar_rule.policy" xml:space="preserve">
+    <value>Years with a leap month {0}: regular month only · Short month: use the last day · Created {1} years ahead</value>
+  </data>
+  <data name="lunar_rule.next" xml:space="preserve">
+    <value>Next: {0}</value>
+  </data>
+  <data name="lunar_rule.customize" xml:space="preserve">
+    <value>Customize lunar rule…</value>
+  </data>
+  <data name="lunar_rule.sync_google_to" xml:space="preserve">
+    <value>Sync to Google ({0} calendar)</value>
+  </data>
+  <data name="event.time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="event.location.label" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="event.description.label" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="event.delete_event" xml:space="preserve">
+    <value>Delete event</value>
+  </data>
+  <data name="event.subtitle.edited" xml:space="preserve">
+    <value>last edited {0}</value>
+  </data>
+  <data name="event.validation.calendar_required" xml:space="preserve">
+    <value>Choose a calendar to save the event.</value>
+  </data>
+  <data name="menu.event.open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="menu.event.edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="menu.event.duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="menu.event.move_calendar" xml:space="preserve">
+    <value>Move to calendar</value>
+  </data>
+  <data name="menu.event.convert_lunar" xml:space="preserve">
+    <value>Convert to lunar recurrence</value>
+  </data>
+  <data name="menu.event.delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="menu.slot.create_at" xml:space="preserve">
+    <value>Create at {0}</value>
+  </data>
+  <data name="menu.slot.create_all_day" xml:space="preserve">
+    <value>Create all-day</value>
+  </data>
+  <data name="menu.slot.create_lunar" xml:space="preserve">
+    <value>Create lunar rule</value>
+  </data>
+  <data name="menu.slot.paste" xml:space="preserve">
+    <value>Paste event</value>
+  </data>
+  <data name="event.validation.title_required" xml:space="preserve">
+    <value>Please enter an event title.</value>
+  </data>
+  <data name="event.validation.invalid_time" xml:space="preserve">
+    <value>End time must be after start time.</value>
+  </data>
+  <!-- Settings Navigation & Tabs (Figma 04, S13, S20) -->
+  <data name="settings.nav.appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="settings.nav.account" xml:space="preserve">
+    <value>Google Account</value>
+  </data>
+  <data name="settings.nav.advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <!-- Google Account Settings (Figma 04, S14) -->
+  <data name="settings.account.title" xml:space="preserve">
+    <value>Google account</value>
+  </data>
+  <data name="settings.account.desc" xml:space="preserve">
+    <value>Two-way sync with Google Calendar</value>
+  </data>
+  <data name="settings.account.status_connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="settings.account.status_disconnected" xml:space="preserve">
+    <value>Not connected to Google Calendar</value>
+  </data>
+  <data name="settings.account.signin_button" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+  <data name="settings.account.signout_button" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="settings.account.sync_now" xml:space="preserve">
+    <value>Sync now</value>
+  </data>
+  <data name="settings.account.syncing" xml:space="preserve">
+    <value>Syncing...</value>
+  </data>
+  <data name="settings.account.last_synced" xml:space="preserve">
+    <value>Last synced: {0}</value>
+  </data>
+  <data name="settings.account.never_synced" xml:space="preserve">
+    <value>Never synced</value>
+  </data>
+  <data name="settings.account.authorizing" xml:space="preserve">
+    <value>Waiting for you to sign in in the browser (up to 5 minutes)…</value>
+  </data>
+  <data name="settings.account.auth_cancelled" xml:space="preserve">
+    <value>Sign-in was cancelled.</value>
+  </data>
+  <data name="settings.account.auth_failed" xml:space="preserve">
+    <value>Sign-in failed: {0}</value>
+  </data>
+  <data name="settings.account.testing_warning" xml:space="preserve">
+    <value>Google ends the sign-in after 7 days. LunarCal will ask you to sign in again; data on this computer is kept.</value>
+  </data>
+  <!-- Advanced Settings (Figma S20) -->
+  <data name="settings.advanced.title" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="settings.advanced.desc" xml:space="preserve">
+    <value>Advanced configuration for developers, storage, and diagnostics</value>
+  </data>
+  <data name="settings.advanced.oauth_title" xml:space="preserve">
+    <value>OAuth client</value>
+  </data>
+  <data name="settings.advanced.oauth_desc" xml:space="preserve">
+    <value>Changing the client signs out every account and asks you to sign in again</value>
+  </data>
+  <data name="settings.advanced.client_id" xml:space="preserve">
+    <value>Client ID</value>
+  </data>
+  <data name="settings.advanced.client_secret" xml:space="preserve">
+    <value>Client secret</value>
+  </data>
+  <data name="settings.advanced.save_oauth" xml:space="preserve">
+    <value>Save and sign in again</value>
+  </data>
+  <data name="settings.advanced.oauth_saved" xml:space="preserve">
+    <value>OAuth client saved. Sign in again under Google account.</value>
+  </data>
+  <data name="settings.advanced.wipe_title" xml:space="preserve">
+    <value>Delete all local data</value>
+  </data>
+  <data name="settings.advanced.wipe_desc" xml:space="preserve">
+    <value>Deletes the calendar cache, Google token, Gemini key, AI queue, outbox and settings on this computer. Events in Google Calendar are not deleted. You confirm once more.</value>
+  </data>
+  <data name="settings.advanced.wipe_button" xml:space="preserve">
+    <value>Delete data…</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_title" xml:space="preserve">
+    <value>Delete all local data?</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_message" xml:space="preserve">
+    <value>The calendar cache, Google token, keys, queue, outbox and settings on this computer are permanently deleted and LunarCal closes. Events in Google Calendar are not deleted; changes not yet synced are lost.</value>
+  </data>
+  <data name="settings.advanced.wipe_confirm_action" xml:space="preserve">
+    <value>Delete permanently</value>
+  </data>
+  <data name="settings.advanced.logs_title" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="settings.advanced.logs_desc" xml:space="preserve">
+    <value>Logs stay on this computer and are never sent</value>
+  </data>
+  <data name="settings.advanced.open_logs" xml:space="preserve">
+    <value>Open logs folder</value>
+  </data>
+  <!-- First Run Wizard (Figma S14) -->
+  <data name="firstrun.title" xml:space="preserve">
+    <value>Welcome to LunarCal</value>
+  </data>
+  <data name="firstrun.subtitle" xml:space="preserve">
+    <value>Perpetual lunar calendar and smart Google Calendar for Windows</value>
+  </data>
+  <data name="firstrun.step1_title" xml:space="preserve">
+    <value>1. Language &amp; Lunar Calendar</value>
+  </data>
+  <data name="firstrun.step1_desc" xml:space="preserve">
+    <value>Choose your display language and configure Vietnamese lunar calendar features</value>
+  </data>
+  <data name="firstrun.step2_title" xml:space="preserve">
+    <value>2. Connect Google Calendar</value>
+  </data>
+  <data name="firstrun.step2_desc" xml:space="preserve">
+    <value>Two-way synchronization with Google Calendar to manage events seamlessly</value>
+  </data>
+  <data name="firstrun.btn_continue" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="firstrun.btn_skip" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="firstrun.btn_finish" xml:space="preserve">
+    <value>Get Started</value>
+  </data>
+  <!-- Status Banners & Relative Time (Figma S18, FR-UI-9, FR-UI-10) -->
+  <data name="banner.offline" xml:space="preserve">
+    <value>You are currently offline. New data will be saved locally and automatically synchronized once connected.</value>
+  </data>
+  <data name="banner.reauth" xml:space="preserve">
+    <value>Google session has expired (7-day Testing mode). Please sign in again to resume synchronization.</value>
+  </data>
+  <data name="banner.btn_reauth" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="banner.btn_dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="sidebar.sync_status_syncing" xml:space="preserve">
+    <value>Syncing...</value>
+  </data>
+  <data name="sidebar.sync_status_failed" xml:space="preserve">
+    <value>Sync error</value>
+  </data>
+  <data name="time.just_now" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="time.minutes_ago" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="time.hours_ago" xml:space="preserve">
+    <value>{0} hr ago</value>
+  </data>
+  <data name="time.days_ago" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="sidebar.sync_title_signed_out" xml:space="preserve">
+    <value>Not connected to Google Calendar</value>
+  </data>
+  <data name="sidebar.sync_title_failed" xml:space="preserve">
+    <value>Google Calendar sync failed</value>
+  </data>
+  <data name="sidebar.sync_status_signed_out" xml:space="preserve">
+    <value>Click to sign in</value>
+  </data>
+  <data name="settings.nav.general" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="settings.nav.back" xml:space="preserve">
+    <value>← Back to calendar</value>
+  </data>
+  <data name="settings.general.title" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="settings.general.timezone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+  <data name="settings.general.timezone_desc" xml:space="preserve">
+    <value>Used to understand “tomorrow” and “next week” in AI commands</value>
+  </data>
+  <data name="settings.account.sync_desc" xml:space="preserve">
+    <value>Get changes from Google almost instantly</value>
+  </data>
+  <data name="settings.account.testing_title" xml:space="preserve">
+    <value>Consent screen in Testing mode?</value>
+  </data>
+  <data name="settings.account.signout_confirm_title" xml:space="preserve">
+    <value>Disconnect the Google account?</value>
+  </data>
+  <data name="settings.account.signout_confirm_message" xml:space="preserve">
+    <value>LunarCal will revoke access for {0} and delete its token and the calendars stored on this computer. Events in Google Calendar are not deleted. Changes not yet synced will be lost.</value>
+  </data>
+  <data name="settings.appearance.datetime_title" xml:space="preserve">
+    <value>Date and time</value>
+  </data>
+  <data name="settings.appearance.datetime_desc" xml:space="preserve">
+    <value>Defaults by language: Monday and 24-hour (vi-VN), Sunday and 12-hour (en-US)</value>
+  </data>
+  <data name="settings.advanced.accounts_desc" xml:space="preserve">
+    <value>Sign in in the system browser; tokens stay on this computer</value>
+  </data>
+  <data name="settings.advanced.account_active" xml:space="preserve">
+    <value>In use</value>
+  </data>
+  <data name="settings.advanced.signout" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="settings.advanced.add_account_title" xml:space="preserve">
+    <value>Add a Google account</value>
+  </data>
+  <data name="settings.advanced.add_account_desc" xml:space="preserve">
+    <value>Sign in in the system browser. Each account has its own cache and token.</value>
+  </data>
+  <data name="settings.advanced.add_account" xml:space="preserve">
+    <value>Add account</value>
+  </data>
+  <data name="settings.advanced.custom_client" xml:space="preserve">
+    <value>Use my own OAuth client</value>
+  </data>
+  <data name="settings.advanced.custom_client_desc" xml:space="preserve">
+    <value>Use your Google Cloud project instead of the client shipped with the release</value>
+  </data>
+  <data name="settings.advanced.client_id_help" xml:space="preserve">
+    <value>Type "Desktop app" in the Google Cloud Console</value>
+  </data>
+  <data name="settings.advanced.client_id_required" xml:space="preserve">
+    <value>Enter a Client ID before saving.</value>
+  </data>
+  <data name="settings.advanced.client_secret_stored" xml:space="preserve">
+    <value>A client secret is stored. Leave empty to keep it.</value>
+  </data>
+  <data name="settings.advanced.client_secret_help" xml:space="preserve">
+    <value>Stored encrypted on this computer (DPAPI). For desktop apps Google does not treat this value as secret</value>
+  </data>
+  <data name="settings.advanced.use_default_client" xml:space="preserve">
+    <value>Use the default client</value>
+  </data>
+  <data name="settings.advanced.oauth_reset" xml:space="preserve">
+    <value>Back to the default client. Sign in again under Google account.</value>
+  </data>
+  <data name="settings.advanced.oauth_confirm_title" xml:space="preserve">
+    <value>Change the OAuth client?</value>
+  </data>
+  <data name="settings.advanced.oauth_confirm_message" xml:space="preserve">
+    <value>Every Google account is signed out and the calendars stored on this computer are deleted; you need to sign in again. Events in Google Calendar are not affected.</value>
+  </data>
+  <data name="settings.advanced.data_title" xml:space="preserve">
+    <value>Data on this computer</value>
+  </data>
+  <data name="settings.advanced.data_desc" xml:space="preserve">
+    <value>The calendar cache is encrypted (SQLCipher) with a DPAPI-protected key</value>
+  </data>
+  <data name="settings.advanced.data_location" xml:space="preserve">
+    <value>Data location</value>
+  </data>
+  <data name="settings.advanced.data_location_desc" xml:space="preserve">
+    <value>{0} · readable only by the current Windows user</value>
+  </data>
+  <data name="settings.advanced.data_size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="settings.advanced.size_mb" xml:space="preserve">
+    <value>Local data {0} MB</value>
+  </data>
+  <data name="settings.advanced.size_kb" xml:space="preserve">
+    <value>Local data {0} KB</value>
+  </data>
+  <data name="settings.advanced.open_folder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="settings.advanced.wipe_done" xml:space="preserve">
+    <value>Local data deleted.</value>
+  </data>
+  <data name="settings.advanced.log_level" xml:space="preserve">
+    <value>Log level</value>
+  </data>
+  <data name="settings.advanced.log_level_desc" xml:space="preserve">
+    <value>Use Debug only to report a problem; it returns to Information after 24 hours</value>
+  </data>
+  <data name="settings.advanced.log_info" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="settings.advanced.log_debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="settings.advanced.logs_folder" xml:space="preserve">
+    <value>Log folder</value>
+  </data>
+  <data name="settings.advanced.logs_folder_desc" xml:space="preserve">
+    <value>Kept for 14 days. Keys, tokens and event titles are never written</value>
+  </data>
+  <!-- First run wizard (Figma S14 39:280, 39:336; P3-R3) -->
+  <data name="firstrun.step_of" xml:space="preserve">
+    <value>Step {0} / {1}</value>
+  </data>
+  <data name="firstrun.welcome_title" xml:space="preserve">
+    <value>Chào mừng đến LunarCal · Welcome to LunarCal</value>
+  </data>
+  <data name="firstrun.welcome_desc" xml:space="preserve">
+    <value>Ngôn ngữ giao diện · Interface language. Changing the UI language does not change your calendar data.</value>
+  </data>
+  <data name="firstrun.nav_language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="firstrun.nav_google" xml:space="preserve">
+    <value>Google account</value>
+  </data>
+  <data name="firstrun.nav_gemini" xml:space="preserve">
+    <value>Gemini API key</value>
+  </data>
+  <data name="firstrun.optional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="firstrun.footer_note" xml:space="preserve">
+    <value>You can change every choice later in Settings.</value>
+  </data>
+  <data name="firstrun.lang_vi_desc" xml:space="preserve">
+    <value>vi-VN · tuần bắt đầu Thứ 2 · 24 giờ · {0}</value>
+  </data>
+  <data name="firstrun.lang_en_desc" xml:space="preserve">
+    <value>en-US · week starts Sunday · 12-hour · {0}</value>
+  </data>
+  <data name="firstrun.connect_title" xml:space="preserve">
+    <value>Connect Google Calendar</value>
+  </data>
+  <data name="firstrun.connect_desc" xml:space="preserve">
+    <value>LunarCal opens your default browser for you to sign in. The app never sees your password.</value>
+  </data>
+  <data name="firstrun.perm_title" xml:space="preserve">
+    <value>LunarCal will ask to</value>
+  </data>
+  <data name="firstrun.perm_events" xml:space="preserve">
+    <value>See and edit events in your calendars</value>
+  </data>
+  <data name="firstrun.perm_calendars" xml:space="preserve">
+    <value>See your calendar list (names, colours)</value>
+  </data>
+  <data name="firstrun.perm_none" xml:space="preserve">
+    <value>Never read Gmail, Drive or contacts</value>
+  </data>
+  <data name="firstrun.signin_google" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+  <data name="firstrun.waiting" xml:space="preserve">
+    <value>Waiting for you to sign in in the browser… (gives up after 5 minutes)</value>
+  </data>
+  <data name="firstrun.unverified_title" xml:space="preserve">
+    <value>Google may say &quot;Google hasn&apos;t verified this app&quot;</value>
+  </data>
+  <data name="firstrun.unverified_desc" xml:space="preserve">
+    <value>LunarCal uses Google&apos;s Testing mode. Choose Advanced → Continue to sign in. In this mode Google asks you to sign in again after 7 days.</value>
+  </data>
+  <data name="firstrun.back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="firstrun.skip_lunar_only" xml:space="preserve">
+    <value>Later, lunar calendar only</value>
+  </data>
+  <data name="firstrun.signed_in" xml:space="preserve">
+    <value>Connected as {0}</value>
+  </data>
+  <!-- Reveal a masked field (Figma S20 client secret, P3-R3) -->
+  <data name="common.show" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="common.hide" xml:space="preserve">
+    <value>Hide</value>
   </data>
 </root>
