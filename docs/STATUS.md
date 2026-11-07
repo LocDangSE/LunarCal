@@ -3,21 +3,21 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-07 21:55 +07:00, Claude Code (Sonnet 5.5). Xong P4-00: ADR-0016 Accepted (endpoint, model mặc định, phân loại lỗi, 10 biện pháp bảo vệ API key) và Figma S16 (`46:370`). Branch `task/P4-00`, chỉ đổi tài liệu và Figma, chưa chạy lại build hay test. `main` đã push tới 00c0c9b (chưa biết kết quả CI).
+**Cập nhật lần cuối:** 2026-11-07 22:25 +07:00, Claude Code (Sonnet 5.5). Chủ dự án duyệt các đề xuất: một tài khoản Google (ADR-0029), sửa S10 (qua đêm, tần suất Dương lịch, múi giờ riêng), nên spec FR-AUTH-5 và FR-UI-4 đã sửa. Figma có thêm S10 3.3 và 3.4, hộp thoại đổi tài khoản 1.5, S20 một tài khoản. Thêm P4-R1..P4-R3 cho Antigravity. Chỉ đổi tài liệu và Figma, chưa chạy build hay test. 3 commit chưa push.
 
-**Phiên trước:** 2026-11-07 21:20 +07:00, Claude Code (Sonnet 5.5). Chủ dự án đăng nhập Google thật, xác nhận lịch Google hiện trên lưới và trang Tài khoản ổn. Đóng cổng `P3-REVIEW` `[x]` (8 bug đã sửa qua hai lần review), merge `phase/3` vào `main`. 493/493 test Release, format sạch, coverage Lunar 99,38%, Core 97%. Chưa push, chưa chạy CI trên `main`.
+**Phiên trước:** 2026-11-07 21:55 +07:00, Claude Code (Sonnet 5.5). Xong P4-00: ADR-0016 Accepted (endpoint, model mặc định, phân loại lỗi, 10 biện pháp bảo vệ API key) và Figma S16 (`46:370`). Branch `task/P4-00`, chỉ đổi tài liệu và Figma, chưa chạy lại build hay test. `main` đã push tới 00c0c9b (chưa biết kết quả CI).
 
-**Trước đó:** 2026-11-04 23:02 +07:00, Claude Code (Sonnet 5.5). Chủ dự án yêu cầu review hết Phase 3 và cho Claude sửa trực tiếp. Xong P3-R2 (dựng lại S10) và sửa các lỗi tìm thấy khi dựng. Commit phiên này: 37dcf37, 8690fc7 (chưa push). 490/490 test Release, format sạch, coverage Lunar 100%, Core 97%. Cổng `P3-REVIEW` vẫn `[f]`, chưa merge vào `main`: còn hai bước DoD cần đăng nhập Google thật.
+**Trước đó:** 2026-11-07 21:20 +07:00, Claude Code (Sonnet 5.5). Chủ dự án đăng nhập Google thật, xác nhận lịch Google hiện trên lưới và trang Tài khoản ổn. Đóng cổng `P3-REVIEW` `[x]` (8 bug đã sửa qua hai lần review), merge `phase/3` vào `main`. 493/493 test Release, format sạch, coverage Lunar 99,38%, Core 97%. Chưa push, chưa chạy CI trên `main`.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 4. Cổng `P3-REVIEW` `[x]`; `P4-00` `[x]` (ADR-0016 Accepted, S16 vẽ xong); P4-01..P4-13 đang chờ Antigravity.
+- **Phase hiện tại:** Phase 4. `P3-REVIEW` `[x]`, `P4-00` `[x]`. Mới thêm P4-R1 (S10), P4-R2 (đổi tài khoản, ADR-0029), P4-R3 (khoá chính `Event`); P4-R2 và P4-R3 phải xong trước P4-08.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ branch hay task nào sau khi merge `task/P4-00` vào `main`. Việc còn lại: xem CI trên `main` (gồm commit sửa test `MutationServiceTests`), rồi review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
-  - **Antigravity:** được bắt đầu P4-01 (Contract `IChatModelClient`). Đọc ADR-0016 trước khi làm P4-02 và P4-03: có các biện pháp bảo mật key bắt buộc và các mục "chưa xác minh" phải kiểm bằng test hợp đồng.
+  - **Antigravity:** được bắt đầu P4-01. Làm P4-R2 và P4-R3 trước P4-08; P4-R1 làm song song ở bất kỳ lúc nào trước khi kết thúc phase. Đọc ADR-0016 (bảo mật key) trước P4-02, P4-03 và ADR-0029 trước P4-R2.
 - **Task tiếp theo đề xuất:**
-  1. Chủ dự án: xem CI trên `main` (tab Actions). Các layout Figma đã được duyệt ngày 2026-11-07.
-  2. Antigravity: P4-01 rồi P4-02 (cần một Gemini API key thật của chủ dự án để chạy thủ công; nhập qua app, không dán vào chat).
+  1. Chủ dự án: xem CI trên `main` (tab Actions); push các commit chưa push.
+  2. Antigravity: P4-01, P4-R3, P4-R2, rồi P4-02 (cần một Gemini API key thật của chủ dự án, gói miễn phí, nhập qua app, không dán vào chat); P4-R1 song song.
   3. Chủ dự án: chốt hai việc tồn đọng từ review Phase 3 (khoá chính `Event`, hành vi S10 chưa có trong Figma) và Q-001 câu 7.
 
 ## Đã hoàn thành (đối chiếu spec §13)

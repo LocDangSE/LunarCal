@@ -86,7 +86,7 @@ Quy tắc phụ thuộc: App → Infrastructure → Core. Core không tham chi�
 - **FR-AUTH-2** Scope tối thiểu: `calendar.events` và quyền đọc danh sách calendar (`calendar.calendarlist.readonly` hoặc `calendar.readonly` nếu cần). Không xin scope dư.
 - **FR-AUTH-3** Refresh token lưu mã hoá DPAPI; tự refresh access token; gặp `invalid_grant` thì yêu cầu đăng nhập lại.
 - **FR-AUTH-4** Đăng xuất: revoke token, xoá token và cache DB của tài khoản đó (có xác nhận).
-- **FR-AUTH-5** Đa tài khoản Google để phase sau, nhưng mô hình dữ liệu có `AccountId` ngay từ đầu.
+- **FR-AUTH-5** Một tài khoản Google tại một thời điểm (ADR-0029, chủ dự án quyết ngày 2026-11-07); không làm đa tài khoản, mô hình dữ liệu vẫn có `AccountId`. Hai tài khoản được coi là một khi Google user id trùng. Đăng nhập lại cùng tài khoản không xoá gì. Đăng nhập tài khoản khác: sau hộp thoại xác nhận (nêu số thay đổi chưa đồng bộ, số lệnh AI đang chờ, luật âm lịch chỉ có trên máy sẽ mất) thì thu hồi token cũ và xoá `Account`, `CalendarInfo`, `Event`, `ReminderState`, `LunarRule`, `PendingMutation`, `AiCommand`, rồi nạp dữ liệu của tài khoản mới; giữ cài đặt và Gemini key. Huỷ thì thu hồi token mới và giữ nguyên trạng thái cũ.
 - **FR-AUTH-6** OAuth client ID lấy từ cấu hình build; cho phép ghi đè trong Settings > Nâng cao (người dùng dùng OAuth client riêng). Lưu ý: scope Calendar thuộc nhóm sensitive, muốn phát hành rộng phải qua OAuth verification của Google; khi consent screen còn ở trạng thái Testing, refresh token hết hạn sau 7 ngày. App phải hiển thị hướng dẫn rõ khi gặp tình huống này.
 
 ### 4.2 Đồng bộ và cache (FR-SYNC)
@@ -103,7 +103,7 @@ Quy tắc phụ thuộc: App → Infrastructure → Core. Core không tham chi�
 - **FR-UI-1** Các view: Tháng, Tuần, Ngày, Agenda. Sidebar có mini-calendar và danh sách calendar (bật/tắt, màu).
 - **FR-UI-2** Mỗi ô ngày hiển thị ngày dương (lớn) và ngày âm (nhỏ). Mùng 1 âm hiển thị dạng `1/tháng` (ghi rõ nếu nhuận). Bật/tắt trong Settings.
 - **FR-UI-3** Panel chi tiết ngày: can chi ngày/tháng/năm, tiết khí, các sự kiện.
-- **FR-UI-4** Tạo/sửa/xoá sự kiện trực tiếp: click, kéo thả trong view Tuần/Ngày, hộp thoại chi tiết (địa điểm, mô tả, nhắc nhở, lặp, calendar đích).
+- **FR-UI-4** Tạo/sửa/xoá sự kiện trực tiếp: click, kéo thả trong view Tuần/Ngày, hộp thoại chi tiết (địa điểm, mô tả, nhắc nhở, lặp, calendar đích). Bổ sung (2026-11-07, chủ dự án duyệt): sự kiện có giờ chỉ hiện giờ kết thúc; nếu giờ kết thúc không sau giờ bắt đầu thì hiểu là ngày hôm sau (chip "+1 ngày"), có liên kết "Ngày kết thúc khác…" cho sự kiện nhiều ngày; lặp Dương lịch có các mức Hàng ngày, Hàng tuần, Hàng tháng, Hàng năm; múi giờ mặc định theo Settings và đổi riêng được cho từng sự kiện.
 - **FR-UI-5** Thanh lệnh AI (AI command bar) ở cuối màn hình lịch, thay cho chat panel; lệnh đi qua hộp thoại xác nhận (mục 4.9) và hàng chờ AI (mục 4.8).
 - **FR-UI-6** System tray, nhắc nhở bằng toast Windows (đặc tả chi tiết ở mục 4.12 FR-NOTIFY), tuỳ chọn khởi động cùng Windows, phím tắt toàn cục mở chat (mặc định Ctrl+Alt+Space, đổi được), single instance.
 - **FR-UI-7** Theme sáng/tối/theo hệ thống; Per-Monitor V2 DPI; i18n vi-VN và en-US theo mục 4.11; đầu tuần cấu hình được (T2/CN); múi giờ theo hệ thống, cho phép chọn múi khác.
@@ -543,7 +543,7 @@ Figma v1 phủ đủ 8 trong 24 nhóm yêu cầu, phủ một phần 6 nhóm và
 | FR-LUNAR-4, 5 Quản lý luật lặp âm lịch | 01 (calendar Âm lịch · cục bộ) | Thiếu | S11 |
 | FR-LUNAR-6 Công tắc lịch âm | 04 | Đủ | Chuỗi song ngữ (mục 4.11) |
 | FR-AUTH-1, 4 Kết nối và ngắt kết nối Google | 04 | Một phần | S14 (đăng nhập lần đầu, đăng nhập lại khi token hết hạn) |
-| FR-AUTH-5, 6 Đa tài khoản, OAuth client riêng | không có | Thiếu | S20 |
+| FR-AUTH-5, 6 Một tài khoản Google (đổi tài khoản xoá dữ liệu cũ), OAuth client riêng | không có | Thiếu | S20, hộp thoại đổi tài khoản (S14) |
 | FR-SYNC Trạng thái đồng bộ, Đồng bộ ngay | 01, 04 | Đủ | Thêm trạng thái lỗi và xung đột (S18) |
 | FR-BYOK-1..5 Nhập, kiểm tra, đổi, xoá key, chọn model | 04 (một ô nhập đã xác thực) | Một phần | S14 hướng dẫn lấy key, S20 chọn model, S18 lỗi key |
 | FR-DATA-1, FR-CLOUD-5 Đồng ý lần đầu và đồng ý lại | 04 (công tắc), 02 (ghi chú) | Một phần | S14 hộp thoại đồng ý |
@@ -588,12 +588,12 @@ Cần thiết kế thêm 15 màn hình (S06 đến S20) trước khi dựng giao
 | S11 | Quản lý luật lặp âm lịch | Danh sách luật, tạo, sửa, xoá; ngày âm, mỗi tháng hoặc mỗi năm; chính sách tháng nhuận và tháng thiếu; số năm; công tắc đồng bộ Google; xem trước ngày dương | 5 |
 | S12 | Cài đặt > Thông báo | Bật tắt toast, nhắc trước mặc định, nhắc mặc định cho sự kiện âm lịch, thời gian hoãn mặc định, ẩn nội dung sự kiện trong thông báo, tray, phím tắt toàn cục, khởi động cùng Windows | 7 |
 | S13 | Cài đặt > Giao diện | Sáng, tối, theo hệ thống; đầu tuần; 12h hoặc 24h; mật độ; chi tiết âm lịch | 2 |
-| S14 | Lần chạy đầu và đăng nhập lại | Chọn ngôn ngữ, đăng nhập Google, hướng dẫn lấy Gemini key kèm nút kiểm tra, hộp thoại đồng ý thu thập dữ liệu, đăng nhập lại khi token hết hạn (kể cả cảnh báo trạng thái Testing 7 ngày) | 3-4 |
+| S14 | Lần chạy đầu và đăng nhập lại | Chọn ngôn ngữ, đăng nhập Google, hướng dẫn lấy Gemini key kèm nút kiểm tra, hộp thoại đồng ý thu thập dữ liệu, đăng nhập lại khi token hết hạn (kể cả cảnh báo trạng thái Testing 7 ngày), hộp thoại xác nhận đổi sang tài khoản Google khác (xoá dữ liệu cũ) | 3-4 |
 | S15 | Bulk: xem trước, tiến độ, hoàn tác | Bảng sự kiện trong hộp thoại xác nhận, thanh tiến độ có nút huỷ, báo cáo thành công và lỗi, toast hoàn tác | 5 |
 | S16 | AI hỏi lại | Trạng thái hỏi thêm thông tin trong hộp thoại, gợi ý trả lời nhanh | 4 |
 | S17 | Dữ liệu đã đóng góp | Danh sách record đã gửi, trạng thái upload outbox, xoá từng record hoặc tất cả, thu hồi contributor, xuất | 6 |
 | S18 | Trạng thái lỗi, rỗng, đang tải | Key sai, hết quota (429), bị chặn an toàn, token hết hạn, xung đột đồng bộ, không có calendar, không có sự kiện, skeleton khi tải | 3-4 |
 | S19 | Giới thiệu | Phiên bản, kênh cập nhật, giấy phép, Privacy Policy và Terms (vi, en), báo lỗi | 8 |
-| S20 | Cài đặt > Nâng cao | OAuth client riêng, đa tài khoản, model Gemini, vị trí dữ liệu, xoá toàn bộ dữ liệu cục bộ, nhật ký | 3-4 |
+| S20 | Cài đặt > Nâng cao | OAuth client riêng, tài khoản Google (một tài khoản), model Gemini, vị trí dữ liệu, xoá toàn bộ dữ liệu cục bộ, nhật ký | 3-4 |
 
 *Hết tài liệu.*
