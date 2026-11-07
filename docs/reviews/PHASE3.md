@@ -70,3 +70,34 @@ Cách kiểm: build Release 0 warning, `dotnet format --verify-no-changes` sạc
 - P3-R4: xác nhận trước khi đăng xuất và xoá dữ liệu; secret OAuth tuỳ chỉnh chỉ ở DPAPI, Client ID tuỳ chỉnh dùng thật trong URL authorize (đã có test).
 - P3-R1 (phần kiểm được bằng test): `SqliteEventStore` đọc cache SQLCipher, host `StartAsync`/`StopAsync`, S14 tự mở lần đầu, sidebar "chưa đồng bộ", `SyncCompleted` về Dispatcher. `SyncEngine` đã bọc `try/catch` cả nhánh không có syncToken lẫn nhánh 410 (mục "SyncEngine ngoài try" của lần 1 đã xử lý).
 - Kiến trúc và analyzer: Core không thêm tham chiếu; không thêm `NoWarn`, `#pragma` hay `SuppressMessage` (đã kiểm bằng diff từ b99364d); chevron/mũi tên là path token (quy tắc `FR_UI_11` không dùng ký tự biểu tượng vẫn xanh).
+
+## Lần 3: đóng cổng
+
+Reviewer: Claude Code (Sonnet 5.5), 2026-11-07 21:20 +07:00 · Branch: phase/3 (đến commit 2eb263e cùng bản sửa test của lần này) · Kết luận: **Duyệt**, `phase/3` merge vào `main`.
+
+Cách kiểm: build Release 0 warning, `dotnet format --verify-no-changes` sạch, 493/493 test Release (có coverage), cổng coverage Lunar 99,38% (159/160 dòng) và Core 97% (356/367 dòng). Chủ dự án đăng nhập Google thật trên bản `phase/3` ngày 2026-11-07.
+
+## Blocker
+
+Không còn. Hai blocker của lần 2 đã được chủ dự án xác nhận trên app chạy thật:
+- P3-R1 (FR-SYNC-1, FR-AUTH-1): đăng nhập Google thật thành công, lịch Google và các lời nhắc đã tạo hiện trên lưới, không còn dữ liệu mẫu.
+- P3-R3 (FR-UI-9): chủ dự án xem trang Cài đặt > Tài khoản ở trạng thái đã đăng nhập và báo mọi thứ ổn. Reviewer không tự đối chiếu ảnh chụp trang này với Figma `4:2` trong lần này.
+
+## Đã sửa
+
+- P3-05/P3-R1 (FR-AUTH-6, SEC-KEY-5): `appsettings.json` chứa `LunarCal:Google:OAuthClientId` rỗng và chuỗi fallback `??` dừng ở chuỗi rỗng đó, nên Client ID/secret trong user-secrets (`Google:ClientId`, `Google:ClientSecret`) không bao giờ được dùng và đăng nhập báo `missing_client_id`; thêm nữa `dotnet run` không đặt `DOTNET_ENVIRONMENT=Development` nên user-secrets không được nạp. Nay bỏ qua giá trị rỗng và bản Debug nạp user-secrets · test `GoogleOAuthConfigurationTests` · commit 2eb263e (tìm thấy khi chủ dự án thử đăng nhập thật lần đầu)
+- Test `FR_LUNAR_2_Year_tables_are_cached` (FR-LUNAR-2): so `LunarYearTable.CachedCount` toàn tiến trình trước và sau, nên một test Lunar khác chạy song song thêm năm vào cache giữa hai lần đọc thì đỏ (kỳ vọng 120, thấy 121). Nay so cùng một instance của năm 2040 trước và sau; vẫn đỏ nếu cache bị bỏ · `tests/LunarCal.Core.Tests/Lunar/LunarPerformanceTests.cs`
+- Test `NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` (NFR-PERF): chạy riêng median 33 ms, max 55 ms (đạt); chạy cả solution cùng các module test khác thì 69 ms và 132 ms, đỏ 3/3 lần. Code không chậm đi, chỉ tranh CPU. Giữ nguyên hai ngưỡng (median và max < 100 ms), cho tối đa 3 lượt đo; hồi quy thật chậm ở cả 3 lượt nên vẫn đỏ · `tests/LunarCal.App.Tests/Performance/MonthViewRenderTests.cs`
+
+## Nên sửa sau
+
+Chuyển nguyên từ lần 2, chủ dự án chưa quyết:
+- Khoá chính `Event` sang `(calendar_id, id)` kèm migration (`EventRows.cs:43`). Đề xuất làm sớm ở đầu Phase 4 hoặc Phase 5, trước khi sự kiện trùng id giữa hai lịch xuất hiện trên dữ liệu thật.
+- S10: Figma chưa vẽ tần suất Dương lịch, ngày kết thúc cho sự kiện có giờ, múi giờ; hành vi hiện tại giữ nguyên cho tới khi chủ dự án chốt.
+- Vật chất hoá luật âm lịch và "Đồng bộ lên Google" thuộc P5-02/P5-03.
+
+## OK
+
+- Mọi task P3-00a..P3-16 và P3-R1..P3-R4 `[x]`; không còn bug blocker; không thêm `NoWarn`, `#pragma` hay bypass chứng chỉ.
+- Chưa chạy lại ở lần này: `docker build --target test .` (Linux) và CI trên GitHub (`phase/3` chưa push).
+

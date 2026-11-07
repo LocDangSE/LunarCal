@@ -3,26 +3,22 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-04 23:02 +07:00, Claude Code (Sonnet 5.5). Chủ dự án yêu cầu review hết Phase 3 và cho Claude sửa trực tiếp. Xong P3-R2 (dựng lại S10) và sửa các lỗi tìm thấy khi dựng. Commit phiên này: 37dcf37, 8690fc7 (chưa push). 490/490 test Release, format sạch, coverage Lunar 100%, Core 97%. Cổng `P3-REVIEW` vẫn `[f]`, chưa merge vào `main`: còn hai bước DoD cần đăng nhập Google thật.
+**Cập nhật lần cuối:** 2026-11-07 21:20 +07:00, Claude Code (Sonnet 5.5). Chủ dự án đăng nhập Google thật, xác nhận lịch Google hiện trên lưới và trang Tài khoản ổn. Đóng cổng `P3-REVIEW` `[x]` (8 bug đã sửa qua hai lần review), merge `phase/3` vào `main`. 493/493 test Release, format sạch, coverage Lunar 99,38%, Core 97%. Chưa push, chưa chạy CI trên `main`.
 
-**Phiên trước:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
+**Phiên trước:** 2026-11-04 23:02 +07:00, Claude Code (Sonnet 5.5). Chủ dự án yêu cầu review hết Phase 3 và cho Claude sửa trực tiếp. Xong P3-R2 (dựng lại S10) và sửa các lỗi tìm thấy khi dựng. Commit phiên này: 37dcf37, 8690fc7 (chưa push). 490/490 test Release, format sạch, coverage Lunar 100%, Core 97%. Cổng `P3-REVIEW` vẫn `[f]`, chưa merge vào `main`: còn hai bước DoD cần đăng nhập Google thật.
 
-**Trước đó:** 2026-11-03 23:10 +07:00, Antigravity. Hoàn thành P3-16: Persistent SQLCipher SQLite `AppSetting` store (`SqliteSettingsStore`), seeding default settings, DI chuyển từ `InMemorySettingsStore` sang `SqliteSettingsStore`, 5 test mới, 439/439 tests pass (Core 99, Infra 194, App 143, UiTests 3), Core coverage 97%, Lunar coverage 100%, 0 lỗ hổng package. Hoàn thành toàn bộ các task Phase 3 (P3-00a..P3-16).
+**Trước đó:** 2026-11-04 00:34 +07:00, Claude Code (Opus 5.5). Review Phase 3: **Trả lại**. Sửa 2 bug trên `phase/3` (S10 crash khi mở; account store/scheduler dùng kết nối SQLite chưa mở), thêm P3-R1..P3-R4 cho phần lớn hơn 50 dòng. Chi tiết `docs/reviews/PHASE3.md`. 442/442 test pass, Lunar 100%, Core 97%.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 3. Cổng `P3-REVIEW` ở `[f]` (Claude Code giữ). P3-R2, P3-R4 `[x]`; P3-R1, P3-R3 `[~]` (chỉ còn bước DoD cần đăng nhập Google thật). Chưa được bắt đầu Phase 4.
+- **Phase hiện tại:** Phase 3 đã đóng: cổng `P3-REVIEW` `[x]`, `phase/3` đã merge vào `main` (cục bộ, chưa push). Phase 4 được phép bắt đầu theo ADR-0027.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** giữ cổng `P3-REVIEW` trên `phase/3`, working tree sạch sau khi commit docs (chưa push). Kết quả lần 2 ở `docs/reviews/PHASE3.md` (mục "Lần 2"):
-    - P3-R2 xong: S10 dựng lại theo Figma `35:774` (ảnh app thật khớp). Lỗi tìm thấy khi dựng và đã sửa: editor không bao giờ nạp danh sách lịch (mọi sự kiện ghi vào calendar "primary" không tồn tại), Save làm mất nhắc nhở và lặp dương lịch, sửa luật âm lịch sinh `lunarRuleId` mới mỗi lần.
-    - UI smoke `Settings_button_opens_appearance_page`: nguyên nhân thật là `NoClickablePointException` (bấm chuột quá sớm), không phải "fail chỉ ở lần chạy đầu"; đã sửa, pass 3/3 ba lần liên tiếp.
-    - **Còn lại (cần chủ dự án):** (1) đăng nhập Google thật để kiểm DoD P3-R1 "lịch Google hiện trên lưới, không còn dữ liệu mẫu"; (2) xem trang Cài đặt > Tài khoản ở trạng thái đã đăng nhập (P3-R3); (3) chốt hành vi S10 mà Figma chưa vẽ (tần suất Dương lịch, ngày kết thúc cho sự kiện có giờ, múi giờ); (4) quyết định có đổi khoá chính `Event` sang `(calendar_id, id)` không (migration, xem "Nên sửa sau" trong review).
-  - **Bước tiếp theo (Claude Code):** sau khi chủ dự án xác nhận (1) và (2): đặt cổng `[x]`, merge `phase/3` vào `main`, chạy CI.
-  - **Antigravity:** đã hoàn thành toàn bộ Phase 3 (P3-00a..P3-16). Theo ADR-0027, dừng lại và chờ `P3-REVIEW` `[x]` trên `main`; không bắt đầu task nào của Phase 4.
+  - **Claude Code:** không giữ branch hay task nào. Review Phase 3 đã `Duyệt` (`docs/reviews/PHASE3.md`, mục "Lần 3"). Việc còn lại sau merge: push `main` (và `phase/3`) rồi xem CI xanh trên GitHub.
+  - **Antigravity:** hoàn thành Phase 3; nay được bắt đầu Phase 4 (task `[ ]` đầu tiên của Phase 4 trong `docs/TASKS.md`).
 - **Task tiếp theo đề xuất:**
-  1. Chủ dự án: đăng nhập Google thật trên bản `phase/3` và báo kết quả (hai bước DoD còn lại).
-  2. Claude Code: đóng cổng `P3-REVIEW` và merge vào `main`.
-  3. Antigravity: chờ cổng `P3-REVIEW` `[x]` mới bắt đầu Phase 4.
+  1. Claude Code (hoặc chủ dự án): push `main`, xem CI xanh (cổng "CI xanh trên `main`" của `P3-REVIEW`).
+  2. Chủ dự án: chốt hai việc chưa quyết từ review Phase 3: (a) đổi khoá chính `Event` sang `(calendar_id, id)` kèm migration (đề xuất làm sớm ở Phase 4/5); (b) hành vi S10 mà Figma chưa vẽ (tần suất Dương lịch, ngày kết thúc cho sự kiện có giờ, múi giờ).
+  3. Antigravity: bắt đầu Phase 4 (SecretStore, BYOK, Gemini, chat một sự kiện, hàng chờ AI, hộp thoại xác nhận).
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -36,17 +32,17 @@
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
-## Build, test, format (chạy ngày 2026-11-03, Windows 11, .NET SDK 10.0.403, Release)
+## Build, test, format (chạy ngày 2026-11-07, Windows 11, .NET SDK 10.0.403, Release)
 
-Lần chạy mới nhất 2026-11-04 23:00 (Release, commit 8690fc7): build 0 warning, format pass, 490 test, 490 pass, UI smoke 3/3 (3 lần liên tiếp). Coverage: Lunar 100%, Core 97% (cổng CI: `dotnet test --solution LunarCal.slnx --coverage ...` rồi `eng/Test-Coverage.ps1`; chạy riêng project Core cho 59,95% vì lớp Core còn được phủ bởi test ở project khác). Test `NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` đỏ 1 trong 3 lần chạy cả solution do tải song song, chạy riêng pass (median ~28 ms).
+Lần chạy mới nhất 2026-11-07 21:20 (Release, `phase/3` trước merge): build 0 warning, format pass, 493 test, 493 pass, 0 skip (gồm UI smoke 3/3). Coverage: Lunar 99,38%, Core 97% (cổng CI: `dotnet test --solution LunarCal.slnx --coverage ...` rồi `eng/Test-Coverage.ps1`). Hai test đo thời gian/cache từng đỏ khi chạy cả solution song song và đã sửa ở lần này (xem `docs/reviews/PHASE3.md` Lần 3): `FR_LUNAR_2_Year_tables_are_cached` so instance thay cho `CachedCount` toàn cục; `NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` giữ ngưỡng 100 ms nhưng cho tối đa 3 lượt đo (chạy riêng: median 33 ms, max 55 ms; chạy cả suite: ~70/130 ms do tranh CPU).
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 490 test: 490 pass, 0 fail, 0 skip (2026-11-04 23:00). Test NFR-PERF MonthView nhạy với tải song song |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 100%, Core 97% (ngưỡng 95% và 85%; đo 2026-11-04 23:00) |
-| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 test out-of-process, 3 lần liên tiếp (2026-11-04) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 493 test: 493 pass, 0 fail, 0 skip (2026-11-07 21:20) |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99,38%, Core 97% (ngưỡng 95% và 85%; đo 2026-11-07 21:20) |
+| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution 2026-11-07 |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
 - **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Lần đo đầu (code P2-07): median 132 ms, max 166 ms, **không đạt**. Sau khi tái sử dụng ô và khe chip, 5 lượt: median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms. Chưa đo lần render đầu tiên lúc khởi động app (thuộc NFR khởi động nguội).
