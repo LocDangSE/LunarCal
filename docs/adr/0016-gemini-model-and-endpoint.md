@@ -1,6 +1,7 @@
 # ADR-0016: Model, endpoint Gemini và bảo vệ API key
 
 - **Status:** Accepted (2026-11-07, Claude Code, theo yêu cầu của chủ dự án trong P4-00). Model mặc định chỉ là giá trị cấu hình, đổi bằng một dòng trong `appsettings.json` mà không cần ADR mới.
+- **Xác nhận của chủ dự án (2026-11-07):** Gemini API key chỉ lấy và lưu trên máy người dùng (không qua server); dùng gói miễn phí để thử (chấp nhận Google dùng nội dung để cải thiện sản phẩm, nên chỉ thử bằng câu lệnh không nhạy cảm).
 - **Phạm vi do chủ dự án chốt:** người dùng tự nhập và lưu API key, dùng model để chat tạo lịch, và key phải được bảo vệ để không bị lộ ra ngoài. Không thêm tính năng nào ngoài phạm vi đó.
 - **Bối cảnh:** Spec §7 và FR-BYOK-5 cấm hard-code model id; `appsettings.json` có `LunarCal:Gemini:DefaultModelId = ""`. ADR này chốt sau khi đọc tài liệu hiện hành.
 
