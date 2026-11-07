@@ -11,7 +11,7 @@ namespace LunarCal.Infrastructure.Storage;
 public sealed class InMemoryEventStore : IEventStore
 {
     private readonly ConcurrentDictionary<string, CalendarInfo> _calendars = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, CalendarEvent> _events = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<(string CalendarId, string Id), CalendarEvent> _events = new();
 
     /// <summary>
     /// Initializes a new instance of <see cref="InMemoryEventStore"/>, optionally seeded with sample data.
@@ -75,14 +75,13 @@ public sealed class InMemoryEventStore : IEventStore
         _calendars.TryRemove(calendarId, out _);
 
         // Also cascade delete events belonging to this calendar
-        var associatedEvents = _events.Values
-            .Where(e => string.Equals(e.CalendarId, calendarId, StringComparison.Ordinal))
-            .Select(e => e.Id)
+        var associatedKeys = _events.Keys
+            .Where(k => string.Equals(k.CalendarId, calendarId, StringComparison.Ordinal))
             .ToList();
 
-        foreach (var eventId in associatedEvents)
+        foreach (var key in associatedKeys)
         {
-            _events.TryRemove(eventId, out _);
+            _events.TryRemove(key, out _);
         }
 
         return Task.CompletedTask;
@@ -128,8 +127,30 @@ public sealed class InMemoryEventStore : IEventStore
         ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _events.TryGetValue(eventId, out var calendarEvent);
+        var calendarEvent = _events.Values.FirstOrDefault(e =>
+            string.Equals(e.Id, eventId, StringComparison.Ordinal) ||
+            string.Equals(e.GoogleId, eventId, StringComparison.Ordinal));
         return Task.FromResult(calendarEvent);
+    }
+
+    /// <inheritdoc/>
+    public Task<CalendarEvent?> GetEventByIdAsync(string calendarId, string eventId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(calendarId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_events.TryGetValue((calendarId, eventId), out var calendarEvent))
+        {
+            return Task.FromResult<CalendarEvent?>(calendarEvent);
+        }
+
+        var match = _events.Values.FirstOrDefault(e =>
+            string.Equals(e.CalendarId, calendarId, StringComparison.Ordinal) &&
+            (string.Equals(e.Id, eventId, StringComparison.Ordinal) ||
+             string.Equals(e.GoogleId, eventId, StringComparison.Ordinal)));
+
+        return Task.FromResult(match);
     }
 
     /// <inheritdoc/>
@@ -140,7 +161,7 @@ public sealed class InMemoryEventStore : IEventStore
         ArgumentException.ThrowIfNullOrWhiteSpace(calendarEvent.CalendarId);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _events[calendarEvent.Id] = calendarEvent;
+        _events[(calendarEvent.CalendarId, calendarEvent.Id)] = calendarEvent;
         return Task.CompletedTask;
     }
 
@@ -150,7 +171,42 @@ public sealed class InMemoryEventStore : IEventStore
         ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _events.TryRemove(eventId, out _);
+        var matches = _events.Where(kvp =>
+            string.Equals(kvp.Key.Id, eventId, StringComparison.Ordinal) ||
+            string.Equals(kvp.Value.GoogleId, eventId, StringComparison.Ordinal))
+            .Select(kvp => kvp.Key)
+            .ToList();
+
+        foreach (var key in matches)
+        {
+            _events.TryRemove(key, out _);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task DeleteEventAsync(string calendarId, string eventId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(calendarId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (!_events.TryRemove((calendarId, eventId), out _))
+        {
+            var matches = _events.Where(kvp =>
+                string.Equals(kvp.Key.CalendarId, calendarId, StringComparison.Ordinal) &&
+                (string.Equals(kvp.Key.Id, eventId, StringComparison.Ordinal) ||
+                 string.Equals(kvp.Value.GoogleId, eventId, StringComparison.Ordinal)))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in matches)
+            {
+                _events.TryRemove(key, out _);
+            }
+        }
+
         return Task.CompletedTask;
     }
 
@@ -336,7 +392,7 @@ public sealed class InMemoryEventStore : IEventStore
 
         foreach (var ev in events)
         {
-            _events[ev.Id] = ev;
+            _events[(ev.CalendarId, ev.Id)] = ev;
         }
     }
 }
