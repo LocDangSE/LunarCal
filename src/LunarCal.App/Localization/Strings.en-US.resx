@@ -1288,4 +1288,32 @@
   <data name="settings.account.switch_cancelled" xml:space="preserve">
     <value>Kept the current account.</value>
   </data>
+  <!-- Event Editor S10 (P4-R1, Figma 52:370, 52:971) -->
+  <data name="event.overnight_chip" xml:space="preserve">
+    <value>+{0} day(s) · ends {1}</value>
+  </data>
+  <data name="event.custom_end_date_link" xml:space="preserve">
+    <value>Different end date…</value>
+  </data>
+  <data name="recurrence.solar_rule.daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="recurrence.solar_rule.weekly" xml:space="preserve">
+    <value>Repeats every {0}</value>
+  </data>
+  <data name="recurrence.solar_rule.monthly" xml:space="preserve">
+    <value>Repeats on day {0} of every month</value>
+  </data>
+  <data name="recurrence.solar_rule.yearly" xml:space="preserve">
+    <value>Annually on {0}/{1}</value>
+  </data>
+  <data name="recurrence.solar_rule.next" xml:space="preserve">
+    <value>Next: {0}</value>
+  </data>
+  <data name="event.timezone.default" xml:space="preserve">
+    <value>From Settings ({0})</value>
+  </data>
+  <data name="event.timezone.note" xml:space="preserve">
+    <value>Applies only to this event</value>
+  </data>
 </root>

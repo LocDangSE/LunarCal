@@ -11,6 +11,7 @@
 - UI smoke test `Settings_button_opens_appearance_page` no longer fails with `NoClickablePointException` (selects the nav item through UI Automation).
 
 ### Added
+- Event editor overnight events, solar recurrence, and per-event timezone (Figma 52:370, 52:971 / 3.3, 3.4, FR-UI-4, FR-UI-7, P4-R1): handles overnight timed events (EndTime <= StartTime) by automatically advancing end date by +1 day, displaying "+1 ngày · kết thúc HH:mm" chip and a link to open custom end date; implements solar recurrence frequency selector (Daily, Weekly, Monthly, Yearly) with RRULE output and "Lặp vào … · Lần tới" occurrences; adds per-event time zone dropdown override with default fallback to settings.
 - Composite primary key `(calendar_id, id)` for SQLite `Event` table (FR-SYNC-1, spec §6, P4-R3): updates SQLite schema via `Migration003EventCompositeKey` (V3) to use `PRIMARY KEY (calendar_id, id)`, enabling events across different calendars to have identical event IDs without colliding; updates `EventRows`, `IEventStore`, `SqliteEventStore`, `InMemoryEventStore`, and `MutationService` to support calendar-scoped event queries and deletions.
 - Vendor-neutral chat model contract (FR-BYOK-7, spec §7, P4-01): introduces IChatModelClient abstraction and domain models in LunarCal.Core (ChatRequest, ChatResponse, ToolCall, ToolDefinition, ToolResult, ChatMessage, ChatMessageRole, ChatFinishReason, ChatTokenUsage).
 - `AccountSessionService`, `AccountDataPurger`, `AccountSwitchDialog` and the `DangerSolidButtonStyle`, `GhostButtonStyle` styles (P4-R2).

@@ -1288,4 +1288,32 @@
   <data name="settings.account.switch_cancelled" xml:space="preserve">
     <value>Đã giữ nguyên tài khoản hiện tại.</value>
   </data>
+  <!-- Event Editor S10 (P4-R1, Figma 52:370, 52:971) -->
+  <data name="event.overnight_chip" xml:space="preserve">
+    <value>+{0} ngày · kết thúc {1}</value>
+  </data>
+  <data name="event.custom_end_date_link" xml:space="preserve">
+    <value>Ngày kết thúc khác…</value>
+  </data>
+  <data name="recurrence.solar_rule.daily" xml:space="preserve">
+    <value>Hằng ngày</value>
+  </data>
+  <data name="recurrence.solar_rule.weekly" xml:space="preserve">
+    <value>Lặp vào {0} hàng tuần</value>
+  </data>
+  <data name="recurrence.solar_rule.monthly" xml:space="preserve">
+    <value>Lặp vào ngày {0} hàng tháng</value>
+  </data>
+  <data name="recurrence.solar_rule.yearly" xml:space="preserve">
+    <value>Hằng năm vào ngày {0} tháng {1}</value>
+  </data>
+  <data name="recurrence.solar_rule.next" xml:space="preserve">
+    <value>Lần tới: {0}</value>
+  </data>
+  <data name="event.timezone.default" xml:space="preserve">
+    <value>Theo Cài đặt ({0})</value>
+  </data>
+  <data name="event.timezone.note" xml:space="preserve">
+    <value>Chỉ áp dụng cho sự kiện này</value>
+  </data>
 </root>

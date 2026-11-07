@@ -15,6 +15,11 @@ namespace LunarCal.App.ViewModels;
 public sealed record RecurrenceOption(EventRecurrenceType Type, string Label);
 
 /// <summary>
+/// Display item representing an event time zone choice (Figma 52:971, S10 3.4).
+/// </summary>
+public sealed record EventTimeZoneOption(string Id, string Label, bool IsDefault, TimeZoneInfo TimeZone);
+
+/// <summary>
 /// Display chip representing an event reminder.
 /// </summary>
 public sealed class ReminderChipViewModel
@@ -152,6 +157,70 @@ public sealed partial class EventEditorViewModel : ObservableObject
     [ObservableProperty]
     private string? _errorMessage;
 
+    /// <summary>Available time zones for this event (Figma 52:971).</summary>
+    public ObservableCollection<EventTimeZoneOption> TimeZoneOptions { get; } = new();
+
+    [ObservableProperty]
+    private EventTimeZoneOption? _selectedTimeZoneOption;
+
+    /// <summary>Effective time zone for the event.</summary>
+    public TimeZoneInfo SelectedTimeZoneInfo => SelectedTimeZoneOption?.TimeZone ?? _preferences.TimeZone;
+
+    /// <summary>True when the user explicitly opened the end date picker via "Ngày kết thúc khác…".</summary>
+    [ObservableProperty]
+    private bool _isCustomEndDateOpen;
+
+
+    /// <summary>True when a timed event extends past its start date (e.g. 22:00 -> 01:00 = overnight).</summary>
+    public bool IsOvernight => IsTimed && EndDate > StartDate;
+
+    /// <summary>Overnight chip label: "+1 ngày · kết thúc 01:00" (Figma 52:370, S10 3.3).</summary>
+    public string OvernightChipText
+    {
+        get
+        {
+            if (!IsOvernight)
+            {
+                return string.Empty;
+            }
+
+            var diff = EndDate.DayNumber - StartDate.DayNumber;
+            return _localizationService.Format("event.overnight_chip", diff, EndTime.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture));
+        }
+    }
+
+    /// <summary>Headline describing the solar recurrence (e.g. "Lặp vào thứ Năm hàng tuần").</summary>
+    public string SolarRuleTitle
+    {
+        get
+        {
+            return _solarFrequency switch
+            {
+                EventRecurrenceType.Daily => _localizationService["recurrence.solar_rule.daily"],
+                EventRecurrenceType.Weekly => _localizationService.Format("recurrence.solar_rule.weekly", FormatWeekday(StartDate)),
+                EventRecurrenceType.Monthly => _localizationService.Format("recurrence.solar_rule.monthly", StartDate.Day),
+                EventRecurrenceType.Yearly => _localizationService.Format("recurrence.solar_rule.yearly", StartDate.Day, StartDate.Month),
+                _ => string.Empty,
+            };
+        }
+    }
+
+    /// <summary>Next occurrences for the solar recurrence (e.g. "Lần tới: 29/10/2026 · 05/11/2026 · 12/11/2026").</summary>
+    public string SolarRuleNextText
+    {
+        get
+        {
+            var dates = NextSolarOccurrences(3);
+            if (dates.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            return _localizationService.Format("recurrence.solar_rule.next", string.Join(" · ", dates.Select(d => d.ToString("dd/MM/yyyy", culture))));
+        }
+    }
+
     /// <summary>Available calendars list for the target calendar picker.</summary>
     public ObservableCollection<CalendarItemViewModel> AvailableCalendars { get; } = new();
 
@@ -188,6 +257,8 @@ public sealed partial class EventEditorViewModel : ObservableObject
             }
 
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SolarRuleTitle));
+            OnPropertyChanged(nameof(SolarRuleNextText));
         }
     }
 
@@ -238,10 +309,44 @@ public sealed partial class EventEditorViewModel : ObservableObject
     public bool IsTimed => !IsAllDay;
 
     /// <summary>
-    /// True when the end date needs its own picker: all-day events, and timed events that already span several days
-    /// (Figma S10 shows start date, start time and end time only).
+    /// True when the end date needs its own picker: all-day events, custom end date opened,
+    /// or timed events that span past overnight (> 1 day).
     /// </summary>
-    public bool ShowEndDate => IsAllDay || EndDate != StartDate;
+    public bool ShowEndDate
+    {
+        get
+        {
+            if (IsAllDay)
+            {
+                return true;
+            }
+
+            if (IsCustomEndDateOpen)
+            {
+                return true;
+            }
+
+            if (IsTimed)
+            {
+                if (EndDate == StartDate.AddDays(1) && EndTime <= StartTime)
+                {
+                    return false;
+                }
+
+                return EndDate != StartDate;
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>Opens the end date picker for choosing a different end date (Figma 52:370).</summary>
+    [RelayCommand]
+    public void OpenCustomEndDate()
+    {
+        IsCustomEndDateOpen = true;
+        OnPropertyChanged(nameof(ShowEndDate));
+    }
 
     /// <summary>Half-hour time slots offered by the time drop-downs (Figma S10 "10:00 ▾").</summary>
     public IReadOnlyList<string> TimeSlots { get; } =
@@ -358,6 +463,79 @@ public sealed partial class EventEditorViewModel : ObservableObject
     /// <summary>Preset reminders offered by "+ Thêm nhắc nhở".</summary>
     public IReadOnlyList<ReminderPreset> ReminderPresets { get; private set; } = Array.Empty<ReminderPreset>();
 
+    private string FormatWeekday(DateOnly date) =>
+        date.ToDateTime(TimeOnly.MinValue).ToString("dddd", _localizationService.CurrentCulture);
+
+    private List<DateOnly> NextSolarOccurrences(int count)
+    {
+        var result = new List<DateOnly>();
+        var current = StartDate;
+        for (int i = 0; i < count; i++)
+        {
+            current = _solarFrequency switch
+            {
+                EventRecurrenceType.Daily => current.AddDays(1),
+                EventRecurrenceType.Weekly => current.AddDays(7),
+                EventRecurrenceType.Monthly => current.AddMonths(1),
+                EventRecurrenceType.Yearly => current.AddYears(1),
+                _ => current,
+            };
+            if (current == StartDate)
+            {
+                break;
+            }
+            result.Add(current);
+        }
+        return result;
+    }
+
+    private void PopulateTimeZoneOptions()
+    {
+        var previousSelectedId = SelectedTimeZoneOption?.Id;
+        TimeZoneOptions.Clear();
+
+        var prefZone = _preferences.TimeZone;
+        var defaultLabel = _localizationService.Format("event.timezone.default", FormatTimeZoneOffsetAndName(prefZone));
+        var defaultOption = new EventTimeZoneOption(string.Empty, defaultLabel, IsDefault: true, prefZone);
+        TimeZoneOptions.Add(defaultOption);
+
+        var utcLabel = FormatTimeZoneOffsetAndName(TimeZoneInfo.Utc);
+        TimeZoneOptions.Add(new EventTimeZoneOption("UTC", $"UTC ({utcLabel})", IsDefault: false, TimeZoneInfo.Utc));
+
+        var systemZones = TimeZoneInfo.GetSystemTimeZones()
+            .Where(z => z.Id != TimeZoneInfo.Utc.Id && z.Id != prefZone.Id)
+            .OrderBy(z => z.BaseUtcOffset)
+            .ThenBy(z => z.DisplayName);
+
+        foreach (var zone in systemZones)
+        {
+            TimeZoneOptions.Add(new EventTimeZoneOption(zone.Id, FormatTimeZoneOffsetAndName(zone), IsDefault: false, zone));
+        }
+
+        if (!string.IsNullOrEmpty(previousSelectedId))
+        {
+            SelectedTimeZoneOption = TimeZoneOptions.FirstOrDefault(o => o.Id == previousSelectedId) ?? defaultOption;
+        }
+        else
+        {
+            SelectedTimeZoneOption = defaultOption;
+        }
+    }
+
+    public static string FormatTimeZoneOffsetAndName(TimeZoneInfo zone)
+    {
+        var offset = zone.BaseUtcOffset;
+        var sign = offset < TimeSpan.Zero ? "-" : "+";
+        var abs = offset.Duration();
+        var name = zone.DisplayName;
+        var close = name.IndexOf(')', StringComparison.Ordinal);
+        if (name.StartsWith('(') && close > 0)
+        {
+            name = name[(close + 1)..].TrimStart();
+        }
+        return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"(GMT{sign}{abs.Hours:D2}:{abs.Minutes:D2}) {name}");
+    }
+
     private string FormatDateWithWeekday(DateOnly date) =>
         _localizationService.Format("format.date_weekday", date.ToDateTime(TimeOnly.MinValue));
 
@@ -394,6 +572,10 @@ public sealed partial class EventEditorViewModel : ObservableObject
             OnPropertyChanged(nameof(StartDateText));
             OnPropertyChanged(nameof(EndDateText));
             OnPropertyChanged(nameof(StartLunarChipText));
+            OnPropertyChanged(nameof(SolarRuleTitle));
+            OnPropertyChanged(nameof(SolarRuleNextText));
+            OnPropertyChanged(nameof(OvernightChipText));
+            PopulateTimeZoneOptions();
             NotifyLunarRuleChanged();
             UpdateLunarDateText();
             RefreshReminderChips();
@@ -401,13 +583,50 @@ public sealed partial class EventEditorViewModel : ObservableObject
 
         AvailableCalendars.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SyncToGoogleText));
 
+        PopulateTimeZoneOptions();
         UpdateLunarDateText();
         RefreshReminderChips();
     }
 
+    partial void OnStartTimeChanged(TimeOnly value)
+    {
+        if (IsTimed && !IsCustomEndDateOpen)
+        {
+            if (EndTime <= value)
+            {
+                EndDate = StartDate.AddDays(1);
+            }
+            else if (EndDate == StartDate.AddDays(1))
+            {
+                EndDate = StartDate;
+            }
+        }
+        NotifyOvernightChanged();
+    }
+
+    partial void OnEndTimeChanged(TimeOnly value)
+    {
+        if (IsTimed && !IsCustomEndDateOpen)
+        {
+            if (value <= StartTime)
+            {
+                EndDate = StartDate.AddDays(1);
+            }
+            else if (EndDate == StartDate.AddDays(1))
+            {
+                EndDate = StartDate;
+            }
+        }
+        NotifyOvernightChanged();
+    }
+
     partial void OnStartDateChanged(DateOnly value)
     {
-        if (EndDate < value)
+        if (!IsCustomEndDateOpen && IsTimed && EndTime <= StartTime)
+        {
+            EndDate = value.AddDays(1);
+        }
+        else if (EndDate < value)
         {
             EndDate = value;
         }
@@ -416,6 +635,8 @@ public sealed partial class EventEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(TimeZoneText));
         OnPropertyChanged(nameof(StartDateText));
         OnPropertyChanged(nameof(StartLunarChipText));
+        OnPropertyChanged(nameof(SolarRuleTitle));
+        OnPropertyChanged(nameof(SolarRuleNextText));
         UpdateLunarDateText();
 
         // Until "Tuỳ chỉnh" is opened the rule simply follows the start date (Figma S10 derives it from the date).
@@ -425,12 +646,21 @@ public sealed partial class EventEditorViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(LunarRuleNextText));
+        NotifyOvernightChanged();
     }
 
     partial void OnEndDateChanged(DateOnly value)
     {
         OnPropertyChanged(nameof(ShowEndDate));
         OnPropertyChanged(nameof(EndDateText));
+        NotifyOvernightChanged();
+    }
+
+    private void NotifyOvernightChanged()
+    {
+        OnPropertyChanged(nameof(IsOvernight));
+        OnPropertyChanged(nameof(OvernightChipText));
+        OnPropertyChanged(nameof(ShowEndDate));
     }
 
     partial void OnSelectedCalendarChanged(CalendarItemViewModel? value)
@@ -531,6 +761,7 @@ public sealed partial class EventEditorViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsTimed));
         OnPropertyChanged(nameof(ShowEndDate));
+        NotifyOvernightChanged();
     }
 
     /// <summary>
@@ -636,6 +867,14 @@ public sealed partial class EventEditorViewModel : ObservableObject
         }
 
         IsAllDay = isAllDay;
+        IsCustomEndDateOpen = false;
+        SelectedTimeZoneOption = TimeZoneOptions.FirstOrDefault(o => o.IsDefault) ?? TimeZoneOptions.FirstOrDefault();
+        if (EndTime <= StartTime && !isAllDay)
+        {
+            EndDate = StartDate.AddDays(1);
+        }
+        NotifyOvernightChanged();
+
         RecurrenceKind = EventRecurrenceType.None;
         Reminders.Clear();
         Reminders.Add(10); // default 10 minutes reminder
@@ -677,7 +916,35 @@ public sealed partial class EventEditorViewModel : ObservableObject
         IsAllDay = calendarEvent.AllDay;
         ErrorMessage = null;
 
-        var timeZone = _preferences.TimeZone;
+        IsCustomEndDateOpen = false;
+        if (!string.IsNullOrEmpty(calendarEvent.TimeZone))
+        {
+            var matched = TimeZoneOptions.FirstOrDefault(o => o.Id == calendarEvent.TimeZone);
+            if (matched is not null)
+            {
+                SelectedTimeZoneOption = matched;
+            }
+            else
+            {
+                try
+                {
+                    var customZone = TimeZoneInfo.FindSystemTimeZoneById(calendarEvent.TimeZone);
+                    var customOpt = new EventTimeZoneOption(customZone.Id, FormatTimeZoneOffsetAndName(customZone), IsDefault: false, customZone);
+                    TimeZoneOptions.Add(customOpt);
+                    SelectedTimeZoneOption = customOpt;
+                }
+                catch
+                {
+                    SelectedTimeZoneOption = TimeZoneOptions.FirstOrDefault(o => o.IsDefault) ?? TimeZoneOptions.FirstOrDefault();
+                }
+            }
+        }
+        else
+        {
+            SelectedTimeZoneOption = TimeZoneOptions.FirstOrDefault(o => o.IsDefault) ?? TimeZoneOptions.FirstOrDefault();
+        }
+
+        var timeZone = SelectedTimeZoneInfo;
         var startLocal = CalendarTime.ToLocal(calendarEvent.StartUtc, timeZone);
         var endLocal = CalendarTime.ToLocal(calendarEvent.EndUtc, timeZone);
 
@@ -835,7 +1102,7 @@ public sealed partial class EventEditorViewModel : ObservableObject
             return false;
         }
 
-        var timeZone = _preferences.TimeZone;
+        var timeZone = SelectedTimeZoneInfo;
         DateTimeOffset startUtc;
         DateTimeOffset endUtc;
 
@@ -935,7 +1202,7 @@ public sealed partial class EventEditorViewModel : ObservableObject
             return null;
         }
 
-        var timeZone = _preferences.TimeZone;
+        var timeZone = SelectedTimeZoneInfo;
         var startUtc = IsAllDay
             ? CalendarTime.StartOfDayUtc(StartDate.AddDays(1), timeZone)
             : CalendarTime.ToUtc(StartDate, StartTime.AddHours(1), timeZone);
