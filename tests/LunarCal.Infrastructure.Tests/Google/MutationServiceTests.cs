@@ -115,6 +115,16 @@ public sealed class MutationServiceTests : IDisposable
             EndUtc = new DateTimeOffset(2026, 11, 4, 9, 30, 0, TimeSpan.Zero)
         };
 
+        // The service fires the post-mutation sync on a background task (so the UI is not blocked),
+        // hence the test waits for that call instead of reading it right after the method returns.
+        var syncTriggered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _syncScheduler.TriggerPostMutationSyncAsync(Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                syncTriggered.TrySetResult();
+                return Task.CompletedTask;
+            });
+
         var created = await _service.CreateEventOptimisticAsync("acc-1", "cal-1", newEvent, ct);
         created.Id.Should().Be("localevt001");
 
@@ -134,7 +144,8 @@ public sealed class MutationServiceTests : IDisposable
         pending[0].Kind.Should().Be(MutationKind.CreateEvent);
         pending[0].PayloadJson.Should().Contain("Team Standup");
 
-        // Verify post mutation sync was requested
+        // Verify post mutation sync was requested (FR-SYNC-3)
+        await syncTriggered.Task.WaitAsync(TimeSpan.FromSeconds(5), ct);
         await _syncScheduler.Received(1).TriggerPostMutationSyncAsync(Arg.Any<CancellationToken>());
     }
 
