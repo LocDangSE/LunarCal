@@ -15,6 +15,8 @@ Nguồn: spec §5 (SEC-*), §4.5 (FR-BYOK), §4.1 (FR-AUTH), §5.9 (điều cấ
 - Trong bộ nhớ: giải mã ngay trước khi dùng, không cache toàn cục, không đưa vào exception message, `ToString()` hay log (SEC-KEY-3).
 - UI chỉ hiển thị dạng che, ví dụ `AIza••••xxxx` (FR-BYOK-3). Có nút xoá key và hướng dẫn thu hồi key (SEC-KEY-4, FR-BYOK-4).
 - Key chỉ ở máy người dùng; không có server proxy gọi Gemini thay người dùng (spec §1 non-goals, §15.3).
+- Biện pháp bổ sung ở Phase 4 (SEC-KEY-6..11, ADR-0016, spec §5.1): che key theo giá trị qua `SecretValueRegistry` (không chỉ theo mẫu `AIza`), `HttpClient` riêng cho Gemini với handler gắn key, host cố định và không theo redirect, bỏ qua key trong cấu hình, ô nhập `PasswordBox` xoá sau khi lưu và xoá clipboard, chỉ lưu key đã kiểm tra, luồng "nghi lộ key", test canary quét log, SQLite, `AppSetting` và outbox. Không bắt buộc key bắt đầu bằng `AIza`.
+- Một tài khoản Google tại một thời điểm (FR-AUTH-5, ADR-0029): mọi đường đăng nhập đi qua `IAccountSessionService`; đừng gọi `IAccountStore.SaveAccountAsync` trực tiếp từ giao diện.
 
 ## OAuth và token Google
 

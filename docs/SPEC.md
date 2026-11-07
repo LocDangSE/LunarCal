@@ -127,11 +127,11 @@ Quy tắc phụ thuộc: App → Infrastructure → Core. Core không tham chi�
 
 ### 4.5 BYOK và cài đặt AI (FR-BYOK)
 
-- **FR-BYOK-1** Lần đầu dùng chat: màn hình hướng dẫn lấy Gemini API key kèm link, ô nhập dạng password, nút Kiểm tra key.
-- **FR-BYOK-2** Kiểm tra key bằng một lời gọi nhẹ (ví dụ liệt kê model). Hiển thị lỗi phân loại: key sai, hết quota, không có mạng, bị chặn khu vực.
-- **FR-BYOK-3** Lưu key mã hoá DPAPI (CurrentUser) qua `ISecretStore`. Không bao giờ ghi ra file cấu hình, log, crash dump, data lake. UI chỉ hiển thị dạng che (ví dụ `AIza••••xxxx`).
+- **FR-BYOK-1** Lần đầu dùng chat: màn hình hướng dẫn lấy Gemini API key (Figma S14 bước 3/3, frame 1.3 `39:395`) kèm link `https://aistudio.google.com/apikey`, ô nhập dạng password, nút Kiểm tra key. Hướng dẫn nói rõ: tạo key riêng cho LunarCal, giới hạn cho Gemini API (Gemini API từ chối key không bị hạn chế), đặt ngân sách và cảnh báo chi phí trong Cloud Console. Không bắt buộc key bắt đầu bằng `AIza`, vì Google không nêu định dạng key (ADR-0016).
+- **FR-BYOK-2** Kiểm tra key bằng `GET /v1beta/models` với header `x-goog-api-key` (danh sách này cũng dùng cho FR-BYOK-5). Hiển thị lỗi phân loại theo cả mã HTTP lẫn `status`/`reason` trong thân lỗi (bảng ở ADR-0016 mục 4): key sai hoặc không có quyền, key bị Google đánh dấu lộ, cần xác minh hoặc liên kết billing, hết quota theo phút hoặc theo ngày, model không tồn tại, không có mạng, bị chặn khu vực hoặc an toàn.
+- **FR-BYOK-3** Lưu key mã hoá DPAPI (CurrentUser) qua `ISecretStore`. Không bao giờ ghi ra file cấu hình, log, crash dump, data lake. UI chỉ hiển thị dạng che (ví dụ `AIza••••xxxx`, hoặc 4 ký tự cuối khi key không có tiền tố đó). Ô nhập là `PasswordBox`, xoá ngay sau khi lưu; chỉ lưu key đã kiểm tra thành công (khi offline có lựa chọn "Lưu mà không kiểm tra"). Các biện pháp chống lộ key: SEC-KEY-6..11.
 - **FR-BYOK-4** Đổi/xoá key bất cứ lúc nào; xoá là xoá khỏi store và bộ nhớ ngay.
-- **FR-BYOK-5** Model id cấu hình được trong Settings (mặc định lấy từ appsettings, kiểm tra tài liệu hiện hành khi triển khai). Hiển thị lưu ý rằng chi phí và quota là của người dùng, và chỉ cho chọn model hỗ trợ function calling.
+- **FR-BYOK-5** Model id cấu hình được trong Settings. Mặc định `gemini-3.8-flash` đặt ở `appsettings.json` (`LunarCal:Gemini:DefaultModelId`), không hard-code trong code (ADR-0016); không dùng alias `*-latest`. Danh sách lấy từ `models.list`: giữ model có `generateContent`, bỏ tên chứa `tts`, `live`, `image`, `embedding`, `omni`, `latest`; khi người dùng chọn một model thì gọi thử một request nhỏ có khai báo hàm để xác nhận hỗ trợ function calling (`models.list` không có trường này). Hiển thị lưu ý: chi phí và quota là của người dùng (Google tính theo project, không theo key); ở gói miễn phí Google có thể dùng nội dung gửi đi để cải thiện sản phẩm, gói trả phí thì không.
 - **FR-BYOK-6** Khi chưa có key: toàn bộ phần lịch vẫn dùng bình thường, chat hiển thị trạng thái chưa cấu hình.
 - **FR-BYOK-7** `IChatModelClient` đủ trừu tượng để thay provider khác sau này; Core không chứa code riêng của Gemini.
 
@@ -189,7 +189,7 @@ Các tool (function declarations) gửi cho model. Tham số được validate b
 Nguồn: Figma màn hình 03 (Offline và hàng chờ AI). Hàng chờ này dành cho lệnh AI; việc ghi sự kiện lên Google khi mất mạng vẫn dùng `PendingMutation` (FR-SYNC-4).
 
 - **FR-QUEUE-1** Mọi lệnh gõ vào thanh lệnh AI được lưu ngay vào bảng SQLite `AiCommand`: mã hiển thị dạng `#1000`, nội dung gốc, `typed_at` (giờ gõ, theo múi giờ trong Settings), `input_lang`, trạng thái, số lần thử, lỗi gần nhất.
-- **FR-QUEUE-2** Sáu trạng thái: Chờ xử lý, Đang xử lý, Chờ xác nhận, Lỗi, Hoàn tất, Đã huỷ. Ngăn kéo “Hàng chờ AI” mở từ khối trạng thái đồng bộ ở sidebar và hiển thị số lệnh chưa hoàn tất.
+- **FR-QUEUE-2** Sáu trạng thái: Chờ xử lý, Đang xử lý, Chờ xác nhận, Lỗi, Hoàn tất, Đã huỷ. Ngăn kéo “Hàng chờ AI” mở từ khối trạng thái đồng bộ ở sidebar và hiển thị số lệnh chưa hoàn tất. Mã lưu ở cột `AiCommand.status`: `pending`, `processing`, `needs_confirmation`, `error`, `completed`, `cancelled`; hai mã cuối là trạng thái kết thúc và `AccountDataPurger.TerminalAiCommandStatuses` (đếm lệnh đang chờ khi đổi tài khoản, FR-AUTH-5) dựa vào đúng hai mã đó.
 - **FR-QUEUE-3** Khi mất mạng, thanh lệnh vẫn nhận lệnh và hiện banner “Không có kết nối. Yêu cầu mới sẽ được lưu cục bộ và chờ xử lý lại khi có mạng.” Có mạng lại thì tự xử lý, người dùng không phải nhập lại.
 - **FR-QUEUE-4** Mốc thời gian để hiểu “ngày mai”, “tomorrow”, “tuần sau” là `typed_at`, không phải lúc xử lý. Dòng hàng chờ hiển thị mốc đã quy đổi (ví dụ tomorrow = 17/10).
 - **FR-QUEUE-5** Thử lại tối đa 5 lần với backoff luỹ thừa có jitter; hiển thị “Thử lại 3/5 (chờ 8 phút)”. Quá 5 lần chuyển sang Lỗi, chờ người dùng thử lại, sửa hoặc huỷ. Lỗi do nội dung (ví dụ AI chưa xác định được giờ) hiện thông báo kèm nút Sửa ngay.
@@ -209,7 +209,7 @@ Nguồn: Figma màn hình 02. Đây là hiện thực giao diện của FR-CHAT-
 - **FR-CONFIRM-5** Validator nghiệp vụ chạy hoàn toàn cục bộ trên cache SQLite: giờ hợp lệ, cảnh báo nếu ở quá khứ, xung đột với lịch hiện có, giới hạn bulk, phạm vi xoá. Kết quả hiện dưới dạng đạt, cảnh báo hoặc lỗi, ví dụ “Đã qua kiểm tra nghiệp vụ: giờ hợp lệ, không xung đột với lịch hiện tại.” Lịch của người dùng không được gửi cho Gemini để kiểm tra xung đột.
 - **FR-CONFIRM-6** Chân hộp thoại có ghi chú quyền riêng tư theo trạng thái opt-in (chuỗi ở mục 4.11) và ba nút: Sửa (mở form chỉnh từng trường), Hủy, “Xác nhận & thêm vào Google”. Nút xác nhận bị khoá khi validator báo lỗi hoặc độ tin cậy dưới ngưỡng, cho đến khi người dùng sửa.
 - **FR-CONFIRM-7** Với lệnh tạo nhiều sự kiện, lặp dương lịch hoặc lặp âm lịch, hộp thoại hiển thị bảng các sự kiện sẽ tạo (ngày dương kèm ngày âm), cho chọn hoặc bỏ từng dòng, sửa từng dòng, hiện tổng số; với luật âm lịch có công tắc “Đồng bộ lên Google” (mặc định tắt). Màn hình này chưa có trong Figma (mục 15).
-- **FR-CONFIRM-8** Khi model cần thêm thông tin (thiếu giờ, ngày mơ hồ), hộp thoại chuyển sang trạng thái hỏi lại với ô nhập ngắn thay vì đoán. Chưa có trong Figma (mục 15).
+- **FR-CONFIRM-8** Khi model cần thêm thông tin (thiếu giờ, ngày mơ hồ), hộp thoại chuyển sang trạng thái hỏi lại với ô nhập ngắn thay vì đoán. Thiết kế: Figma S16, frame 4.4 (`46:370`, dialog `46:862`): nhãn "Cần bổ sung" thay "Chờ xác nhận", hàng còn thiếu tô vàng nhạt, khối "CÂU HỎI CỦA AI" chỉ hỏi một thông tin mỗi lần, chip trả lời nhanh (giờ gợi ý), ô trả lời ngắn có focus, ghi chú "câu trả lời được gửi tới Gemini cùng lệnh gốc"; nút Hủy và "Trả lời & tiếp tục" (bỏ nút Sửa). Lượt hỏi lại phát lại các `part` gốc của model qua `ChatResponse.ProviderState` (mục 7).
 - **FR-CONFIRM-9** Hành động của người dùng (xác nhận, sửa, từ chối, huỷ) và bản sau khi sửa được ghi vào outbox nếu đã opt-in (FR-DATA-3).
 
 ### 4.10 Thu thập dữ liệu lên cloud (FR-CLOUD)
@@ -339,6 +339,13 @@ Nguồn: Figma màn hình 05 (Nhắc việc Windows). Nhóm này thay cho phần
 - **SEC-KEY-3** Trong bộ nhớ: giữ key ở dạng tồn tại ngắn nhất có thể, giải mã khi cần dùng, không cache toàn cục lâu; không đưa vào exception message, `ToString`, telemetry. Đây là nỗ lực tốt nhất, vì .NET không đảm bảo xoá sạch chuỗi khỏi bộ nhớ.
 - **SEC-KEY-4** Cung cấp nút xoá key và hướng dẫn thu hồi key trong Google AI Studio khi nghi ngờ bị lộ.
 - **SEC-KEY-5** Repo: gitleaks (pre-commit và CI); `.gitignore` chặn `*.user`, `secrets.*`, `*.pfx`; môi trường dev dùng `dotnet user-secrets` cho OAuth client id nếu cần.
+- **SEC-KEY-6** Che key theo giá trị, không chỉ theo mẫu: `SecretValueRegistry` đăng ký chuỗi key (và dạng URL-encode) khi lưu hoặc nạp; mọi sink log, thông báo lỗi và chuỗi hiển thị thay nó bằng `[REDACTED]`; xoá key thì gỡ khỏi registry. Regex `AIza…` của `LogRedactor` chỉ là lớp dự phòng, vì Google không nêu định dạng key mới.
+- **SEC-KEY-7** `HttpClient` riêng cho Gemini: một `DelegatingHandler` gắn key ngay trước khi gửi (không để trong `DefaultRequestHeaders` hay field của client), từ chối gửi nếu host đích không phải `generativelanguage.googleapis.com`, và `AllowAutoRedirect = false` để header không bị chuyển tiếp sang host khác.
+- **SEC-KEY-8** Không đọc key từ cấu hình: nếu thấy `LunarCal:Gemini:ApiKey`, `Gemini:ApiKey` hoặc `GEMINI_API_KEY` trong appsettings, biến môi trường hay user-secrets thì ghi cảnh báo (không in giá trị) và bỏ qua; key chỉ đọc từ `ISecretStore`.
+- **SEC-KEY-9** Nhập key an toàn: `PasswordBox` không bind chuỗi qua `INotifyPropertyChanged`, đọc một lần khi bấm Lưu rồi xoá ô, không có nút "hiện key"; sau khi lưu thì xoá clipboard, chỉ khi nội dung clipboard đúng bằng key vừa lưu; không lưu key chưa qua kiểm tra (trừ lựa chọn "Lưu mà không kiểm tra" khi offline).
+- **SEC-KEY-10** Khi gặp lỗi "key bị báo lộ" hoặc người dùng chọn "Tôi nghi key bị lộ": xoá key khỏi store và bộ nhớ ngay (FR-BYOK-4), tạm dừng (không xoá) lệnh AI đang chờ, hiển thị hướng dẫn theo thứ tự Google khuyến nghị: tạo key mới, cập nhật app, xoá key cũ, xem lại mức dùng và hoá đơn.
+- **SEC-KEY-11** Test canary toàn hệ thống: đặt một key giả dài, không theo mẫu `AIza`, chạy kịch bản lưu, kiểm tra, lỗi 401 và 429, đổi, xoá; rồi quét log, thông báo lỗi, bảng SQLite, `AppSetting` và outbox, không được có chuỗi key.
+- Giới hạn đã biết: DPAPI `CurrentUser` không chống được mã độc chạy cùng tài khoản Windows (ADR-0018); lớp bảo vệ cuối là phía Google (giới hạn key cho Gemini API, ngân sách, thu hồi nhanh).
 
 ### 5.2 OAuth và Google
 
@@ -386,13 +393,13 @@ Nguồn: Figma màn hình 05 (Nhắc việc Windows). Nhóm này thay cho phần
 
 ### 5.9 Điều cấm đối với Claude Code khi sinh code
 
-Không hard-code key, secret hay model id. Không dùng `ServerCertificateValidationCallback` để bỏ qua chứng chỉ. Không log request/response thô của Gemini ở mức mặc định. Không đặt secret trong query string. Không thêm telemetry. Không tắt analyzer hoặc warning bằng pragma mà không có lý do trong comment. Không dùng `async void` ngoài event handler. Không block UI thread bằng `.Result` hoặc `.Wait()`.
+Không hard-code key, secret hay model id. Không dùng `ServerCertificateValidationCallback` để bỏ qua chứng chỉ. Không log request/response thô của Gemini ở mức mặc định. Không đặt secret trong query string. Không đọc Gemini key từ cấu hình hay biến môi trường, và không gửi header chứa key tới host nào khác `generativelanguage.googleapis.com`. Không thêm telemetry. Không tắt analyzer hoặc warning bằng pragma mà không có lý do trong comment. Không dùng `async void` ngoài event handler. Không block UI thread bằng `.Result` hoặc `.Wait()`.
 
 ### 5.10 Threat model rút gọn
 
 | Mối đe doạ | Biện pháp |
 | --- | --- |
-| Lộ API key qua log hoặc file | SEC-KEY-1..3, SEC-LOG-1 |
+| Lộ API key qua log hoặc file | SEC-KEY-1..3, SEC-KEY-6..11, SEC-LOG-1 |
 | Malware chạy cùng user đọc token | DPAPI chỉ chống user khác; ghi rõ giới hạn này trong THREAT\_MODEL.md; cho phép thu hồi nhanh |
 | Prompt injection qua nội dung lịch | SEC-PI-\* |
 | Model tạo hoặc xoá hàng loạt ngoài ý muốn | Xác nhận bắt buộc, giới hạn số lượng, hoàn tác theo batchId |
@@ -434,8 +441,12 @@ Bổ sung từ thiết kế Figma và cloud (v1.1):
 
 ## 7. Tích hợp Gemini
 
-- Gọi qua `IChatModelClient.SendAsync(ChatRequest) → ChatResponse` (khai báo trong Core), hiện thực trong `Infrastructure/Gemini` bằng REST `generateContent` với function calling bật chế độ AUTO.
-- Model id, endpoint, giới hạn token lấy từ cấu hình; ghi ADR sau khi đọc tài liệu hiện hành.
+- Gọi qua `IChatModelClient.SendAsync(ChatRequest) → ChatResponse` (khai báo trong Core), hiện thực trong `Infrastructure/Gemini` bằng REST `POST /v1beta/models/{model}:generateContent` với function calling bật chế độ AUTO. ADR-0016 (Accepted) ghi nguồn tài liệu và ngày đọc; Interactions API là phương án thay thế, chưa dùng (Google vẫn hỗ trợ đầy đủ `generateContent`).
+- Model id mặc định `gemini-3.8-flash`, `BaseUrl`, `MaxOutputTokens` (mặc định 2048) và `RequestTimeoutSeconds` (60) lấy từ cấu hình, không hard-code.
+- Không gửi `temperature`, `topP`, `topK` (Gemini 3.6 trở lên bỏ qua và sẽ trả 400 ở bản sau) và không gửi mức thinking `minimal` (model không hỗ trợ).
+- Function calling với Gemini 3.x: khi phát lại lượt có function call (trường hợp hỏi lại, FR-CONFIRM-8), client phải trả nguyên vẹn `thoughtSignature` trong đúng `part`, nếu không API trả 400. Core không chứa type của Gemini, nên `ChatResponse` mang trường mờ `ProviderState` (chuỗi) để client phát lại các `part` gốc. Luồng chính (model trả tool call, người dùng xác nhận, app tự thi hành) không gửi kết quả ngược lại cho model.
+- Phân loại lỗi và chính sách retry theo bảng ở ADR-0016 mục 4: không retry 400, 402, 403 và `quota_exceeded`; backoff luỹ thừa có jitter cho 429 theo phút, 500, 503, 408 và hết thời gian (chỉ khi request idempotent, SEC-NET-2).
+- Các chi tiết chưa xác minh được từ tài liệu (chữ hoa thường của `toolConfig.functionCallingConfig.mode`, JSON `functionResponse`, tham số phân trang `models.list`, định dạng key mới) phải được kiểm bằng test hợp đồng và một lần chạy thật với key của chủ dự án ở P4-02, rồi ghi kết quả vào ADR-0016.
 - System prompt lưu ở file resource có version (`Prompts/system.v1.md`); ghi `prompt_version` vào lake.
 - Quy tắc prompt: trả function call khi đủ thông tin, hỏi lại khi thiếu; dùng giờ địa phương của người dùng; RRULE theo RFC 5545; không bịa `calendarId`; trả lời ngắn gọn bằng ngôn ngữ của người dùng.
 - Test bằng fake `HttpMessageHandler` với các phản hồi ghi sẵn: function call hợp lệ, sai schema, 429, 401/403, bị chặn an toàn, timeout. Có thêm bộ test golden (câu tiếng Việt → tool call mong đợi) chạy thủ công với key thật, không chạy trong CI.
@@ -488,7 +499,7 @@ README (cài đặt, build, hướng dẫn lấy Gemini key và tạo OAuth clie
 | 1 | Lunar engine và test fixture | FR-LUNAR-1..3 đạt, coverage Lunar ≥ 95% |
 | 2 | UI shell, lưới Tháng/Tuần/Ngày với dữ liệu giả và ngày âm, theme, i18n | FR-UI-1,2,3,7 chạy được, có smoke test |
 | 3 | Google OAuth, SyncEngine, SQLCipher cache, CRUD sự kiện | FR-AUTH, FR-SYNC, FR-UI-4 đạt; integration test xanh |
-| 4 | SecretStore, BYOK, Gemini client, chat một sự kiện, thẻ xem trước | FR-BYOK, FR-CHAT-1,2,4 đạt; SEC-KEY, SEC-LOG đạt |
+| 4 | SecretStore, BYOK, Gemini client, chat một sự kiện, thẻ xem trước | FR-BYOK, FR-CHAT-1,2,4 đạt; SEC-KEY (gồm SEC-KEY-6..11), SEC-LOG đạt; FR-AUTH-5 (một tài khoản, đổi tài khoản xoá dữ liệu cũ) đạt |
 | 5 | Lặp dương lịch, lặp âm lịch, bulk, tiến độ, hoàn tác, test SEC-PI | FR-CHAT đầy đủ, FR-LUNAR-4,5 |
 | 6 | Data lake: consent, raw JSONL mã hoá, compaction Parquet, xuất/xoá | FR-DATA đầy đủ, test quét rò rỉ bí mật xanh |
 | 7 | Tray, toast, hotkey, autostart, single instance, accessibility | FR-UI-6,8, FR-NOTIFY |
@@ -497,7 +508,7 @@ README (cài đặt, build, hướng dẫn lấy Gemini key và tạo OAuth clie
 Điều chỉnh lộ trình (v1.1):
 
 - Phase 2: dựng khung i18n và file resx cả hai ngôn ngữ ngay từ đầu (FR-I18N-1..4).
-- Phase 4: thêm hàng chờ AI (FR-QUEUE) và hộp thoại xác nhận (FR-CONFIRM).
+- Phase 4: thêm hàng chờ AI (FR-QUEUE) và hộp thoại xác nhận (FR-CONFIRM, gồm trạng thái hỏi lại FR-CONFIRM-8 theo S16). Phase 4 cũng gồm ba task sửa tồn đọng từ review Phase 3: P4-R1 (trình soạn sự kiện: qua đêm, tần suất Dương lịch, múi giờ riêng, theo FR-UI-4), P4-R2 (một tài khoản, FR-AUTH-5, đã xong) và P4-R3 (khoá chính `Event` đổi sang `(calendar_id, id)` bằng migration mới); P4-R2 và P4-R3 phải xong trước P4-08.
 - Phase 6 tách ba phần: 6a outbox, consent, xem và xoá phía client; 6b backend ingestion, IaC, CI/CD cho backend, test PII; 6c báo cáo thống kê dataset theo ngôn ngữ.
 - Phase 7: toast nhắc nhở theo FR-NOTIFY: Hoãn và Hoàn thành, bảng `ReminderState`, lên lịch qua Windows (`ScheduledToastNotification`), nhắc lỡ, cột `reminders` cho `LunarRule`.
 - Mỗi phase chỉ bắt đầu khi các màn hình thuộc phạm vi phase đó đã có thiết kế (danh sách ở mục 15.4).
@@ -513,7 +524,7 @@ Bổ sung (v1.1):
 
 - Nhà cung cấp và vùng cloud cho backend thu thập (Azure, GCP, AWS hoặc Supabase/Neon) cùng ngân sách ước tính.
 - Bên kiểm soát dữ liệu (cá nhân hay pháp nhân), địa chỉ liên hệ về quyền riêng tư, độ tuổi tối thiểu của người đóng góp.
-- Xác nhận hai quyết định ở mục 15.3: key Gemini ở lại máy người dùng (không qua server) và lịch âm mặc định chỉ lưu cục bộ.
+- Xác nhận hai quyết định ở mục 15.3: key Gemini ở lại máy người dùng (không qua server) và lịch âm mặc định chỉ lưu cục bộ. Chủ dự án đã xác nhận phần key Gemini ở máy ngày 2026-11-07 (ADR-0016); phần lịch âm cục bộ chưa trả lời.
 - Bản tiếng Anh cho các chuỗi giao diện còn lại (Figma hiện chỉ có chuỗi tiếng Việt ở màn hình Cài đặt).
 
 ## 15. Đối chiếu với thiết kế Figma UI v1
@@ -538,14 +549,14 @@ Figma v1 phủ đủ 8 trong 24 nhóm yêu cầu, phủ một phần 6 nhóm và
 | FR-UI-4 Tạo, sửa, xoá sự kiện, kéo thả | 01 (chỉ nút Tạo sự kiện) | Thiếu | S10 |
 | FR-UI-5, FR-CHAT Thanh lệnh AI | 01 | Đủ | Spec đã đổi từ chat panel sang thanh lệnh |
 | FR-CONFIRM-1..6 Xác nhận một sự kiện | 02 | Đủ | Không |
-| FR-CONFIRM-7, 8 và FR-CHAT-5 Bulk, lặp, hỏi lại, tiến độ, hoàn tác | không có | Thiếu | S15, S16 |
+| FR-CONFIRM-7, 8 và FR-CHAT-5 Bulk, lặp, hỏi lại, tiến độ, hoàn tác | S16 hỏi lại đã vẽ (frame 4.4 `46:370`); còn lại không có | Một phần | S15 (S16 đã có) |
 | FR-QUEUE Hàng chờ AI, offline | 03 | Đủ | Thêm trạng thái Đã huỷ và dọn lệnh cũ |
 | FR-LUNAR-4, 5 Quản lý luật lặp âm lịch | 01 (calendar Âm lịch · cục bộ) | Thiếu | S11 |
 | FR-LUNAR-6 Công tắc lịch âm | 04 | Đủ | Chuỗi song ngữ (mục 4.11) |
 | FR-AUTH-1, 4 Kết nối và ngắt kết nối Google | 04 | Một phần | S14 (đăng nhập lần đầu, đăng nhập lại khi token hết hạn) |
 | FR-AUTH-5, 6 Một tài khoản Google (đổi tài khoản xoá dữ liệu cũ), OAuth client riêng | không có | Thiếu | S20, hộp thoại đổi tài khoản (S14) |
 | FR-SYNC Trạng thái đồng bộ, Đồng bộ ngay | 01, 04 | Đủ | Thêm trạng thái lỗi và xung đột (S18) |
-| FR-BYOK-1..5 Nhập, kiểm tra, đổi, xoá key, chọn model | 04 (một ô nhập đã xác thực) | Một phần | S14 hướng dẫn lấy key, S20 chọn model, S18 lỗi key |
+| FR-BYOK-1..5 Nhập, kiểm tra, đổi, xoá key, chọn model | 04 (một ô nhập đã xác thực) | Một phần | S14 hướng dẫn lấy key (1.3 `39:395`), S20 chọn model (5.3 `34:191`), S18 lỗi key (7.1 `42:292`): đã vẽ và được duyệt 2026-11-07 |
 | FR-DATA-1, FR-CLOUD-5 Đồng ý lần đầu và đồng ý lại | 04 (công tắc), 02 (ghi chú) | Một phần | S14 hộp thoại đồng ý |
 | FR-CLOUD-4 Xem và xoá dữ liệu đã gửi | 04 (hai nút) | Một phần | S17 |
 | FR-UI-6 Toast nhắc nhở | 05 | Đủ (sau khi bổ sung FR-NOTIFY) | Thêm trạng thái Hoãn và Hoàn thành (`ReminderState`); cập nhật Figma 05 theo FR-NOTIFY-5, 6: danh sách chọn thời gian hoãn thay nút “Hoãn 10 phút”, nhãn AI ngắn |
@@ -563,7 +574,7 @@ Mười điểm dưới đây đã được xử lý trong spec; hai điểm đ�
 
 | Điểm | Figma | Spec trước đó | Quyết định |
 | --- | --- | --- | --- |
-| Nơi lưu Gemini key | Server mã hoá key và gọi Gemini thay người dùng | Key ở máy (DPAPI), app gọi trực tiếp | Giữ key ở máy: server không giữ key của nhiều người, không cần proxy, rủi ro và chi phí vận hành thấp hơn. Sửa chuỗi `settings.byok.desc`. Muốn theo Figma thì phải thêm backend proxy, KMS, giới hạn chi phí và viết lại SEC-KEY-\* |
+| Nơi lưu Gemini key | Server mã hoá key và gọi Gemini thay người dùng | Key ở máy (DPAPI), app gọi trực tiếp | **Đã chốt 2026-11-07 (chủ dự án, ADR-0016).** Giữ key ở máy: server không giữ key của nhiều người, không cần proxy, rủi ro và chi phí vận hành thấp hơn. Sửa chuỗi `settings.byok.desc`. Muốn theo Figma thì phải thêm backend proxy, KMS, giới hạn chi phí và viết lại SEC-KEY-\* |
 | Sự kiện âm lịch | Lưu cục bộ, không đồng bộ Google | Tạo thành event trên Google | Mặc định cục bộ, tuỳ chọn đồng bộ theo từng luật (FR-LUNAR-5). Lưu ý: để cục bộ thì không hiện nhắc giỗ trên điện thoại |
 | Giao diện AI | Thanh lệnh, hộp thoại, hàng chờ | Chat panel | Dùng thiết kế Figma (FR-UI-5) |
 | Dữ liệu gửi cho Gemini | Chỉ nội dung câu lệnh | Kèm tối đa 30 event gần ngày được nhắc | Bỏ danh sách event; kiểm tra xung đột chạy cục bộ (FR-CHAT-1, FR-CONFIRM-5) |
@@ -590,7 +601,7 @@ Cần thiết kế thêm 15 màn hình (S06 đến S20) trước khi dựng giao
 | S13 | Cài đặt > Giao diện | Sáng, tối, theo hệ thống; đầu tuần; 12h hoặc 24h; mật độ; chi tiết âm lịch | 2 |
 | S14 | Lần chạy đầu và đăng nhập lại | Chọn ngôn ngữ, đăng nhập Google, hướng dẫn lấy Gemini key kèm nút kiểm tra, hộp thoại đồng ý thu thập dữ liệu, đăng nhập lại khi token hết hạn (kể cả cảnh báo trạng thái Testing 7 ngày), hộp thoại xác nhận đổi sang tài khoản Google khác (xoá dữ liệu cũ) | 3-4 |
 | S15 | Bulk: xem trước, tiến độ, hoàn tác | Bảng sự kiện trong hộp thoại xác nhận, thanh tiến độ có nút huỷ, báo cáo thành công và lỗi, toast hoàn tác | 5 |
-| S16 | AI hỏi lại | Trạng thái hỏi thêm thông tin trong hộp thoại, gợi ý trả lời nhanh | 4 |
+| S16 | AI hỏi lại | Trạng thái hỏi thêm thông tin trong hộp thoại, gợi ý trả lời nhanh. Đã vẽ: frame 4.4 (`46:370`) | 4 |
 | S17 | Dữ liệu đã đóng góp | Danh sách record đã gửi, trạng thái upload outbox, xoá từng record hoặc tất cả, thu hồi contributor, xuất | 6 |
 | S18 | Trạng thái lỗi, rỗng, đang tải | Key sai, hết quota (429), bị chặn an toàn, token hết hạn, xung đột đồng bộ, không có calendar, không có sự kiện, skeleton khi tải | 3-4 |
 | S19 | Giới thiệu | Phiên bản, kênh cập nhật, giấy phép, Privacy Policy và Terms (vi, en), báo lỗi | 8 |

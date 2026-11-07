@@ -10,7 +10,7 @@ Gemini API key, Google OAuth tokens, local calendar cache, AI command queue, dat
 
 | Threat | Mitigation | Status |
 | --- | --- | --- |
-| API key leaked via logs or files | SEC-KEY-1..3, SEC-LOG-1 | Planned (Phase 4) |
+| API key leaked via logs or files | SEC-KEY-1..3, SEC-KEY-6..11, SEC-LOG-1 | Planned (Phase 4) |
 | Malware running as the same user reads tokens | DPAPI only protects against *other* users; fast revoke | Known limitation |
 | Prompt injection through calendar content | SEC-PI-* | Planned (Phase 4–5) |
 | Unintended bulk create/delete by the model | Mandatory confirmation, limits, undo by batchId | Planned (Phase 5) |
