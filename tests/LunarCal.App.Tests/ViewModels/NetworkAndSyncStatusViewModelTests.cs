@@ -123,11 +123,15 @@ public sealed class NetworkAndSyncStatusViewModelTests
         var accountStore = Substitute.For<IAccountStore>();
         var syncScheduler = Substitute.For<ISyncScheduler>();
         var signOutService = Substitute.For<IGoogleSignOutService>();
+        var session = Substitute.For<IAccountSessionService>();
+        session.ApplySignInAsync(Arg.Any<GoogleUserInfo>(), Arg.Any<Func<AccountSignInAssessment, CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>())
+            .Returns(AccountSignInOutcome.Saved);
 
         var vm = new GoogleAccountViewModel(
             oauthClient,
             signOutService,
             accountStore,
+            session,
             _localizationService,
             syncScheduler);
 
@@ -144,9 +148,12 @@ public sealed class NetworkAndSyncStatusViewModelTests
         vm.ErrorMessage.Should().BeNull();
         changedFired.Should().BeTrue();
 
-        await accountStore.Received(1).SaveAccountAsync(
-            Arg.Is<AccountInfo>(a => a.Id == "google-1" && a.Email == "user@example.com"),
+        // FR-AUTH-5: every sign-in goes through the session service, never straight to the account store.
+        await session.Received(1).ApplySignInAsync(
+            Arg.Is<GoogleUserInfo>(u => u.Id == "google-1" && u.Email == "user@example.com"),
+            Arg.Any<Func<AccountSignInAssessment, CancellationToken, Task<bool>>>(),
             Arg.Any<CancellationToken>());
+        await accountStore.DidNotReceive().SaveAccountAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
 
         await syncScheduler.Received(1).TriggerManualSyncAsync(Arg.Any<CancellationToken>());
     }
@@ -167,6 +174,7 @@ public sealed class NetworkAndSyncStatusViewModelTests
             oauthClient,
             signOutService,
             accountStore,
+            Substitute.For<IAccountSessionService>(),
             _localizationService,
             syncScheduler);
 
@@ -193,6 +201,7 @@ public sealed class NetworkAndSyncStatusViewModelTests
             oauthClient,
             signOutService,
             accountStore,
+            Substitute.For<IAccountSessionService>(),
             _localizationService,
             syncScheduler,
             confirmation: confirmation)
@@ -259,6 +268,7 @@ public sealed class NetworkAndSyncStatusViewModelTests
             _localizationService,
             oauthClient,
             accountStore,
+            Substitute.For<IAccountSessionService>(),
             syncScheduler);
 
         vm.CurrentStep.Should().Be(1);
@@ -286,7 +296,7 @@ public sealed class NetworkAndSyncStatusViewModelTests
     public void FR_UI_7_SettingsViewModel_SelectTab_updates_ActiveTab()
     {
         var appearance = new AppearanceSettingsViewModel(Substitute.For<ISettingsStore>(), _themeService, _localizationService, _preferences);
-        var account = new GoogleAccountViewModel(Substitute.For<IGoogleOAuthClient>(), Substitute.For<IGoogleSignOutService>(), Substitute.For<IAccountStore>(), _localizationService, Substitute.For<ISyncScheduler>());
+        var account = new GoogleAccountViewModel(Substitute.For<IGoogleOAuthClient>(), Substitute.For<IGoogleSignOutService>(), Substitute.For<IAccountStore>(), Substitute.For<IAccountSessionService>(), _localizationService, Substitute.For<ISyncScheduler>());
         var advanced = new AdvancedSettingsViewModel(_localizationService, Substitute.For<ILocalDataWipeService>());
 
         var vm = new SettingsViewModel(appearance, account, advanced);

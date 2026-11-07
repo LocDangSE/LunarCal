@@ -1,6 +1,5 @@
 using LunarCal.Core.Abstractions;
 using LunarCal.Infrastructure.Storage;
-using Microsoft.Data.Sqlite;
 using Serilog;
 
 namespace LunarCal.Infrastructure.Google;
@@ -14,7 +13,7 @@ public sealed class GoogleSignOutService : IGoogleSignOutService
 {
     private readonly IGoogleOAuthClient _oauthClient;
     private readonly ISecretStore _secretStore;
-    private readonly ISqliteConnectionFactory _connectionFactory;
+    private readonly AccountDataPurger _purger;
     private readonly ILogger _logger;
 
     public GoogleSignOutService(
@@ -29,7 +28,7 @@ public sealed class GoogleSignOutService : IGoogleSignOutService
 
         _oauthClient = oauthClient;
         _secretStore = secretStore;
-        _connectionFactory = connectionFactory;
+        _purger = new AccountDataPurger(connectionFactory);
         _logger = logger ?? Log.ForContext<GoogleSignOutService>();
     }
 
@@ -72,92 +71,10 @@ public sealed class GoogleSignOutService : IGoogleSignOutService
         await _secretStore.DeleteSecretAsync(secretKey, cancellationToken).ConfigureAwait(false);
         _logger.Information("Deleted DPAPI refresh token for account {AccountId}.", accountId);
 
-        // FR-AUTH-4: Delete account and cache DB of that account
-        await PurgeAccountDataFromDatabaseAsync(accountId, cancellationToken).ConfigureAwait(false);
+        // FR-AUTH-4: delete the account and its cache, plus the queues that cannot be told apart per account (ADR-0029)
+        await _purger.PurgeAccountAsync(accountId, cancellationToken).ConfigureAwait(false);
         _logger.Information("Successfully purged database cache for account {AccountId}.", accountId);
 
         return GoogleSignOutResult.Succeeded(tokenRevokedOnServer: tokenRevoked);
-    }
-
-    private async Task PurgeAccountDataFromDatabaseAsync(string accountId, CancellationToken cancellationToken)
-    {
-        await using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-
-        // 1. Delete ReminderState entries for events in account calendars
-        const string deleteRemindersSql = """
-            DELETE FROM ReminderState
-            WHERE event_id IN (
-                SELECT e.id FROM Event e
-                INNER JOIN CalendarInfo c ON e.calendar_id = c.id
-                WHERE c.account_id = $accountId
-            );
-            """;
-        await using (var cmd = connection.CreateCommand())
-        {
-            cmd.Transaction = (SqliteTransaction)transaction;
-            cmd.CommandText = deleteRemindersSql;
-            cmd.Parameters.AddWithValue("$accountId", accountId);
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        // 2. Delete LunarRules associated with account calendars
-        const string deleteLunarRulesSql = """
-            DELETE FROM LunarRule
-            WHERE calendar_id IN (
-                SELECT id FROM CalendarInfo WHERE account_id = $accountId
-            );
-            """;
-        await using (var cmd = connection.CreateCommand())
-        {
-            cmd.Transaction = (SqliteTransaction)transaction;
-            cmd.CommandText = deleteLunarRulesSql;
-            cmd.Parameters.AddWithValue("$accountId", accountId);
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        // 3. Delete Events for account calendars
-        const string deleteEventsSql = """
-            DELETE FROM Event
-            WHERE calendar_id IN (
-                SELECT id FROM CalendarInfo WHERE account_id = $accountId
-            );
-            """;
-        await using (var cmd = connection.CreateCommand())
-        {
-            cmd.Transaction = (SqliteTransaction)transaction;
-            cmd.CommandText = deleteEventsSql;
-            cmd.Parameters.AddWithValue("$accountId", accountId);
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        // 4. Delete CalendarInfo for the account
-        const string deleteCalendarsSql = """
-            DELETE FROM CalendarInfo
-            WHERE account_id = $accountId;
-            """;
-        await using (var cmd = connection.CreateCommand())
-        {
-            cmd.Transaction = (SqliteTransaction)transaction;
-            cmd.CommandText = deleteCalendarsSql;
-            cmd.Parameters.AddWithValue("$accountId", accountId);
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        // 5. Delete the Account record
-        const string deleteAccountSql = """
-            DELETE FROM Account
-            WHERE id = $accountId;
-            """;
-        await using (var cmd = connection.CreateCommand())
-        {
-            cmd.Transaction = (SqliteTransaction)transaction;
-            cmd.CommandText = deleteAccountSql;
-            cmd.Parameters.AddWithValue("$accountId", accountId);
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
 }

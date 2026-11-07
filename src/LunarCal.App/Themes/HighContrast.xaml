@@ -48,6 +48,7 @@
   <SolidColorBrush x:Key="AiTextBrush" Color="{x:Static SystemColors.HighlightTextColor}" />
 
   <!-- Status & Feedback -->
+  <SolidColorBrush x:Key="DangerSolidBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="DangerBrush" Color="{x:Static SystemColors.HighlightColor}" />
   <SolidColorBrush x:Key="DangerSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
   <SolidColorBrush x:Key="SuccessBrush" Color="{x:Static SystemColors.WindowTextColor}" />

@@ -1089,22 +1089,10 @@
     <value>Defaults by language: Monday and 24-hour (vi-VN), Sunday and 12-hour (en-US)</value>
   </data>
   <data name="settings.advanced.accounts_desc" xml:space="preserve">
-    <value>Sign in in the system browser; tokens stay on this computer</value>
-  </data>
-  <data name="settings.advanced.account_active" xml:space="preserve">
-    <value>In use</value>
+    <value>One account at a time. Changing the account deletes the current account's data from this computer.</value>
   </data>
   <data name="settings.advanced.signout" xml:space="preserve">
     <value>Sign out</value>
-  </data>
-  <data name="settings.advanced.add_account_title" xml:space="preserve">
-    <value>Add a Google account</value>
-  </data>
-  <data name="settings.advanced.add_account_desc" xml:space="preserve">
-    <value>Sign in in the system browser. Each account has its own cache and token.</value>
-  </data>
-  <data name="settings.advanced.add_account" xml:space="preserve">
-    <value>Add account</value>
   </data>
   <data name="settings.advanced.custom_client" xml:space="preserve">
     <value>Use my own OAuth client</value>
@@ -1257,5 +1245,47 @@
   </data>
   <data name="common.hide" xml:space="preserve">
     <value>Hide</value>
+  </data>
+  <data name="settings.advanced.change_account_title" xml:space="preserve">
+    <value>Change Google account</value>
+  </data>
+  <data name="settings.advanced.change_account_desc" xml:space="preserve">
+    <value>Sign in in the system browser. The current account's data is deleted only after you confirm.</value>
+  </data>
+  <data name="settings.advanced.change_account" xml:space="preserve">
+    <value>Change account…</value>
+  </data>
+  <data name="account_switch.title" xml:space="preserve">
+    <value>Switch to a different Google account?</value>
+  </data>
+  <data name="account_switch.subtitle" xml:space="preserve">
+    <value>Signed in: {0} · new account: {1}</value>
+  </data>
+  <data name="account_switch.body" xml:space="preserve">
+    <value>LunarCal works with one Google account. If you continue, the data of {0} on this computer is deleted and the calendar of {1} is downloaded.</value>
+  </data>
+  <data name="account_switch.warn_title" xml:space="preserve">
+    <value>Will be deleted from this computer</value>
+  </data>
+  <data name="account_switch.warn_pending" xml:space="preserve">
+    <value>{0} change(s) not yet synced to Google</value>
+  </data>
+  <data name="account_switch.warn_ai" xml:space="preserve">
+    <value>{0} AI command(s) waiting in the queue</value>
+  </data>
+  <data name="account_switch.warn_lunar" xml:space="preserve">
+    <value>{0} lunar recurrence rule(s) stored only on this computer</value>
+  </data>
+  <data name="account_switch.kept" xml:space="preserve">
+    <value>Kept: settings, language and Gemini API key</value>
+  </data>
+  <data name="account_switch.keep_button" xml:space="preserve">
+    <value>Keep current account</value>
+  </data>
+  <data name="account_switch.confirm_button" xml:space="preserve">
+    <value>Delete old data and switch account</value>
+  </data>
+  <data name="settings.account.switch_cancelled" xml:space="preserve">
+    <value>Kept the current account.</value>
   </data>
 </root>

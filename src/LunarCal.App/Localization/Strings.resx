@@ -1089,22 +1089,10 @@
     <value>Mặc định theo ngôn ngữ: Thứ 2 và 24 giờ (vi-VN), Chủ nhật và 12 giờ (en-US)</value>
   </data>
   <data name="settings.advanced.accounts_desc" xml:space="preserve">
-    <value>Đăng nhập trong trình duyệt hệ thống; token chỉ lưu trên máy này</value>
-  </data>
-  <data name="settings.advanced.account_active" xml:space="preserve">
-    <value>Đang dùng</value>
+    <value>Chỉ một tài khoản tại một thời điểm. Đổi tài khoản sẽ xoá dữ liệu của tài khoản hiện tại khỏi máy này.</value>
   </data>
   <data name="settings.advanced.signout" xml:space="preserve">
     <value>Đăng xuất</value>
-  </data>
-  <data name="settings.advanced.add_account_title" xml:space="preserve">
-    <value>Thêm tài khoản Google</value>
-  </data>
-  <data name="settings.advanced.add_account_desc" xml:space="preserve">
-    <value>Đăng nhập trong trình duyệt hệ thống. Mỗi tài khoản có cache và token riêng.</value>
-  </data>
-  <data name="settings.advanced.add_account" xml:space="preserve">
-    <value>Thêm tài khoản</value>
   </data>
   <data name="settings.advanced.custom_client" xml:space="preserve">
     <value>Dùng OAuth client riêng</value>
@@ -1257,5 +1245,47 @@
   </data>
   <data name="common.hide" xml:space="preserve">
     <value>Ẩn</value>
+  </data>
+  <data name="settings.advanced.change_account_title" xml:space="preserve">
+    <value>Đổi tài khoản Google</value>
+  </data>
+  <data name="settings.advanced.change_account_desc" xml:space="preserve">
+    <value>Đăng nhập trong trình duyệt hệ thống. Dữ liệu của tài khoản hiện tại chỉ bị xoá sau khi bạn xác nhận.</value>
+  </data>
+  <data name="settings.advanced.change_account" xml:space="preserve">
+    <value>Đổi tài khoản…</value>
+  </data>
+  <data name="account_switch.title" xml:space="preserve">
+    <value>Đổi sang tài khoản Google khác?</value>
+  </data>
+  <data name="account_switch.subtitle" xml:space="preserve">
+    <value>Đang đăng nhập: {0} · tài khoản mới: {1}</value>
+  </data>
+  <data name="account_switch.body" xml:space="preserve">
+    <value>LunarCal chỉ làm việc với một tài khoản Google. Nếu tiếp tục, dữ liệu của {0} trên máy này sẽ bị xoá và lịch của {1} được tải về.</value>
+  </data>
+  <data name="account_switch.warn_title" xml:space="preserve">
+    <value>Sẽ bị xoá khỏi máy này</value>
+  </data>
+  <data name="account_switch.warn_pending" xml:space="preserve">
+    <value>{0} thay đổi chưa đồng bộ lên Google</value>
+  </data>
+  <data name="account_switch.warn_ai" xml:space="preserve">
+    <value>{0} lệnh AI đang chờ trong hàng chờ</value>
+  </data>
+  <data name="account_switch.warn_lunar" xml:space="preserve">
+    <value>{0} luật lặp âm lịch chỉ lưu trên máy</value>
+  </data>
+  <data name="account_switch.kept" xml:space="preserve">
+    <value>Được giữ lại: cài đặt, ngôn ngữ và Gemini API key</value>
+  </data>
+  <data name="account_switch.keep_button" xml:space="preserve">
+    <value>Giữ tài khoản hiện tại</value>
+  </data>
+  <data name="account_switch.confirm_button" xml:space="preserve">
+    <value>Xoá dữ liệu cũ và đổi tài khoản</value>
+  </data>
+  <data name="settings.account.switch_cancelled" xml:space="preserve">
+    <value>Đã giữ nguyên tài khoản hiện tại.</value>
   </data>
 </root>

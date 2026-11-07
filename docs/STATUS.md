@@ -3,22 +3,22 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-07 22:25 +07:00, Claude Code (Sonnet 5.5). Chủ dự án duyệt các đề xuất: một tài khoản Google (ADR-0029), sửa S10 (qua đêm, tần suất Dương lịch, múi giờ riêng), nên spec FR-AUTH-5 và FR-UI-4 đã sửa. Figma có thêm S10 3.3 và 3.4, hộp thoại đổi tài khoản 1.5, S20 một tài khoản. Thêm P4-R1..P4-R3 cho Antigravity. Chỉ đổi tài liệu và Figma, chưa chạy build hay test. 3 commit chưa push.
+**Cập nhật lần cuối:** 2026-11-07 23:10 +07:00, Claude Code (Sonnet 5.5). Xong P4-R2 theo yêu cầu trực tiếp của chủ dự án: một tài khoản Google, đổi tài khoản thì xoá dữ liệu cũ (ADR-0029). 513/513 test Release, format sạch, coverage Lunar 99,38% và Core 97%. Đã merge `task/P4-R2` vào `phase/4`; `phase/4` và `main` chưa push, chưa có CI.
 
-**Phiên trước:** 2026-11-07 21:55 +07:00, Claude Code (Sonnet 5.5). Xong P4-00: ADR-0016 Accepted (endpoint, model mặc định, phân loại lỗi, 10 biện pháp bảo vệ API key) và Figma S16 (`46:370`). Branch `task/P4-00`, chỉ đổi tài liệu và Figma, chưa chạy lại build hay test. `main` đã push tới 00c0c9b (chưa biết kết quả CI).
+**Phiên trước:** 2026-11-07 22:25 +07:00, Claude Code (Sonnet 5.5). Chủ dự án duyệt các đề xuất: một tài khoản Google (ADR-0029), sửa S10 (qua đêm, tần suất Dương lịch, múi giờ riêng), nên spec FR-AUTH-5 và FR-UI-4 đã sửa. Figma có thêm S10 3.3 và 3.4, hộp thoại đổi tài khoản 1.5, S20 một tài khoản. Thêm P4-R1..P4-R3 cho Antigravity. Chỉ đổi tài liệu và Figma, chưa chạy build hay test. 3 commit chưa push.
 
-**Trước đó:** 2026-11-07 21:20 +07:00, Claude Code (Sonnet 5.5). Chủ dự án đăng nhập Google thật, xác nhận lịch Google hiện trên lưới và trang Tài khoản ổn. Đóng cổng `P3-REVIEW` `[x]` (8 bug đã sửa qua hai lần review), merge `phase/3` vào `main`. 493/493 test Release, format sạch, coverage Lunar 99,38%, Core 97%. Chưa push, chưa chạy CI trên `main`.
+**Trước đó:** 2026-11-07 21:55 +07:00, Claude Code (Sonnet 5.5). Xong P4-00: ADR-0016 Accepted (endpoint, model mặc định, phân loại lỗi, 10 biện pháp bảo vệ API key) và Figma S16 (`46:370`). Branch `task/P4-00`, chỉ đổi tài liệu và Figma, chưa chạy lại build hay test. `main` đã push tới 00c0c9b (chưa biết kết quả CI).
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 4. `P3-REVIEW` `[x]`, `P4-00` `[x]`. Mới thêm P4-R1 (S10), P4-R2 (đổi tài khoản, ADR-0029), P4-R3 (khoá chính `Event`); P4-R2 và P4-R3 phải xong trước P4-08.
+- **Phase hiện tại:** Phase 4, nhánh `phase/4` (mới tạo, chưa push). `P4-00` và `P4-R2` `[x]`. Còn P4-01..P4-13, P4-R1 (S10) và P4-R3 (khoá chính `Event`); P4-R3 phải xong trước P4-08.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ branch hay task nào sau khi merge `task/P4-00` vào `main`. Việc còn lại: xem CI trên `main` (gồm commit sửa test `MutationServiceTests`), rồi review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
-  - **Antigravity:** được bắt đầu P4-01. Làm P4-R2 và P4-R3 trước P4-08; P4-R1 làm song song ở bất kỳ lúc nào trước khi kết thúc phase. Đọc ADR-0016 (bảo mật key) trước P4-02, P4-03 và ADR-0029 trước P4-R2.
+  - **Claude Code:** không giữ branch. P4-R2 xong và đã merge vào `phase/4`. Review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
+  - **Antigravity:** làm tiếp trên `phase/4` (sau khi pull): P4-01, P4-R3, P4-R1, rồi P4-02. P4-R2 đã xong: không làm lại, và đọc `AccountSessionService` trước khi động vào luồng đăng nhập. P4-08 phải dùng trạng thái `completed` và `cancelled` cho lệnh AI đã xong (xem dòng P4-08 trong `TASKS.md`).
 - **Task tiếp theo đề xuất:**
-  1. Chủ dự án: xem CI trên `main` (tab Actions); push các commit chưa push.
-  2. Antigravity: P4-01, P4-R3, P4-R2, rồi P4-02 (cần một Gemini API key thật của chủ dự án, gói miễn phí, nhập qua app, không dán vào chat); P4-R1 song song.
-  3. Chủ dự án: chốt hai việc tồn đọng từ review Phase 3 (khoá chính `Event`, hành vi S10 chưa có trong Figma) và Q-001 câu 7.
+  1. Chủ dự án: push `phase/4`, `main` và `task/P4-R2` rồi xem CI trên GitHub (tab Actions).
+  2. Antigravity: P4-01, P4-R3 (migration khoá chính), P4-R1 (S10), rồi P4-02 (cần Gemini API key thật, gói miễn phí, nhập qua app).
+  3. Chủ dự án: kiểm tra thủ công đăng nhập tài khoản Google khác trên app thật (tôi chưa thể làm vì cần đăng nhập thật): hộp thoại hiện, huỷ giữ nguyên dữ liệu, đồng ý thì lịch mới được tải về.
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
@@ -34,14 +34,14 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 
 ## Build, test, format (chạy ngày 2026-11-07, Windows 11, .NET SDK 10.0.403, Release)
 
-Lần chạy mới nhất 2026-11-07 21:20 (Release, `phase/3` trước merge): build 0 warning, format pass, 493 test, 493 pass, 0 skip (gồm UI smoke 3/3). Coverage: Lunar 99,38%, Core 97% (cổng CI: `dotnet test --solution LunarCal.slnx --coverage ...` rồi `eng/Test-Coverage.ps1`). Hai test đo thời gian/cache từng đỏ khi chạy cả solution song song và đã sửa ở lần này (xem `docs/reviews/PHASE3.md` Lần 3): `FR_LUNAR_2_Year_tables_are_cached` so instance thay cho `CachedCount` toàn cục; `NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` giữ ngưỡng 100 ms nhưng cho tối đa 3 lượt đo (chạy riêng: median 33 ms, max 55 ms; chạy cả suite: ~70/130 ms do tranh CPU).
+Lần chạy mới nhất 2026-11-07 23:00 (Release, `task/P4-R2`): build 0 warning, format pass, 513 test, 513 pass, 0 skip (gồm UI smoke 3/3). Coverage: Lunar 99,38%, Core 97,01%. Hộp thoại đổi tài khoản và trang S20 được dựng thật bằng dữ liệu mẫu và đối chiếu ảnh với Figma 1.5 và S20 (chưa chạy với đăng nhập Google thật).
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 493 test: 493 pass, 0 fail, 0 skip (2026-11-07 21:20) |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99,38%, Core 97% (ngưỡng 95% và 85%; đo 2026-11-07 21:20) |
+| `dotnet test --solution LunarCal.slnx -c Release` | 513 test: 513 pass, 0 fail, 0 skip (2026-11-07 23:00) |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99,38%, Core 97,01% (ngưỡng 95% và 85%; đo 2026-11-07 23:00) |
 | UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution 2026-11-07 |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
@@ -71,7 +71,7 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - P2-R1: múi giờ hiển thị lấy từ setting `timezone` (mặc định múi hệ thống); sự kiện cả ngày giữ ngày theo múi của chính sự kiện (`CalendarEvent.TimeZone`), không dời theo múi người xem.
 - P2-R4: ký hiệu tháng nhuận ở ô lịch tiếng Anh là "L" (ví dụ `1/2L`), tiếng Việt giữ "n". "Đủ/Thiếu" ở tiêu đề âm lịch tiếng Anh là "30 days/29 days". Spec và Figma chưa quy định; đổi được trong resx (`lunar.leap_marker`, `lunar.month_full`, `lunar.month_short`).
 - P2-R2: Cài đặt > Giao diện (S13) tạm mở bằng cửa sổ con từ nút ⚙ trên thanh trên cùng, chờ màn hình Cài đặt đầy đủ ở phase sau.
-- ADR-0029 (2026-11-07): chỉ một tài khoản Google; đăng nhập tài khoản khác thì xoá dữ liệu cũ và nạp dữ liệu tài khoản mới; đăng nhập lại cùng tài khoản không xoá gì. Bỏ FR-AUTH-5. Chờ chủ dự án đồng ý sửa spec và duyệt cách làm. Kiểm tra code cho thấy đăng xuất hiện không xoá `PendingMutation` và `AiCommand`.
+- ADR-0029 (2026-11-07): chỉ một tài khoản Google; đăng nhập tài khoản khác thì xoá dữ liệu cũ và nạp dữ liệu tài khoản mới; đăng nhập lại cùng tài khoản không xoá gì. Bỏ FR-AUTH-5. Spec đã sửa; đã triển khai ở P4-R2 (2026-11-07). Kiểm tra code cho thấy đăng xuất hiện không xoá `PendingMutation` và `AiCommand`.
 - ADR-0016 (2026-11-07): chủ dự án xác nhận Gemini key chỉ ở máy người dùng và dùng gói miễn phí.
 - ADR-0026: consent screen để ở Testing (refresh token hết hạn sau 7 ngày, xử lý ở P3-06). Task Phase 3 không có giao diện được làm trước khi có S10, S14, S18, S20; P3-14, P3-15 phải chờ P3-00b. Đây là ngoại lệ có chủ đích với spec §13. Lưu ý cho P3-05: tên key trong user-secrets (`Google:ClientId`, `Google:ClientSecret`) chưa khớp `appsettings.json` (`LunarCal:Google:OAuthClientId`); user-secrets chỉ được nạp khi `DOTNET_ENVIRONMENT=Development`.
 - P3-00b (thiết kế, đã duyệt 2026-11-07): hộp thoại đồng ý thu thập dữ liệu hiện trước lệnh AI đầu tiên, không nằm trong lần chạy đầu (FR-DATA-1 thắng mô tả S14 ở spec §15.4); lần chạy đầu còn 3 bước (ngôn ngữ, Google, Gemini key tuỳ chọn). S20 vẽ sẵn phần nhiều tài khoản dù FR-AUTH-5 để phase sau. Chuỗi công tắc âm lịch và đóng góp dữ liệu theo đúng bảng FR-I18N-7.

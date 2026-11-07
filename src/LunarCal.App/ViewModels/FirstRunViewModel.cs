@@ -26,6 +26,8 @@ public sealed partial class FirstRunViewModel : ObservableObject
     private readonly ILocalizationService _localization;
     private readonly IGoogleOAuthClient _oauthClient;
     private readonly IAccountStore _accountStore;
+    private readonly IAccountSessionService _accountSession;
+    private readonly IAccountSwitchPrompt? _switchPrompt;
     private readonly ISyncScheduler? _syncScheduler;
 
     [ObservableProperty]
@@ -64,14 +66,18 @@ public sealed partial class FirstRunViewModel : ObservableObject
         ILocalizationService localization,
         IGoogleOAuthClient oauthClient,
         IAccountStore accountStore,
+        IAccountSessionService accountSession,
         ISyncScheduler? syncScheduler = null,
-        GoogleOAuthOptions? oauthOptions = null)
+        GoogleOAuthOptions? oauthOptions = null,
+        IAccountSwitchPrompt? switchPrompt = null)
     {
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _accountStore = accountStore ?? throw new ArgumentNullException(nameof(accountStore));
+        _accountSession = accountSession ?? throw new ArgumentNullException(nameof(accountSession));
+        _switchPrompt = switchPrompt;
         _syncScheduler = syncScheduler;
         IsTestingMode = oauthOptions?.IsTestingConsentMode ?? false;
 
@@ -155,9 +161,14 @@ public sealed partial class FirstRunViewModel : ObservableObject
             if (authResult.Success && authResult.UserInfo is not null)
             {
                 var info = authResult.UserInfo;
-                await _accountStore.SaveAccountAsync(
-                    new AccountInfo { Id = info.Id, Email = info.Email, DisplayName = info.DisplayName },
-                    cancellationToken).ConfigureAwait(true);
+
+                // One account at a time (FR-AUTH-5, ADR-0029): a different Google account only replaces the stored one after the user confirms.
+                var outcome = await _accountSession.ApplySignInAsync(info, AccountSwitchPrompts.ToDelegate(_switchPrompt), cancellationToken).ConfigureAwait(true);
+                if (outcome == AccountSignInOutcome.Cancelled)
+                {
+                    ErrorMessage = _localization["settings.account.switch_cancelled"];
+                    return;
+                }
 
                 IsSignedIn = true;
                 SignedInText = _localization.Format("firstrun.signed_in", info.Email);

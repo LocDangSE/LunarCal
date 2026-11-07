@@ -62,6 +62,7 @@ public partial class App : Application
             builder.Services.AddSerilog(Log.Logger, dispose: true);
             builder.Services.AddSingleton(sp => new LogLevelService(levelSwitch, sp.GetRequiredService<ISettingsStore>()));
             builder.Services.AddSingleton<IConfirmationService, DialogConfirmationService>();
+            builder.Services.AddSingleton<IAccountSwitchPrompt, DialogAccountSwitchPrompt>();
 
             builder.Services.AddLunarCalInfrastructure(builder.Configuration);
 

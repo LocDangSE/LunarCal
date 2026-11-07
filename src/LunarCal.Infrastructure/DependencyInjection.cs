@@ -247,6 +247,10 @@ public static class DependencyInjection
             return new SqliteAccountStore(connectionFactory, logger);
         });
 
+        // One Google account at a time; switching accounts wipes the old data (FR-AUTH-5, ADR-0029)
+        services.AddSingleton(sp => new AccountDataPurger(sp.GetRequiredService<ISqliteConnectionFactory>()));
+        services.AddSingleton<IAccountSessionService, AccountSessionService>();
+
         return services;
     }
 

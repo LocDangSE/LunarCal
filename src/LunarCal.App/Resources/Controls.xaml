@@ -130,6 +130,28 @@
     <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
   </Style>
+  <!-- Filled red button for destructive confirmations that cannot be undone (Figma S14 1.5) -->
+  <Style x:Key="DangerSolidButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseActionButtonStyle}">
+    <Setter Property="Background" Value="{DynamicResource DangerSolidBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DangerSolidBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Opacity" Value="0.9" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+  <!-- Text-only action button with the same padding as the other buttons (Figma Button/Ghost) -->
+  <Style x:Key="GhostButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseActionButtonStyle}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
   <Style x:Key="DangerOutlineButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseActionButtonStyle}">
     <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}" />

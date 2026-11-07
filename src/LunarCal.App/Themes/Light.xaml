@@ -48,6 +48,7 @@
   <SolidColorBrush x:Key="AiTextBrush" Color="#5925DC" />
 
   <!-- Status & Feedback -->
+  <SolidColorBrush x:Key="DangerSolidBrush" Color="#D92D20" />
   <SolidColorBrush x:Key="DangerBrush" Color="#B42318" />
   <SolidColorBrush x:Key="DangerSubtleBrush" Color="#FEF3F2" />
   <SolidColorBrush x:Key="SuccessBrush" Color="#12B76A" />
