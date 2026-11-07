@@ -1,4 +1,5 @@
 using LunarCal.Core.Abstractions;
+using LunarCal.Infrastructure.Gemini;
 using LunarCal.Infrastructure.Google;
 using LunarCal.Infrastructure.Google.OAuth;
 using LunarCal.Infrastructure.Network;
@@ -17,6 +18,8 @@ namespace LunarCal.Infrastructure;
 public static class DependencyInjection
 {
     /// <summary>Adds LunarCal infrastructure services. Registrations are added phase by phase (spec §13).</summary>
+    public const string GeminiClientName = "LunarCal.Gemini";
+
     public static IServiceCollection AddLunarCalInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -250,6 +253,31 @@ public static class DependencyInjection
         // One Google account at a time; switching accounts wipes the old data (FR-AUTH-5, ADR-0029)
         services.AddSingleton(sp => new AccountDataPurger(sp.GetRequiredService<ISqliteConnectionFactory>()));
         services.AddSingleton<IAccountSessionService, AccountSessionService>();
+
+        // Phase 4: Gemini REST generateContent client & key security (P4-02, SEC-KEY-2, SEC-KEY-3, ADR-0016)
+        GeminiConfigurationValidator.WarnIfApiKeyInConfiguration(configuration, Log.Logger);
+
+        services.Configure<GeminiOptions>(configuration.GetSection(GeminiOptions.SectionName));
+
+        services.AddTransient<GeminiApiKeyDelegatingHandler>();
+
+        services.AddHttpClient(GeminiClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                // ADR-0016: Disable auto-redirect so x-goog-api-key header never leaks across host boundaries
+                AllowAutoRedirect = false
+            })
+            .AddHttpMessageHandler<NetworkSecurityDelegatingHandler>()
+            .AddHttpMessageHandler<GeminiApiKeyDelegatingHandler>();
+
+        services.AddSingleton<IChatModelClient, GeminiChatModelClient>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = factory.CreateClient(GeminiClientName);
+            var options = sp.GetRequiredService<IOptions<GeminiOptions>>();
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<GeminiChatModelClient>>();
+            return new GeminiChatModelClient(httpClient, options, logger);
+        });
 
         return services;
     }
