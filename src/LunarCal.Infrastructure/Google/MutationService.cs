@@ -245,12 +245,12 @@ public sealed class MutationService : IMutationService
         using var transaction = connection.BeginTransaction();
         try
         {
-            await DeleteEventFromDbAsync(connection, transaction, eventId, cancellationToken).ConfigureAwait(false);
+            await DeleteEventFromDbAsync(connection, transaction, calendarId, eventId, cancellationToken).ConfigureAwait(false);
             await EnqueueMutationInTransactionAsync(connection, transaction, mutation, cancellationToken).ConfigureAwait(false);
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             if (_eventStore is not null)
             {
-                await _eventStore.DeleteEventAsync(eventId, cancellationToken).ConfigureAwait(false);
+                await _eventStore.DeleteEventAsync(calendarId, eventId, cancellationToken).ConfigureAwait(false);
             }
             _logger.Information("Optimistically deleted event {EventId} from calendar {CalendarId} (FR-SYNC-4)", eventId, calendarId);
         }
@@ -416,7 +416,7 @@ public sealed class MutationService : IMutationService
         command.CommandText = @"
             UPDATE Event
             SET google_id = @google_id, etag = @etag, updated = @updated
-            WHERE id = @local_id;";
+            WHERE id = @local_id AND calendar_id = @calendar_id;";
 
         command.Parameters.AddWithValue("@google_id", (object?)remoteEvent.GoogleId ?? remoteEvent.Id);
         command.Parameters.AddWithValue("@etag", (object?)remoteEvent.Etag ?? DBNull.Value);
@@ -424,6 +424,7 @@ public sealed class MutationService : IMutationService
             ? remoteEvent.Updated.Value.ToString("o", CultureInfo.InvariantCulture)
             : DBNull.Value);
         command.Parameters.AddWithValue("@local_id", payload.EventId);
+        command.Parameters.AddWithValue("@calendar_id", payload.CalendarId);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
@@ -432,8 +433,9 @@ public sealed class MutationService : IMutationService
         if (payload.Event.Recurrence is { Count: > 0 })
         {
             using var cleanup = connection.CreateCommand();
-            cleanup.CommandText = "DELETE FROM Event WHERE id = @local_id;";
+            cleanup.CommandText = "DELETE FROM Event WHERE id = @local_id AND calendar_id = @calendar_id;";
             cleanup.Parameters.AddWithValue("@local_id", payload.EventId);
+            cleanup.Parameters.AddWithValue("@calendar_id", payload.CalendarId);
             await cleanup.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -466,13 +468,14 @@ public sealed class MutationService : IMutationService
             command.CommandText = @"
                 UPDATE Event
                 SET etag = @etag, updated = @updated
-                WHERE id = @id OR google_id = @id;";
+                WHERE (id = @id OR google_id = @id) AND calendar_id = @calendar_id;";
 
             command.Parameters.AddWithValue("@etag", (object?)updatedRemote.Etag ?? DBNull.Value);
             command.Parameters.AddWithValue("@updated", updatedRemote.Updated.HasValue
                 ? updatedRemote.Updated.Value.ToString("o", CultureInfo.InvariantCulture)
                 : DBNull.Value);
             command.Parameters.AddWithValue("@id", payload.EventId);
+            command.Parameters.AddWithValue("@calendar_id", payload.CalendarId);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             _logger.Information("Successfully updated remote event {EventId}", payload.EventId);
@@ -542,7 +545,7 @@ public sealed class MutationService : IMutationService
             }
             else
             {
-                await DeleteEventFromDbAsync(connection, transaction, payload.EventId, cancellationToken).ConfigureAwait(false);
+                await DeleteEventFromDbAsync(connection, transaction, payload.CalendarId, payload.EventId, cancellationToken).ConfigureAwait(false);
             }
 
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
@@ -554,7 +557,7 @@ public sealed class MutationService : IMutationService
                 }
                 else
                 {
-                    await _eventStore.DeleteEventAsync(payload.EventId, cancellationToken).ConfigureAwait(false);
+                    await _eventStore.DeleteEventAsync(payload.CalendarId, payload.EventId, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -584,14 +587,16 @@ public sealed class MutationService : IMutationService
     private static async Task DeleteEventFromDbAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
+        string calendarId,
         string eventId,
         CancellationToken cancellationToken)
     {
-        const string sql = "DELETE FROM Event WHERE id = @id OR google_id = @id;";
+        const string sql = "DELETE FROM Event WHERE (id = @id OR google_id = @id) AND calendar_id = @calendar_id;";
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
         cmd.CommandText = sql;
         cmd.Parameters.AddWithValue("@id", eventId);
+        cmd.Parameters.AddWithValue("@calendar_id", calendarId);
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 

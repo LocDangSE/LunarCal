@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 namespace LunarCal.Infrastructure.Storage;
 
 /// <summary>
-/// <see cref="IEventStore"/> over the SQLCipher cache (spec §6, FR-SYNC-1, FR-SYNC-6, P3-R1). The calendar views
+/// <see cref="IEventStore"/> over the SQLCipher cache (spec §6, FR-SYNC-1, FR-SYNC-6, P3-R1, P4-R3). The calendar views
 /// read the calendars and events the sync engine wrote, so the app works offline on the last synced state.
 /// Range queries without a calendar filter return only events of calendars switched on in the sidebar (FR-UI-1).
 /// </summary>
@@ -123,6 +123,20 @@ public sealed class SqliteEventStore : IEventStore
     }
 
     /// <inheritdoc />
+    public async Task<CalendarEvent?> GetEventByIdAsync(string calendarId, string eventId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(calendarId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        await using var connection = await OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"SELECT {EventRows.EventColumns} FROM Event e WHERE (e.id = @id OR e.google_id = @id) AND e.calendar_id = @calendar_id LIMIT 1;";
+        cmd.Parameters.AddWithValue("@id", eventId);
+        cmd.Parameters.AddWithValue("@calendar_id", calendarId);
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? EventRows.ReadEvent(reader) : null;
+    }
+
+    /// <inheritdoc />
     public async Task UpsertEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(calendarEvent);
@@ -138,6 +152,19 @@ public sealed class SqliteEventStore : IEventStore
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM Event WHERE id = @id OR google_id = @id;";
         cmd.Parameters.AddWithValue("@id", eventId);
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteEventAsync(string calendarId, string eventId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(calendarId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventId);
+        await using var connection = await OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "DELETE FROM Event WHERE (id = @id OR google_id = @id) AND calendar_id = @calendar_id;";
+        cmd.Parameters.AddWithValue("@id", eventId);
+        cmd.Parameters.AddWithValue("@calendar_id", calendarId);
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
