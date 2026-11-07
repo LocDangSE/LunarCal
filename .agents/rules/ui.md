@@ -45,6 +45,8 @@ S06–S09 và S13 là bản nháp Claude Code vẽ ngày 2026-11-01, **chờ ch�
 
 S10, S14, S18, S20 và component P3 là bản nháp Claude Code vẽ ngày 2026-11-01 (P3-00b), **chờ chủ dự án duyệt**. S16 là bản nháp Claude Code vẽ ngày 2026-11-07 (P4-00), cũng **chờ chủ dự án duyệt**; dựng bằng cách nhân bản frame 02 nên dùng đúng giá trị màu, chữ và bo góc của hộp thoại xác nhận (cảnh báo vàng `#FFFAEB`/`#B54708`/`#F79009`, viền focus `#7A5AF8` kèm vòng `#EBE9FE`). Vẽ bằng giá trị trong bảng token bên dưới (file vẫn chưa có Variables). Ngày âm mẫu tính bằng engine: 22/10/2026 = 13/9 Bính Ngọ, các lần sau 12/10/2027, 30/10/2028.
 
+Cách đặt tên trong Figma (2026-11-07): frame màn hình nằm trong 8 nhóm `01`..`08` (Bắt đầu & đăng nhập, Xem lịch & âm lịch, Quản lý sự kiện, Trợ lý AI & hàng chờ, Cài đặt & quyền riêng tư, Thông báo & nhắc việc, Trạng thái lỗi/rỗng/đang tải, Thành phần tái sử dụng) và có tên dạng `<nhóm>.<số> · <tên> · <mã>`, ví dụ `4.4 · AI hỏi lại · S16`. Mã cuối là mã trong spec §15.4 và tài liệu (`S06`..`S20`, hoặc `Figma 01`..`Figma 05` cho năm màn hình v1); bảng trên tra theo node id, không đổi.
+
 Màn hình chưa có trong Figma (S11, S12, S15, S17, S19): bảng ở spec §15.4. Phải có thiết kế trước khi làm phase tương ứng (spec §13); nếu chưa có thì ghi vào `docs/STATUS.md` mục "Câu hỏi mở" và dừng task UI đó.
 
 Lưu ý từ spec §15.3: thanh lệnh AI thay cho chat panel; chuỗi `settings.byok.desc` và chuỗi "nhận thay đổi gần như tức thì" đã được sửa theo spec, không theo Figma.
