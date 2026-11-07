@@ -299,4 +299,115 @@ public sealed class EventEditorS10Tests
         ReminderMinutes = reminders,
         Recurrence = recurrence,
     };
+
+    [Fact]
+    public async Task FR_UI_4_Overnight_event_22_to_01_becomes_next_day_shows_chip_and_allows_custom_end_date()
+    {
+        var vm = CreateVm();
+        await vm.LoadCalendarsAsync(TestContext.Current.CancellationToken);
+        vm.InitializeForNew(new DateOnly(2026, 11, 10), new TimeOnly(22, 0));
+
+        // When setting EndTime to 01:00 (which is <= StartTime 22:00)
+        vm.EndTime = new TimeOnly(1, 0);
+
+        // System automatically understands it as next day (+1 day)
+        vm.EndDate.Should().Be(new DateOnly(2026, 11, 11));
+        vm.IsOvernight.Should().BeTrue();
+        vm.OvernightChipText.Should().Be("+1 ngày · kết thúc 01:00");
+        vm.ShowEndDate.Should().BeFalse("overnight chip clarifies the date without needing full picker");
+
+        // Clicking 'Ngày kết thúc khác…' reveals the end date picker
+        vm.OpenCustomEndDateCommand.Execute(null);
+        vm.IsCustomEndDateOpen.Should().BeTrue();
+        vm.ShowEndDate.Should().BeTrue();
+
+        // User can adjust end date further (e.g. 2 days later)
+        vm.EndDate = new DateOnly(2026, 11, 12);
+        vm.OvernightChipText.Should().Be("+2 ngày · kết thúc 01:00");
+
+        // Saving succeeds and stores correct start and end UTC
+        vm.Title = "Ca trực đêm";
+        (await vm.SaveAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
+
+        var written = LastWritten(nameof(IMutationService.CreateEventOptimisticAsync));
+        written.StartUtc.Should().Be(CalendarTime.ToUtc(new DateOnly(2026, 11, 10), new TimeOnly(22, 0), _preferences.TimeZone));
+        written.EndUtc.Should().Be(CalendarTime.ToUtc(new DateOnly(2026, 11, 12), new TimeOnly(1, 0), _preferences.TimeZone));
+    }
+
+    [Fact]
+    public async Task FR_UI_4_Per_event_timezone_is_persisted_and_used_for_utc_conversion()
+    {
+        var vm = CreateVm();
+        await vm.LoadCalendarsAsync(TestContext.Current.CancellationToken);
+        vm.InitializeForNew(new DateOnly(2026, 11, 10), new TimeOnly(9, 0));
+        vm.Title = "Họp quốc tế";
+
+        // Default option is "Theo Cài đặt"
+        vm.SelectedTimeZoneOption.Should().NotBeNull();
+        vm.SelectedTimeZoneOption!.IsDefault.Should().BeTrue();
+
+        // Select UTC
+        var utcOption = vm.TimeZoneOptions.First(o => o.Id == "UTC");
+        vm.SelectedTimeZoneOption = utcOption;
+        vm.SelectedTimeZoneInfo.Should().Be(TimeZoneInfo.Utc);
+
+        (await vm.SaveAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
+
+        var written = LastWritten(nameof(IMutationService.CreateEventOptimisticAsync));
+        written.TimeZone.Should().Be("UTC");
+        // In UTC, 9:00 is 9:00 UTC
+        written.StartUtc.Should().Be(new DateTimeOffset(2026, 11, 10, 9, 0, 0, TimeSpan.Zero));
+        written.EndUtc.Should().Be(new DateTimeOffset(2026, 11, 10, 10, 0, 0, TimeSpan.Zero));
+
+        // When initializing for edit on an event with specific timezone, that timezone is selected
+        var editVm = CreateVm();
+        await editVm.LoadCalendarsAsync(TestContext.Current.CancellationToken);
+        editVm.InitializeForEdit(written);
+
+        editVm.SelectedTimeZoneOption!.Id.Should().Be("UTC");
+        editVm.StartTime.Should().Be(new TimeOnly(9, 0));
+    }
+
+    [Fact]
+    public async Task FR_UI_4_Solar_recurrence_options_produce_correct_rrule_and_next_occurrences()
+    {
+        var vm = CreateVm();
+        await vm.LoadCalendarsAsync(TestContext.Current.CancellationToken);
+        vm.InitializeForNew(new DateOnly(2026, 10, 22), new TimeOnly(9, 0)); // 2026-10-22 is Thursday
+        vm.Title = "Lặp tuần";
+
+        vm.IsSolarRecurrence = true;
+
+        // 1. Weekly (default solar frequency)
+        vm.SelectedSolarFrequencyOption = vm.SolarFrequencyOptions.Single(o => o.Type == EventRecurrenceType.Weekly);
+        vm.SolarRuleTitle.Should().ContainEquivalentOf("thứ Năm");
+        vm.SolarRuleNextText.Should().Be("Lần tới: 29/10/2026 · 05/11/2026 · 12/11/2026");
+
+        (await vm.SaveAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
+        LastWritten(nameof(IMutationService.CreateEventOptimisticAsync)).Recurrence.Should().Equal("RRULE:FREQ=WEEKLY");
+
+        // 2. Daily
+        vm.SelectedSolarFrequencyOption = vm.SolarFrequencyOptions.Single(o => o.Type == EventRecurrenceType.Daily);
+        vm.SolarRuleTitle.Should().Be("Hằng ngày");
+        vm.SolarRuleNextText.Should().Be("Lần tới: 23/10/2026 · 24/10/2026 · 25/10/2026");
+
+        (await vm.SaveAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
+        LastWritten(nameof(IMutationService.CreateEventOptimisticAsync)).Recurrence.Should().Equal("RRULE:FREQ=DAILY");
+
+        // 3. Monthly
+        vm.SelectedSolarFrequencyOption = vm.SolarFrequencyOptions.Single(o => o.Type == EventRecurrenceType.Monthly);
+        vm.SolarRuleTitle.Should().Be("Lặp vào ngày 22 hàng tháng");
+        vm.SolarRuleNextText.Should().Be("Lần tới: 22/11/2026 · 22/12/2026 · 22/01/2027");
+
+        (await vm.SaveAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
+        LastWritten(nameof(IMutationService.CreateEventOptimisticAsync)).Recurrence.Should().Equal("RRULE:FREQ=MONTHLY");
+
+        // 4. Yearly
+        vm.SelectedSolarFrequencyOption = vm.SolarFrequencyOptions.Single(o => o.Type == EventRecurrenceType.Yearly);
+        vm.SolarRuleTitle.Should().Be("Hằng năm vào ngày 22 tháng 10");
+        vm.SolarRuleNextText.Should().Be("Lần tới: 22/10/2027 · 22/10/2028 · 22/10/2029");
+
+        (await vm.SaveAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
+        LastWritten(nameof(IMutationService.CreateEventOptimisticAsync)).Recurrence.Should().Equal("RRULE:FREQ=YEARLY");
+    }
 }

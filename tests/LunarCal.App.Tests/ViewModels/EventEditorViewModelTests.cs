@@ -106,11 +106,12 @@ public sealed class EventEditorViewModelTests
         vm.ErrorMessage.Should().NotBeNullOrEmpty();
         vm.HasError.Should().BeTrue();
 
-        // 2. Title provided, but EndTime <= StartTime for timed event -> fails
+        // 2. Title provided, but EndTime <= StartTime with custom end date on the same day -> fails
         vm.Title = "Valid Title";
         vm.IsAllDay = false;
         vm.StartDate = new DateOnly(2026, 11, 10);
         vm.StartTime = new TimeOnly(15, 0);
+        vm.OpenCustomEndDateCommand.Execute(null);
         vm.EndDate = new DateOnly(2026, 11, 10);
         vm.EndTime = new TimeOnly(14, 0);
 
