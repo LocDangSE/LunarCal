@@ -14,7 +14,7 @@
 - **Phase hiện tại:** Phase 4, nhánh `phase/4` (mới tạo, chưa push). `P4-00` và `P4-R2` `[x]`. Còn P4-01..P4-13, P4-R1 (S10) và P4-R3 (khoá chính `Event`); P4-R3 phải xong trước P4-08.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ branch. P4-R2 xong và đã merge vào `phase/4`. Review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
-  - **Antigravity:** làm tiếp trên `phase/4` (sau khi pull): P4-01, P4-R3, P4-R1, rồi P4-02. P4-R2 đã xong: không làm lại, và đọc `AccountSessionService` trước khi động vào luồng đăng nhập. P4-08 phải dùng trạng thái `completed` và `cancelled` cho lệnh AI đã xong (xem dòng P4-08 trong `TASKS.md`).
+  - **Antigravity:** Đang làm P4-01 trên branch `task/P4-01` (tách từ `phase/4`): xây dựng contract trung lập IChatModelClient, ChatRequest, ChatResponse, ToolCall (FR-BYOK-7, spec §7). Tiếp theo: P4-R3, P4-R1, P4-02. Đã lưu ý: P4-R2 đã xong, đọc AccountSessionService; P4-08 dùng trạng thái completed và cancelled.
     - Đọc trước khi làm Phase 4 (spec đã cập nhật 2026-11-07): ADR-0016 (Gemini, bảo vệ key), ADR-0029 (một tài khoản), spec §4.5 (FR-BYOK-1..7), §5.1 (SEC-KEY-6..11), §7 (Tích hợp Gemini), FR-CONFIRM-8, FR-QUEUE-2 (mã trạng thái `AiCommand`) và §13 (Phase 4 gồm P4-R1..R3). Thiết kế đã duyệt, node id ở `.agents/rules/ui.md`: S14 1.3 (hướng dẫn key), S16 4.4 (hỏi lại), S18 7.1 (lỗi), S20 5.3 (Nâng cao), S10 3.3 và 3.4 (P4-R1).
 - **Task tiếp theo đề xuất:**
   1. Chủ dự án: push `phase/4`, `main` và `task/P4-R2` rồi xem CI trên GitHub (tab Actions).
