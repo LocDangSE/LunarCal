@@ -3,7 +3,7 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-07 23:40 +07:00, Antigravity. Hoàn thành P4-01 (Chat contract) và P4-R3 (khoá chính Event composite (calendar_id, id), Migration V3). Toàn bộ 521/521 test pass, format sạch, coverage Lunar 99.54% và Core 97.32%. Đã merge `task/P4-R3` vào `phase/4` (commit 6f397eb). Task tiếp theo: P4-R1.
+**Cập nhật lần cuối:** 2026-11-08 00:05 +07:00, Antigravity. Hoàn thành P4-R1 (EventEditorDialog: qua đêm +1 ngày kèm chip/link mở custom end date, lặp Dương lịch sinh RRULE + preview 3 ngày, múi giờ riêng cho từng sự kiện). Toàn bộ 524/524 test pass, format sạch, coverage Lunar 99.54% và Core 97.32%. Đã merge `task/P4-R1` vào `phase/4` (commit d46dc7c). Task tiếp theo: P4-02.
 
 **Phiên trước:** 2026-11-07 22:25 +07:00, Claude Code (Sonnet 5.5). Chủ dự án duyệt các đề xuất: một tài khoản Google (ADR-0029), sửa S10 (qua đêm, tần suất Dương lịch, múi giờ riêng), nên spec FR-AUTH-5 và FR-UI-4 đã sửa. Figma có thêm S10 3.3 và 3.4, hộp thoại đổi tài khoản 1.5, S20 một tài khoản. Thêm P4-R1..P4-R3 cho Antigravity. Chỉ đổi tài liệu và Figma, chưa chạy build hay test. 3 commit chưa push.
 
@@ -11,14 +11,14 @@
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 4, nhánh `phase/4`. `P4-00`, `P4-01`, `P4-R2`, `P4-R3` `[x]`. Còn P4-R1 (S10) và P4-02..P4-13.
+- **Phase hiện tại:** Phase 4, nhánh `phase/4`. `P4-00`, `P4-01`, `P4-R1`, `P4-R2`, `P4-R3` `[x]`. Còn P4-02..P4-13.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ branch. P4-R2 xong và đã merge vào `phase/4`. Review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
-  - **Antigravity:** Đã hoàn thành P4-01 (IChatModelClient contract trung lập, 5 test) và P4-R3 (khoá chính Event composite (calendar_id, id), Migration V3, 3 test mới). Đã merge cả 2 vào `phase/4`. Đang chuyển sang làm task tiếp theo: P4-R1 (sửa EventEditorDialog S10 theo Figma 3.3 và 3.4) trên branch `task/P4-R1` tách từ `phase/4`.
+  - **Antigravity:** Đã hoàn thành P4-01 (IChatModelClient contract trung lập, 5 test), P4-R3 (khoá chính Event composite (calendar_id, id), Migration V3, 3 test mới), và P4-R1 (EventEditorDialog qua đêm +1 ngày, lặp Dương lịch, múi giờ riêng, 3 test mới). Toàn bộ 524/524 test pass, format sạch, coverage gate đạt. Đã merge vào `phase/4`. Sẵn sàng nhận task tiếp theo: P4-02 (GeminiChatModelClient, REST generateContent, function calling AUTO, header x-goog-api-key, timeout 60s, ADR-0016).
     - Đọc trước khi làm Phase 4 (spec đã cập nhật 2026-11-07): ADR-0016 (Gemini, bảo vệ key), ADR-0029 (một tài khoản), spec §4.5 (FR-BYOK-1..7), §5.1 (SEC-KEY-6..11), §7 (Tích hợp Gemini), FR-CONFIRM-8, FR-QUEUE-2 (mã trạng thái `AiCommand`) và §13 (Phase 4 gồm P4-R1..R3). Thiết kế đã duyệt, node id ở `.agents/rules/ui.md`: S14 1.3 (hướng dẫn key), S16 4.4 (hỏi lại), S18 7.1 (lỗi), S20 5.3 (Nâng cao), S10 3.3 và 3.4 (P4-R1).
 - **Task tiếp theo đề xuất:**
   1. Chủ dự án: push `phase/4`, `main` và `task/P4-R2` rồi xem CI trên GitHub (tab Actions).
-  2. Antigravity: P4-01, P4-R3 (migration khoá chính), P4-R1 (S10), rồi P4-02 (cần Gemini API key thật, gói miễn phí, nhập qua app).
+  2. Antigravity: Bắt đầu P4-02 (GeminiChatModelClient REST client, SEC-KEY-2, SEC-KEY-3, spec §7, ADR-0016).
   3. Chủ dự án: kiểm tra thủ công đăng nhập tài khoản Google khác trên app thật (tôi chưa thể làm vì cần đăng nhập thật): hộp thoại hiện, huỷ giữ nguyên dữ liệu, đồng ý thì lịch mới được tải về.
 
 ## Đã hoàn thành (đối chiếu spec §13)
@@ -33,17 +33,17 @@
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
-## Build, test, format (chạy ngày 2026-11-07, Windows 11, .NET SDK 10.0.403, Release)
+## Build, test, format (chạy ngày 2026-11-08, Windows 11, .NET SDK 10.0.403, Release)
 
-Lần chạy mới nhất 2026-11-07 23:00 (Release, `task/P4-R2`): build 0 warning, format pass, 513 test, 513 pass, 0 skip (gồm UI smoke 3/3). Coverage: Lunar 99,38%, Core 97,01%. Hộp thoại đổi tài khoản và trang S20 được dựng thật bằng dữ liệu mẫu và đối chiếu ảnh với Figma 1.5 và S20 (chưa chạy với đăng nhập Google thật).
+Lần chạy mới nhất 2026-11-08 00:05 (Release, `phase/4`): build 0 warning, format pass, 524 test: 524 pass, 0 fail, 0 skip (gồm UI smoke 3/3). Coverage gate: Lunar 99,54%, Core 97,32%.
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx -c Release` | 513 test: 513 pass, 0 fail, 0 skip (2026-11-07 23:00) |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99,38%, Core 97,01% (ngưỡng 95% và 85%; đo 2026-11-07 23:00) |
-| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution 2026-11-07 |
+| `dotnet test --solution LunarCal.slnx` | 524 test: 524 pass, 0 fail, 0 skip (2026-11-08 00:01) |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99,54%, Core 97,32% (ngưỡng 95% và 85%; đo 2026-11-08 00:02) |
+| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution 2026-11-08 |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
 - **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Lần đo đầu (code P2-07): median 132 ms, max 166 ms, **không đạt**. Sau khi tái sử dụng ô và khe chip, 5 lượt: median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms. Chưa đo lần render đầu tiên lúc khởi động app (thuộc NFR khởi động nguội).
@@ -130,4 +130,4 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - **Mô tả:** `Tokens.xaml` và `Themes/Light.xaml` ban đầu dùng bảng màu Google Material (`#1A73E8`, `#202124`, ...), sidebar 240, top bar 52, thanh AI 48. Figma 01–05 dùng `#2F6BFF`, thang xám `#101828`…`#F9FAFB`, màu âm lịch `#B54708`, font Inter fallback Segoe UI, sidebar 280, top bar 64, thanh AI 92.
 - **Cập nhật 2026-11-01 13:02 (Antigravity):** Đã hoàn thành task P2-06b cân chỉnh toàn bộ `Tokens.xaml` và 3 theme `Light.xaml`, `Dark.xaml`, `HighContrast.xaml` theo đúng bảng đo Figma trong `ui.md`. Kiểm tra 144 unit tests xanh.
 - **Trạng thái:** Đã đóng
-- **Ghi bởi:** Claude Code, 2026-11-01 · Đóng ngày 2026-11-01
+- **Ghi bởi:** Claude Code, 2026-10-31 · Đóng ngày 2026-11-01
