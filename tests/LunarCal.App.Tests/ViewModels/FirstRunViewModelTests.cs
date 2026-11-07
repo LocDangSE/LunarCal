@@ -21,9 +21,10 @@ public sealed class FirstRunViewModelTests
     private readonly IDisplayPreferences _prefs = Substitute.For<IDisplayPreferences>();
     private readonly IGoogleOAuthClient _oauth = Substitute.For<IGoogleOAuthClient>();
     private readonly IAccountStore _accounts = Substitute.For<IAccountStore>();
+    private readonly IAccountSessionService _session = Substitute.For<IAccountSessionService>();
     private readonly LocalizationService _loc = new(SupportedCultures.Vietnamese);
 
-    private FirstRunViewModel Create() => new(_store, _prefs, _loc, _oauth, _accounts);
+    private FirstRunViewModel Create() => new(_store, _prefs, _loc, _oauth, _accounts, _session);
 
     [Fact]
     public async Task FR_I18N_1_FR_UI_7_Choosing_English_applies_the_defaults_its_card_describes()
@@ -70,7 +71,8 @@ public sealed class FirstRunViewModelTests
         vm.FinishCommand.CanExecute(null).Should().BeFalse("Tiếp tục on step 2 needs a connected account");
         await vm.SignInAsync(ct);
 
-        await _accounts.Received(1).SaveAccountAsync(Arg.Is<AccountInfo>(a => a.Id == "acc"), Arg.Any<CancellationToken>());
+        // FR-AUTH-5: the sign-in goes through the session service (one account at a time), not straight to the store.
+        await _session.Received(1).ApplySignInAsync(Arg.Is<GoogleUserInfo>(u => u.Id == "acc"), Arg.Any<Func<AccountSignInAssessment, CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>());
         vm.IsSignedIn.Should().BeTrue();
         vm.SignedInText.Should().Contain("me@gmail.com");
         finished.Should().BeFalse();

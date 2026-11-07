@@ -24,6 +24,7 @@
   <!-- Figma 01, S06-S09 sizes (P2-R11..R15) -->
   <sys:Double x:Key="FontSizeBrand">19</sys:Double>
   <sys:Double x:Key="FontSizeColumnDate">17</sys:Double>
+  <sys:Double x:Key="FontSizeDialogTitle">17</sys:Double>
   <sys:Double x:Key="FontSizeAgendaDate">18</sys:Double>
   <sys:Double x:Key="FontSizePanelTitle">18</sys:Double>
   <sys:Double x:Key="FontSizeLunarBlock">36</sys:Double>
@@ -97,6 +98,8 @@
   <CornerRadius x:Key="CornerRadiusMedium">8</CornerRadius>
   <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
   <CornerRadius x:Key="CornerRadiusAiCard">14</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusDialog">16</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusDialogBottom">0,0,16,16</CornerRadius>
   <CornerRadius x:Key="CornerRadiusDayNumber">13</CornerRadius>
   <!-- Circles only (equal width and height). WPF scales radii that exceed the size, so 999 on a wide box draws an ellipse. -->
   <CornerRadius x:Key="CornerRadiusFull">999</CornerRadius>
@@ -130,6 +133,8 @@
   <!-- Event Editor Dialog (Figma S10 35:774) -->
   <sys:Double x:Key="EventEditorDialogWidth">560</sys:Double>
   <sys:Double x:Key="ConfirmDialogWidth">488</sys:Double>
+  <!-- Figma S14 1.5 (52:3130): card 520 wide plus 24 margin each side for the shadow -->
+  <sys:Double x:Key="AccountSwitchDialogWidth">568</sys:Double>
   <sys:Double x:Key="SettingsContentWidth">720</sys:Double>
   <sys:Double x:Key="SettingsNavItemHeight">42</sys:Double>
 

@@ -24,6 +24,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly INetworkStatusService? _networkStatusService;
     private readonly ISyncScheduler? _syncScheduler;
     private readonly IAccountStore? _accountStore;
+    private readonly IAccountSessionService? _accountSession;
+    private readonly IAccountSwitchPrompt? _switchPrompt;
     private readonly IGoogleOAuthClient? _oauthClient;
 
     // Sync events arrive on a thread-pool thread; view state (collections bound to the UI) must change on the
@@ -139,7 +141,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         INetworkStatusService? networkStatusService = null,
         ISyncScheduler? syncScheduler = null,
         IAccountStore? accountStore = null,
-        IGoogleOAuthClient? oauthClient = null)
+        IGoogleOAuthClient? oauthClient = null,
+        IAccountSessionService? accountSession = null,
+        IAccountSwitchPrompt? switchPrompt = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
@@ -147,6 +151,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
         _mutationService = mutationService;
+        _accountSession = accountSession;
+        _switchPrompt = switchPrompt;
         _networkStatusService = networkStatusService;
         _syncScheduler = syncScheduler;
         _accountStore = accountStore;
@@ -537,7 +543,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public async Task ReauthAsync(CancellationToken cancellationToken = default)
     {
-        if (_oauthClient is null)
+        if (_oauthClient is null || _accountSession is null)
         {
             OpenSettings();
             return;
@@ -548,17 +554,21 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             var result = await _oauthClient.AuthorizeAsync(cancellationToken).ConfigureAwait(true);
             if (result.Success && result.UserInfo is not null)
             {
-                IsReauthBannerVisible = false;
-                if (_accountStore is not null)
+                // Re-login after the token expired is the same account and keeps everything; a different Google account
+                // only replaces it after the user confirms (FR-AUTH-5, ADR-0029).
+                var outcome = await _accountSession.ApplySignInAsync(result.UserInfo, AccountSwitchPrompts.ToDelegate(_switchPrompt), cancellationToken).ConfigureAwait(true);
+                if (outcome == AccountSignInOutcome.Cancelled)
                 {
-                    await _accountStore.SaveAccountAsync(new AccountInfo
-                    {
-                        Id = result.UserInfo.Id,
-                        Email = result.UserInfo.Email,
-                        DisplayName = result.UserInfo.DisplayName
-                    }, cancellationToken).ConfigureAwait(true);
+                    return;
                 }
+
+                IsReauthBannerVisible = false;
                 await LoadAccountAsync(cancellationToken).ConfigureAwait(true);
+                if (outcome == AccountSignInOutcome.Switched)
+                {
+                    await LoadCalendarsAsync(cancellationToken).ConfigureAwait(true);
+                    await ReloadAllViewsAsync(cancellationToken).ConfigureAwait(true);
+                }
                 await SyncNowAsync(cancellationToken).ConfigureAwait(true);
             }
         }

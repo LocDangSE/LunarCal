@@ -1,0 +1,99 @@
+<Window x:Class="LunarCal.App.Views.AccountSwitchDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}"
+        Width="{DynamicResource AccountSwitchDialogWidth}"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        FontFamily="{DynamicResource FontFamilyBase}"
+        AutomationProperties.AutomationId="AccountSwitchDialog">
+  <Window.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+  </Window.Resources>
+  <!-- Figma S14 1.5 "Đổi sang tài khoản Google khác" (52:3130): same card chrome as S10, ADR-0029. -->
+  <Border Margin="24"
+          Background="{DynamicResource SurfaceBackgroundBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1"
+          CornerRadius="{DynamicResource CornerRadiusDialog}"
+          Effect="{DynamicResource ShadowDialog}">
+    <StackPanel>
+      <!-- Header: "G" tile, title and the two accounts -->
+      <Grid Margin="24,20,24,8">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" Width="36" Height="36" VerticalAlignment="Top"
+                CornerRadius="{DynamicResource CornerRadiusListItem}" Background="{DynamicResource AccentSubtleBrush}">
+          <TextBlock Text="G" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="{DynamicResource FontSizeSection}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource AccentPrimaryBrush}" />
+        </Border>
+        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+          <TextBlock Text="{Binding Title}" TextWrapping="Wrap"
+                     FontSize="{DynamicResource FontSizeDialogTitle}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     AutomationProperties.AutomationId="SwitchTitle" />
+          <TextBlock Text="{Binding Subtitle}" Margin="0,2,0,0" TextWrapping="Wrap"
+                     FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource TextSecondaryBrush}"
+                     AutomationProperties.AutomationId="SwitchSubtitle" />
+        </StackPanel>
+      </Grid>
+
+      <!-- Body: what happens, what is lost, what is kept -->
+      <StackPanel Margin="24,8,24,16">
+        <TextBlock Text="{Binding Body}" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextBodyBrush}"
+                   AutomationProperties.AutomationId="SwitchBody" />
+        <Border Margin="0,12,0,0" Padding="14,12"
+                CornerRadius="{DynamicResource CornerRadiusListItem}"
+                Background="{DynamicResource WarningSubtleBrush}"
+                BorderBrush="{DynamicResource WarningBorderBrush}" BorderThickness="1"
+                Visibility="{Binding HasWarning, Converter={StaticResource BoolToVis}}"
+                AutomationProperties.AutomationId="SwitchWarning">
+          <StackPanel>
+            <TextBlock Text="{Binding WarningTitle}"
+                       FontSize="{DynamicResource FontSizeBodyStrong}" FontWeight="{DynamicResource FontWeightSemiBold}"
+                       Foreground="{DynamicResource WarningTextBrush}" />
+            <ItemsControl ItemsSource="{Binding WarningLines}" Focusable="False">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding}" Margin="0,6,0,0" TextWrapping="Wrap"
+                             FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource LunarStrongBrush}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+        <Border Margin="0,12,0,0" Padding="12,10"
+                CornerRadius="{DynamicResource CornerRadiusMedium}" Background="{DynamicResource SurfaceMutedBrush}">
+          <TextBlock Text="{Binding KeptText}" TextWrapping="Wrap"
+                     FontSize="{DynamicResource FontSizeBodyStrong}" FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     AutomationProperties.AutomationId="SwitchKept" />
+        </Border>
+      </StackPanel>
+
+      <!-- Footer: the safe choice is the default and Escape -->
+      <Border Padding="24,14"
+              Background="{DynamicResource SurfaceMutedBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+              CornerRadius="{DynamicResource CornerRadiusDialogBottom}">
+        <DockPanel LastChildFill="False">
+          <Button DockPanel.Dock="Right" Content="{Binding ConfirmButtonText}"
+                  Style="{StaticResource DangerSolidButtonStyle}" Click="OnConfirm"
+                  AutomationProperties.AutomationId="BtnSwitchConfirm" />
+          <Button DockPanel.Dock="Left" Content="{Binding KeepButtonText}"
+                  Style="{StaticResource GhostButtonStyle}" IsCancel="True" IsDefault="True" Click="OnKeep"
+                  AutomationProperties.AutomationId="BtnSwitchKeep" />
+        </DockPanel>
+      </Border>
+    </StackPanel>
+  </Border>
+</Window>

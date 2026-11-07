@@ -29,7 +29,7 @@ public sealed class ConfirmationRequiredTests
         var accounts = Substitute.For<IAccountStore>();
         accounts.GetPrimaryAccountAsync(Arg.Any<CancellationToken>()).Returns(new AccountInfo { Id = "acc", Email = "me@gmail.com" });
         signOut.SignOutAsync("acc", true, Arg.Any<CancellationToken>()).Returns(GoogleSignOutResult.Succeeded());
-        return new GoogleAccountViewModel(Substitute.For<IGoogleOAuthClient>(), signOut, accounts, _loc, confirmation: confirmation);
+        return new GoogleAccountViewModel(Substitute.For<IGoogleOAuthClient>(), signOut, accounts, Substitute.For<IAccountSessionService>(), _loc, confirmation: confirmation);
     }
 
     [Fact]
