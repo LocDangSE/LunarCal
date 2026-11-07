@@ -44,11 +44,12 @@ public class LunarPerformanceTests
     [Fact]
     public void FR_LUNAR_2_Year_tables_are_cached()
     {
+        // Compare the instance for one year instead of the process-wide CachedCount: other tests run in
+        // parallel and add years to the shared cache, which made a count comparison flaky.
         _ = LunarCalendar.ToLunar(new DateOnly(2040, 5, 5));
-        var count = LunarYearTable.CachedCount;
+        var table = LunarYearTable.Get(2040);
         _ = LunarCalendar.ToLunar(new DateOnly(2040, 5, 6));
-        LunarYearTable.CachedCount.Should().Be(count);
-        LunarYearTable.Get(2040).Should().BeSameAs(LunarYearTable.Get(2040));
+        LunarYearTable.Get(2040).Should().BeSameAs(table);
     }
 
     /// <summary>The 6×7 month grid: lunar date, day Can Chi and solar term for each cell.</summary>
