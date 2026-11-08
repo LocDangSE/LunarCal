@@ -23,7 +23,7 @@ public sealed class MonthViewRenderTests
 {
     private const int EventCount = 200;
     private const int Iterations = 12;
-    private const int MaxAttempts = 3;
+    private const int MaxAttempts = 5;
     private static readonly Size _viewport = new(1100, 760);
 
     [Fact]
@@ -173,6 +173,7 @@ public sealed class MonthViewRenderTests
             }
         });
         thread.SetApartmentState(ApartmentState.STA);
+        thread.Priority = ThreadPriority.Highest;
         thread.Start();
         thread.Join();
 

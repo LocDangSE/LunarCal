@@ -110,6 +110,10 @@ public sealed partial class MonthDayViewModel : ObservableObject
         bool isLunarVisible,
         string leapMarker)
     {
+        var prevSolarDate = SolarDate;
+        var prevLunarDate = LunarDate;
+        var prevHighlight = IsLunarHighlight;
+
         SolarDate = solarDate;
         LunarDate = lunarDate;
         _leapMarker = leapMarker;
@@ -118,15 +122,27 @@ public sealed partial class MonthDayViewModel : ObservableObject
         IsSelected = false;
         IsLunarVisible = isLunarVisible;
 
-        OnPropertyChanged(nameof(SolarDate));
-        OnPropertyChanged(nameof(SolarDay));
-        OnPropertyChanged(nameof(SolarDayString));
-        OnPropertyChanged(nameof(LunarDate));
-        OnPropertyChanged(nameof(LunarDay));
-        OnPropertyChanged(nameof(LunarMonth));
-        OnPropertyChanged(nameof(IsLeapMonth));
-        OnPropertyChanged(nameof(IsFirstLunarDay));
-        OnPropertyChanged(nameof(IsLunarHighlight));
+        if (prevSolarDate != solarDate)
+        {
+            OnPropertyChanged(nameof(SolarDate));
+            OnPropertyChanged(nameof(SolarDay));
+            OnPropertyChanged(nameof(SolarDayString));
+        }
+
+        if (prevLunarDate != lunarDate)
+        {
+            OnPropertyChanged(nameof(LunarDate));
+            OnPropertyChanged(nameof(LunarDay));
+            OnPropertyChanged(nameof(LunarMonth));
+            OnPropertyChanged(nameof(IsLeapMonth));
+            OnPropertyChanged(nameof(IsFirstLunarDay));
+        }
+
+        if (prevHighlight != IsLunarHighlight)
+        {
+            OnPropertyChanged(nameof(IsLunarHighlight));
+        }
+
         UpdateLunarDayText();
     }
 
@@ -152,8 +168,12 @@ public sealed partial class MonthDayViewModel : ObservableObject
         Func<CalendarEvent, string>? labelOf = null,
         Func<CalendarEvent, string?>? colorOf = null)
     {
-        Events = events ?? Array.Empty<CalendarEvent>();
-        VisibleEvents = Events.Take(MaxVisibleChips).ToList();
+        var nextEvents = events ?? Array.Empty<CalendarEvent>();
+        Events = nextEvents;
+        VisibleEvents = nextEvents.Count <= MaxVisibleChips
+            ? nextEvents
+            : nextEvents.Take(MaxVisibleChips).ToList();
+
         for (var i = 0; i < Chips.Count; i++)
         {
             if (i < VisibleEvents.Count)
@@ -167,10 +187,11 @@ public sealed partial class MonthDayViewModel : ObservableObject
             }
         }
 
-        MoreEventsCount = Math.Max(0, Events.Count - MaxVisibleChips);
-        HasMoreEvents = MoreEventsCount > 0;
-        MoreEventsText = HasMoreEvents && !string.IsNullOrWhiteSpace(moreEventsFormat)
-            ? string.Format(CultureInfo.CurrentCulture, moreEventsFormat, MoreEventsCount)
+        var moreCount = Math.Max(0, nextEvents.Count - MaxVisibleChips);
+        MoreEventsCount = moreCount;
+        HasMoreEvents = moreCount > 0;
+        MoreEventsText = moreCount > 0 && !string.IsNullOrWhiteSpace(moreEventsFormat)
+            ? string.Format(CultureInfo.CurrentCulture, moreEventsFormat, moreCount)
             : string.Empty;
     }
 
