@@ -3,21 +3,21 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-08 07:55 +07:00, Antigravity. Hoàn thành P4-04 (Cấu hình model Gemini trong Settings AI Figma 04 và Settings Nâng cao Figma S20 `34:372`, IAiModelService và GeminiModelService lọc model theo generateContent, loại bỏ tts/live/image/embedding/omni/latest và gemini-2.5-*, strip prefix models/, probe dummy function declaration test_ping để xác nhận hỗ trợ function calling, lưu SettingKeys.GeminiModelId vào ISettingsStore, GeminiChatModelClient tự động ưu tiên model đã chọn, hiển thị lưu ý chi phí và quota Google Cloud, free tier training và bảng giá tham khảo 3.8 Flash trong cả vi-VN và en-US). Toàn bộ 615/615 test pass, format sạch, coverage Lunar 99.54% và Core 97.40%. Đã merge task/P4-04 vào phase/4 (commit cebc437). Task tiếp theo: P4-05.
+**Cập nhật lần cuối:** 2026-11-08 08:05 +07:00, Antigravity. Hoàn thành P4-05 (Viết ADR-0030 chốt vị trí system prompt trong Core EmbeddedResource; tạo `Prompts/system.v1.md` với đầy đủ quy tắc spec §7: RFC 5545, mùng 1/rằm âm lịch, hỏi lại khi thiếu giờ cho sự kiện có giờ, mốc neo thời gian `typed_at` và `timezone`, ví dụ song ngữ vi/en/mixed; hiện thực `ISystemPromptProvider`, `SystemPromptProvider` và `PromptContext`; kiểm tra bảo mật bằng reflection đảm bảo không có bất kỳ trường nào của event trong context hay template). Toàn bộ 623/623 test pass (111 Core, 304 Infra, 205 App, 3 UiTests), format sạch, coverage Lunar 99.54% và Core 97.63%. Đã merge `task/P4-05` vào `phase/4` (commit 4f6cdef). Task tiếp theo: P4-06.
 
-**Phiên trước:** 2026-11-08 07:27 +07:00, Antigravity. Hoàn thành P4-03 (Settings > AI Figma 04, KeyValidator, masked key, canary test SEC-KEY-11). Merge commit 1210582 trên phase/4.
+**Phiên trước:** 2026-11-08 07:55 +07:00, Antigravity. Hoàn thành P4-04 (Cấu hình model Gemini trong Settings AI & Advanced, probe function calling). Merge commit cebc437 trên phase/4.
 
-**Trước đó:** 2026-11-07 22:25 +07:00, Claude Code (Sonnet 5.5). Chủ dự án duyệt các đề xuất: một tài khoản Google (ADR-0029), sửa S10 (qua đêm, tần suất Dương lịch, múi giờ riêng), nên spec FR-AUTH-5 và FR-UI-4 đã sửa. Figma có thêm S10 3.3 và 3.4, hộp thoại đổi tài khoản 1.5, S20 một tài khoản. Thêm P4-R1..P4-R3 cho Antigravity.
+**Trước đó:** 2026-11-08 07:27 +07:00, Antigravity. Hoàn thành P4-03 (Settings > AI Figma 04, KeyValidator, masked key, canary test SEC-KEY-11). Merge commit 1210582 trên phase/4.
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 4, nhánh `phase/4`. `P4-00`, `P4-01`, `P4-02`, `P4-03`, `P4-04`, `P4-R1`, `P4-R2`, `P4-R3` `[x]`. Còn P4-05..P4-13.
+- **Phase hiện tại:** Phase 4, nhánh `phase/4`. `P4-00`, `P4-01`, `P4-02`, `P4-03`, `P4-04`, `P4-05`, `P4-R1`, `P4-R2`, `P4-R3` `[x]`. Còn P4-06..P4-13.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ branch. P4-R2 xong và đã merge vào `phase/4`. Review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
-  - **Antigravity:** Đã hoàn thành P4-01, P4-R3, P4-R1, P4-02, P4-03 và P4-04 (Cấu hình model Gemini, probe function calling, ISettingsStore persistence, lưu ý chi phí & quota, cập nhật Settings AI & Advanced). Toàn bộ 615/615 test pass, format sạch, coverage gate đạt (Lunar 99.54%, Core 97.40%). Đã merge vào `phase/4`. Sẵn sàng nhận task tiếp theo: P4-05 (Prompt hệ thống `Prompts/system.v1.md`, spec §7, FR-CHAT-6, FR-QUEUE-4).
-    - Đọc trước khi làm Phase 4 (spec đã cập nhật 2026-11-07): ADR-0016 (Gemini, bảo vệ key), ADR-0029 (một tài khoản), spec §4.5 (FR-BYOK-1..7), §5.1 (SEC-KEY-6..11), §7 (Tích hợp Gemini), FR-CONFIRM-8, FR-QUEUE-2 (mã trạng thái `AiCommand`) và §13 (Phase 4 gồm P4-R1..R3). Thiết kế đã duyệt, node id ở `.agents/rules/ui.md`: S14 1.3 (hướng dẫn key), S16 4.4 (hỏi lại), S18 7.1 (lỗi), S20 5.3 (Nâng cao), S10 3.3 và 3.4 (P4-R1).
+  - **Antigravity:** Đã hoàn thành P4-01, P4-R3, P4-R1, P4-02, P4-03, P4-04 và P4-05 (System prompt có phiên bản `Prompts/system.v1.md`, `ISystemPromptProvider`, `PromptContext`, ADR-0030, bảo vệ dữ liệu không rò rỉ nội dung event). Toàn bộ 623/623 test pass, format sạch, coverage gate đạt (Lunar 99.54%, Core 97.63%). Đã merge vào `phase/4`. Sẵn sàng nhận task tiếp theo: P4-06 (FR-CHAT bảng 7 tool, SEC-PI-2, FR-CHAT-3: Schema 7 tool, validate tham số, giới hạn 500 event, 50 lời gọi tool mỗi phiên, 4000 ký tự, ≤ 5 năm).
+    - Đọc trước khi làm Phase 4 (spec đã cập nhật 2026-11-07): ADR-0016 (Gemini, bảo vệ key), ADR-0029 (một tài khoản), ADR-0030 (vị trí prompt), spec §4.5 (FR-BYOK-1..7), §5.1 (SEC-KEY-6..11), §7 (Tích hợp Gemini), FR-CONFIRM-8, FR-QUEUE-2 (mã trạng thái `AiCommand`) và §13 (Phase 4 gồm P4-R1..R3). Thiết kế đã duyệt, node id ở `.agents/rules/ui.md`: S14 1.3 (hướng dẫn key), S16 4.4 (hỏi lại), S18 7.1 (lỗi), S20 5.3 (Nâng cao), S10 3.3 và 3.4 (P4-R1).
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: Bắt đầu P4-05 (spec §7, FR-CHAT-6, FR-QUEUE-4: Prompt hệ thống có version `Prompts/system.v1.md`, test context không gửi nội dung event, kiểm tra prompt version).
+  1. Antigravity: Bắt đầu P4-06 (FR-CHAT bảng tool, SEC-PI-2, FR-CHAT-3: Schema 7 tool, validate tham số, giới hạn 500 event, 50 lời gọi mỗi phiên, 4000 ký tự, ≤ 5 năm).
   2. Chủ dự án: push `phase/4`, `main` và `task/P4-R2` rồi xem CI trên GitHub (tab Actions).
   3. Chủ dự án: kiểm tra thủ công đăng nhập tài khoản Google khác trên app thật: hộp thoại hiện, huỷ giữ nguyên dữ liệu, đồng ý thì lịch mới được tải về.
 
@@ -29,25 +29,25 @@
 | 1 | Xong: FR-LUNAR-1..3, coverage Lunar 100%, CI xanh | `src/LunarCal.Core/Lunar/`, `tests/LunarCal.Core.Tests/Lunar/`, `tests/LunarCal.Core.Tests/Fixtures/`, ADR-0006..0009, `docs/TRACEABILITY.md` |
 | 2 | Hoàn thành 100%: P2-00 (Figma S06–S09, S13 và design token), P2-01 (resx, i18n), P2-02 (pseudo-locale), P2-03 (theme & tokens, ADR-0011), P2-04 (settings store), P2-05 (event model & sample store), P2-06 (MainWindow shell, TopBar, Sidebar, MiniCalendar), P2-06b (cân chỉnh tokens theo Figma), P2-07 (MonthView 6×7 grid, lunar formatting, render < 100 ms), P2-08 (WeekView, DayView, timed event grid, now line, lane clustering), P2-09 (AgendaView, date grouping, calendar filters), P2-10 (DayDetailPanel, Can Chi, solar terms, glosses), P2-11 (AppearancePage, week start, 12h/24h, timezone), P2-12 (FlaUI UI smoke tests out-of-process), P2-13 (kết thúc Phase 2, cập nhật tài liệu, kiểm tra gates) | `tests/LunarCal.App.UiTests/SmokeTests.cs`, `src/LunarCal.App/Views/Settings/AppearancePage.xaml`, `DayDetailPanel.xaml`, `AgendaView.xaml`, `WeekView.xaml`, `DayView.xaml`, `MonthView.xaml`, `MainWindow.xaml`, `tests/`, `docs/TRACEABILITY.md`, `CHANGELOG.md` |
 | 3 | Hoàn thành 100% (P3-00a..P3-16): P3-00a xong (Client ID trong user-secrets, consent Testing); P3-00b xong (Figma S10, S14, S18, S20); P3-01 xong (Serilog file sink xoay vòng 14 ngày, LogRedactor che bí mật, SEC-LOG-1, SEC-LOG-2); P3-02 xong (ISecretStore, DpapiSecretStore, SEC-KEY-1, SEC-OAUTH-3, FR-AUTH-3, ADR-0018); P3-03 xong (SQLCipher encrypted storage, migration runner V1, 9 bảng spec §6, index, SEC-DATA-1, ADR-0013); P3-04 xong (ACL thư mục SEC-DATA-2, LocalDataWipeService SEC-DATA-3); P3-05 xong (Google OAuth desktop PKCE S256, loopback 127.0.0.1, state, timeout 5 phút, scope tối thiểu, ADR-0017 Accepted, FR-AUTH-1, FR-AUTH-2, FR-AUTH-6, SEC-OAUTH-1, SEC-OAUTH-2); P3-06 xong (Tự động refresh token, invalid_grant đăng nhập lại, hướng dẫn consent Testing hết hạn sau 7 ngày, FR-AUTH-3, FR-AUTH-6); P3-07 xong (Đăng xuất Google account: revoke endpoint, xoá refresh token DPAPI, purge toàn bộ cache Account/CalendarInfo/Event/ReminderState/LunarRule khỏi SQLite có xác nhận, FR-AUTH-4); P3-08 xong (HttpClient resilience pipeline, allow-list host, HTTPS only, timeout, circuit breaker, retry idempotency filter, SEC-NET-1, SEC-NET-2); P3-09 xong (Google Calendar API v3 Gateway và SyncEngine: đồng bộ lần đầu calendar list và events [-12m, +24m], singleEvents=true, SQLite persistence, extended_json, FR-SYNC-1, FR-SYNC-6, ADR-0028); P3-10 xong (Incremental sync bằng syncToken, xử lý sự kiện bị huỷ, upsert, tự động kích hoạt full resync khi 410 Gone, FR-SYNC-2); P3-11 xong (Quota management và throttling <= 5 req/s via IClock, exponential backoff và jitter cho 429 và 403 rateLimitExceeded, FR-SYNC-5); P3-12 xong (Hosted background sync scheduler, polling thích ứng 2m active / 10m tray, trigger tức thời focus / post-mutation / thủ công, coalescing, FR-SYNC-3); P3-13 xong (PendingMutation queue, optimistic UI, retry khi offline, ETag/If-Match concurrency control, server-wins conflict resolution khi gặp HTTP 412, FR-SYNC-4, NFR-REL); P3-14 xong (EventEditorDialog Figma S10, EventEditorViewModel, context menus cho sự kiện và ô trống với Shift+F10, kéo thả/điều chỉnh thời gian lưới 15 phút trong Tuần/Ngày, clipboard copy/paste, CRUD tích hợp PendingMutation và optimistic UI, FR-UI-4); P3-15 xong (Settings > Tài khoản Google Figma 04, chip Online/Offline, banner cảnh báo offline và hết hạn token, khối đồng bộ "Đồng bộ ngay", format relative sync time, custom OAuth overrides, local data wipe, onboarding wizard S14, FR-UI-9, FR-UI-10, FR-AUTH-1); P3-16 xong (SqliteSettingsStore persistent SQLite AppSetting store, seeding defaults, DI update, spec §6, spec §9, spec §13) | ADR-0013, ADR-0017, ADR-0018, ADR-0019, ADR-0026, ADR-0028, `src/LunarCal.Infrastructure/`, `tests/LunarCal.Infrastructure.Tests/`, `src/LunarCal.App/`, `tests/LunarCal.App.Tests/`, `docs/TASKS.md` |
-| 4 | Đang thực hiện: P4-00..P4-04, P4-R1..P4-R3 đã hoàn tất [x]. Đang thực hiện P4-05..P4-13. | `phase/4`, `src/LunarCal.Core/`, `src/LunarCal.Infrastructure/`, `src/LunarCal.App/` |
+| 4 | Đang thực hiện: P4-00..P4-05, P4-R1..P4-R3 đã hoàn tất [x]. Đang thực hiện P4-06..P4-13. | `phase/4`, `src/LunarCal.Core/`, `src/LunarCal.Infrastructure/`, `src/LunarCal.App/` |
 | 5–8 | Chưa bắt đầu | `docs/TASKS.md` |
 
 Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks, CodeQL, SourceLink đều đã hoàn tất.
 
 ## Build, test, format (chạy ngày 2026-11-08, Windows 11, .NET SDK 10.0.403, Release)
 
-Lần chạy mới nhất 2026-11-08 07:53 (Release, `phase/4`): build 0 warning, format pass, 615 test: 615 pass, 0 fail, 0 skip (gồm UI smoke 3/3). Coverage gate: Lunar 99.54%, Core 97.40%.
+Lần chạy mới nhất 2026-11-08 08:03 (Release, `phase/4`): build 0 warning, format pass, 623 test (111 Core, 304 Infra, 205 App, 3 UiTests): 623 pass, 0 fail, 0 skip. Coverage gate: Lunar 99.54%, Core 97.63%.
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 615 test: 615 pass, 0 fail, 0 skip (2026-11-08 07:52) |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99.54%, Core 97.40% (ngưỡng 95% và 85%; đo 2026-11-08 07:52) |
-| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution 2026-11-08 |
+| `dotnet test --solution LunarCal.slnx` | 623 test: 623 pass, 0 fail, 0 skip (2026-11-08 08:03) |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99.54%, Core 97.63% (ngưỡng 95% và 85%; đo 2026-11-08 08:03) |
+| UI smoke (`tests/LunarCal.App.UiTests`, 3 test) | Pass 3/3 trong lần chạy cả solution |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 
-- **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Sau khi tái sử dụng ô và khe chip, 5 lượt: median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms.
+- **Số đo render MonthView (P2-07, NFR-PERF < 100 ms; đo lại ở P2-R6):** test `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` dựng `MonthView` thật trên luồng STA với `Tokens.xaml` + `Light.xaml`, 200 sự kiện/tháng, đo nạp dữ liệu + measure/arrange/layout khi đổi tháng, 12 lần mỗi lượt. Máy: Intel i7-12700H, 24 GB RAM, Release. Sau khi tái sử dụng ô và khe chip, median 20,3–22,7 ms, max 39,5–43,0 ms, lần đầu sau khởi động 21–26 ms.
 - **Kiểm tra đổi theme khi đang chạy (P2-03):** smoke test `Settings_button_opens_appearance_page`: mở Cài đặt > Giao diện, chọn lần lượt Tối, Tương phản cao, Sáng, Theo hệ thống; app không thoát, radio được chọn đúng. Pass.
 
 ## Quyết định đã chốt mà spec chưa ghi
@@ -73,6 +73,7 @@ Chi tiết nằm trong ADR (`docs/DECISIONS.md`):
 - ADR-0029 (2026-11-07): chỉ một tài khoản Google; đăng nhập tài khoản khác thì xoá dữ liệu cũ và nạp dữ liệu tài khoản mới; đăng nhập lại cùng tài khoản không xoá gì. Bỏ FR-AUTH-5. Spec đã sửa; đã triển khai ở P4-R2 (2026-11-07).
 - ADR-0016 (2026-11-07): chủ dự án xác nhận Gemini key chỉ ở máy người dùng và dùng gói miễn phí. Model mặc định `gemini-3.8-flash`, lọc model hỗ trợ `generateContent` loại `tts`, `live`, `image`, `embedding`, `omni`, `latest`, `gemini-2.5-*`, probe `test_ping` xác nhận function calling.
 - ADR-0026: consent screen để ở Testing (refresh token hết hạn sau 7 ngày, xử lý ở P3-06).
+- ADR-0030 (2026-11-08): Vị trí lưu trữ và cơ chế nạp System Prompt có phiên bản: đặt tại `src/LunarCal.Core/Prompts/system.{version}.md` dưới dạng EmbeddedResource, nạp qua `ISystemPromptProvider`, context injection qua `PromptContext` đảm bảo zero event data rò rỉ vào prompt.
 
 ## Câu hỏi mở
 
