@@ -9,7 +9,7 @@
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 4 đã đóng (cổng `P4-REVIEW` `[x]`, đã merge vào `main`). Phase 5 chưa bắt đầu; task đầu tiên của Phase 5 là `P5-00` (👤 thiết kế S11, S15) hoặc `P5-01`.
+- **Phase hiện tại:** Phase 4 đã đóng chính thức ngày 2026-11-08 (các mục chưa test thủ công nằm ở mục "Việc chủ dự án chưa test") (cổng `P4-REVIEW` `[x]`, đã merge vào `main`). Phase 5 chưa bắt đầu; task đầu tiên của Phase 5 là `P5-00` (👤 thiết kế S11, S15) hoặc `P5-01`.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ branch. Đã review Phase 4, sửa P4-R4 và merge `phase/4` vào `main`; sau đó sửa P4-R5..P4-R7 trực tiếp trên `main` (chủ dự án cho phép). Không có việc dở.
   - **Antigravity:** Hoàn thành toàn bộ task Phase 4 (đã được review). Chưa nhận task Phase 5. Trước khi bắt đầu, đọc `docs/reviews/PHASE4.md` mục "Nên sửa sau" và ADR-0031 (đề xuất của model lưu ở `AiCommand.proposal_json`; ghi lịch chỉ qua `IAiCommandConfirmationService`).
@@ -17,6 +17,21 @@
   0. Chủ dự án: chạy lại một lệnh AI thật, đọc dòng log `Gemini call finished in ... ms` trong `%LOCALAPPDATA%\LunarCal\logs` để biết thinking `low` có đủ nhanh và đúng không; nếu vẫn chậm, quyết định đổi `DefaultModelId` (ADR-0032).
   1. Chủ dự án: push `main` và `phase/4` lên remote, xem CI trên GitHub; thử một lệnh AI thật với key Gemini của mình (gõ lệnh → mở ngăn kéo → Xác nhận) vì chưa có test nào gọi Gemini thật.
   2. Antigravity: bắt đầu Phase 5 (`P5-00` cần thiết kế Figma S11, S15 trước; `P5-01`, `P5-02` làm được ngay). `CalendarToolExecutor` mới hiện thực `create_event`; Phase 5 mở rộng cho các tool còn lại.
+
+## Việc chủ dự án chưa test (ghi khi đóng Phase 4, 2026-11-08)
+
+Phase 4 đã đóng theo quy trình (cổng `P4-REVIEW` `[x]`, 804 test xanh). Các mục sau chưa được kiểm thử trên app thật; chủ dự án sẽ test sau. Chưa có test tự động nào gọi Gemini thật.
+
+1. **Gọi Gemini thật (P4-R5, P4-R6, ADR-0032):** gõ một lệnh như "nhắc tôi họp 6h tối mai". Kiểm tra: (a) hộp thoại hiện 18:00 và đúng ngày, thứ theo tiếng Việt; (b) thời gian xử lý, đọc dòng `Gemini call finished in ... ms` trong `%LOCALAPPDATA%\LunarCal\logs` (thinking `low` có đủ nhanh không); (c) log có dòng "Gemini rejected the thinking level setting" hay không (nếu có, tên trường `thinkingConfig.thinkingLevel` bị API từ chối và app đã tự bỏ, vẫn chậm); nếu vẫn chậm, quyết định đổi `DefaultModelId`.
+2. **Thẻ tiến trình (P4-R7, FR-QUEUE-10):** thẻ hiện ngay sau khi gửi, đếm giờ, nút Huỷ lệnh; hộp thoại tự mở khi sẵn sàng; khi đang gõ lệnh khác hoặc cửa sổ ở nền thì thẻ có nút "Xem"; thẻ lỗi hiện lý do bằng tiếng Việt; "Đã thêm vào Google Calendar" tự ẩn sau 4 giây.
+3. **Ngăn kéo hàng chờ:** đóng khi bấm "Xem" hoặc "Xác nhận"; tự cập nhật khi đang mở; "Xem" lệnh đã hoàn tất chỉ đọc, Xác nhận bị khoá.
+4. **Xác nhận ghi lịch thật (FR-CHAT-2, FR-CONFIRM-6):** sự kiện xuất hiện trên lịch và đồng bộ lên Google Calendar đúng giờ.
+5. **Nút "Sửa" (P4-R8):** editor điền sẵn đề xuất; Lưu thì lệnh Hoàn tất; Huỷ thì lệnh vẫn chờ.
+6. **Huỷ lệnh khi AI đang chạy (P4-R8):** lệnh không quay lại "Chờ xác nhận".
+7. **CI trên GitHub:** máy này không có `gh`; xem tab Actions cho `main` (commit c615765).
+8. **Đối chiếu Figma còn lại (mức thấp):** thanh lệnh AI (Figma 01), ngăn kéo hàng chờ (Figma 03), Settings > AI, S16 và hộp thoại S02 (độ đậm giá trị, icon khiên). Thẻ tiến trình đã đối chiếu với frame 4.5 (`57:380`).
+
+Nếu một mục thất bại, ghi lỗi vào đây và tạo task `P4-R*` hoặc nhờ Claude Code sửa trên `main`.
 
 ## Câu hỏi mở
 

@@ -35,3 +35,7 @@ Không có (mọi blocker bên dưới đã sửa trên `phase/4`, theo quyết 
 - FR-AUTH-5/P4-R2, P4-R3: migration V3 dựng lại bảng `Event` với khoá `(calendar_id, id)` giữ nguyên dữ liệu (test nâng cấp V2 → V3, hai lịch cùng id không ghi đè nhau).
 - Kiến trúc: Core không thêm tham chiếu ngoài BCL; Infrastructure không tham chiếu WPF; không thấy `NoWarn`, `#pragma` mới hay bỏ qua kiểm tra chứng chỉ. Không có màu hard-code mới trong XAML Phase 4 (dùng token).
 - i18n: `Strings.resx`, `Strings.vi-VN.resx`, `Strings.en-US.resx` cùng thêm 458 dòng; test `XamlLocalizationKeyTests` xanh.
+
+## Đóng phase (2026-11-08)
+
+Chủ dự án đóng Phase 4. Các mục chưa test thủ công được ghi ở `docs/STATUS.md`, mục "Việc chủ dự án chưa test". Sau review, các mục "Nên sửa sau" đã được xử lý ở P4-R5..P4-R8 (ADR-0032), trừ phần đối chiếu Figma kỹ của thanh lệnh AI, ngăn kéo hàng chờ, Settings > AI và S16.
