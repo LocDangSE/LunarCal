@@ -821,6 +821,41 @@ public sealed partial class EventEditorViewModel : ObservableObject
                 InitializeForNew(request.Date, request.Time, request.IsAllDay, request.CalendarId);
                 break;
         }
+
+        if (request.Prefill is not null && IsNew)
+        {
+            ApplyPrefill(request.Prefill);
+        }
+    }
+
+    /// <summary>
+    /// Fills a new event with what the AI proposed so "Sửa" in the confirmation dialog starts from it (FR-CONFIRM-4).
+    /// The order matters: the date and time setters adjust the end, so the end is set last.
+    /// </summary>
+    public void ApplyPrefill(EventEditorPrefill prefill)
+    {
+        ArgumentNullException.ThrowIfNull(prefill);
+
+        Title = prefill.Title;
+        IsAllDay = prefill.IsAllDay;
+        StartDate = DateOnly.FromDateTime(prefill.Start);
+        if (!prefill.IsAllDay)
+        {
+            StartTime = TimeOnly.FromDateTime(prefill.Start);
+            EndTime = TimeOnly.FromDateTime(prefill.End);
+        }
+
+        // An all-day event proposed by the model ends the day after it starts (exclusive end); the editor shows the last day.
+        EndDate = prefill.IsAllDay
+            ? DateOnly.FromDateTime(prefill.End).AddDays(prefill.End.TimeOfDay == TimeSpan.Zero && prefill.End > prefill.Start ? -1 : 0)
+            : DateOnly.FromDateTime(prefill.End);
+        if (EndDate < StartDate)
+        {
+            EndDate = StartDate;
+        }
+
+        NotifyOvernightChanged();
+        UpdateLunarDateText();
     }
 
     /// <summary>

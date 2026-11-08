@@ -111,6 +111,15 @@ public partial class MainWindow : Window
     // initialised, otherwise the calendar picker is empty and the event has no calendar to be written to.
     private async void OnEventEditorRequested(object? sender, EventEditorRequest request)
     {
+        if (await ShowEventEditorAsync(request).ConfigureAwait(true) && DataContext is MainWindowViewModel mwVm)
+        {
+            _ = mwVm.ReloadActiveViewAsync();
+        }
+    }
+
+    // Shows the event editor modally; true when the user saved an event.
+    private async Task<bool> ShowEventEditorAsync(EventEditorRequest request)
+    {
         var eventStore = _services.GetRequiredService<IEventStore>();
         var localization = _services.GetRequiredService<ILocalizationService>();
         var preferences = _services.GetRequiredService<IDisplayPreferences>();
@@ -126,10 +135,7 @@ public partial class MainWindow : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
 
-        if (dialog.ShowDialog() == true && DataContext is MainWindowViewModel mwVm)
-        {
-            _ = mwVm.ReloadActiveViewAsync();
-        }
+        return dialog.ShowDialog() == true;
     }
 
     // Opens AI Confirmation Dialog (Figma 02, FR-CONFIRM-1..6, and S16 FR-CONFIRM-8) as a modal dialog owned by the shell.
@@ -217,11 +223,25 @@ public partial class MainWindow : Window
         }
         else if (confirmVm.RequestEdit)
         {
+            // "Sửa" (FR-CONFIRM-4): open the editor filled with what the model proposed. Saving there is the user's own
+            // explicit action and writes the event, so the AI command is then finished; cancelling leaves it waiting.
+            var prefill = EventEditorPrefill.FromToolCall(toolCall, storedCommand.TimeZone);
             var req = new EventEditorRequest(
                 Mode: EventEditorMode.Create,
-                Date: DateOnly.FromDateTime(item.TypedAt.LocalDateTime),
-                Time: TimeOnly.FromDateTime(item.TypedAt.LocalDateTime));
-            OnEventEditorRequested(this, req);
+                Date: DateOnly.FromDateTime(item.TypedAt.DateTime),
+                Time: TimeOnly.FromDateTime(item.TypedAt.DateTime),
+                Prefill: prefill);
+            if (await ShowEventEditorAsync(req).ConfigureAwait(true) && DataContext is MainWindowViewModel editedVm)
+            {
+                if (isActionable)
+                {
+                    await _services.GetRequiredService<IAiCommandStore>()
+                        .UpdateStatusAsync(item.Id, AiCommandStatus.Completed).ConfigureAwait(true);
+                    await editedVm.AiQueueDrawer.RefreshCommandsAsync().ConfigureAwait(true);
+                }
+
+                await editedVm.ReloadActiveViewAsync().ConfigureAwait(true);
+            }
         }
     }
 }

@@ -21,4 +21,5 @@ public sealed record EventEditorRequest(
     TimeOnly? Time = null,
     bool IsAllDay = false,
     CalendarEvent? Event = null,
-    string? CalendarId = null);
+    string? CalendarId = null,
+    EventEditorPrefill? Prefill = null);

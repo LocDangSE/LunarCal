@@ -435,7 +435,7 @@ Index theo `(calendar_id, start_utc)`. Migration có version, chạy khi khởi 
 
 Bổ sung từ thiết kế Figma và cloud (v1.1):
 
-- `AiCommand(id, display_no, text, typed_at, timezone, input_lang, status, retry_count, next_retry_at, last_error, batch_id, created_at, updated_at)`
+- `AiCommand(id, display_no, text, typed_at, timezone, input_lang, status, retry_count, next_retry_at, last_error, batch_id, created_at, updated_at, proposal_json)` (`proposal_json` nullable: đề xuất của model, hoặc câu hỏi làm rõ và câu trả lời, để lệnh “Chờ xác nhận” sống qua nhiều phiên; migration V4, ADR-0031)
 - `ContributionOutbox(id, turn_id, payload_encrypted, schema_version, created_at, uploaded_at, attempts)`
 - `ReminderState(event_id, occurrence_start, snoozed_until, completed_at, last_fired_at)`, khoá chính `(event_id, occurrence_start)`: trạng thái Hoãn và Hoàn thành của từng lần sự kiện (FR-NOTIFY-6, 7), lưu cục bộ vì Google Calendar không có trạng thái hoàn thành cho event.
 - `AppSetting` có thêm các khoá: `ui_language`, `lunar_enabled`, `training_opt_in`, `consent_version`, `contributor_id`, `gemini_enabled`, `week_start`, `theme`.

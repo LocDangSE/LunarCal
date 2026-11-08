@@ -19,13 +19,13 @@ Không có (mọi blocker bên dưới đã sửa trên `phase/4`, theo quyết 
 
 ## Nên sửa sau
 
-- P4-09: "Xem" lệnh đã `completed` hiện lại hộp thoại với nút Xác nhận còn bấm được (dịch vụ từ chối nên không ghi gì, nhưng người dùng không thấy phản hồi). Nên khoá nút khi lệnh không còn `needs_confirmation`. `src/LunarCal.App/Views/MainWindow.xaml.cs:96`
-- P4-10: nút "Sửa" mở trình soạn sự kiện trống, chưa điền sẵn dữ liệu đề xuất; chỉnh sửa trong hộp thoại cũng chưa được đưa vào `ConfirmAsync(editedCall)`. `src/LunarCal.App/Views/MainWindow.xaml.cs:164`
-- P4-08: người dùng huỷ lệnh khi worker đang xử lý, worker vẫn ghi đè trạng thái `needs_confirmation`. `src/LunarCal.Infrastructure/Chat/AiCommandQueueWorker.cs:291`
+- ~~(đã sửa ở P4-R7)~~ P4-09: "Xem" lệnh đã `completed` hiện lại hộp thoại với nút Xác nhận còn bấm được (dịch vụ từ chối nên không ghi gì, nhưng người dùng không thấy phản hồi). Nên khoá nút khi lệnh không còn `needs_confirmation`. `src/LunarCal.App/Views/MainWindow.xaml.cs:96`
+- ~~(đã sửa ở P4-R8)~~ P4-10: nút "Sửa" mở trình soạn sự kiện trống, chưa điền sẵn dữ liệu đề xuất; chỉnh sửa trong hộp thoại cũng chưa được đưa vào `ConfirmAsync(editedCall)`. `src/LunarCal.App/Views/MainWindow.xaml.cs:164`
+- ~~(đã sửa ở P4-R8)~~ P4-08: người dùng huỷ lệnh khi worker đang xử lý, worker vẫn ghi đè trạng thái `needs_confirmation`. `src/LunarCal.Infrastructure/Chat/AiCommandQueueWorker.cs:291`
 - P4-R4: `CalendarToolExecutor` dùng múi giờ máy khi model không trả `timezone`, chưa dùng múi giờ trong Settings; cấu hình mặc định của model nằm ở `appsettings.json` (`DefaultModelId`). Tool khác `create_event` trả lỗi "chưa hỗ trợ" cho tới Phase 5. `src/LunarCal.Infrastructure/Chat/CalendarToolExecutor.cs`
 - Giao diện: thanh lệnh AI, ngăn kéo hàng chờ, trang Settings > AI và S16 chỉ được review nhẹ (smoke test FlaUI xanh, VM test); chưa đặt ảnh chụp từng màn hình cạnh Figma `1:2`, `3:493`, `46:862`. Hộp thoại S02 còn lệch nhỏ (độ đậm giá trị, biểu tượng khiên cạnh ghi chú).
 - Test: `MonthViewRenderTests.NFR_PERF_Month_view_renders_in_under_100_ms_with_200_events` (median ~96 ms theo log của Antigravity) đạt sát ngưỡng 100 ms và fail 1 lần khi chạy cùng `--coverage` trên máy đang tải; chạy riêng thì xanh. Đây là test đo thời gian, không phải lỗi logic.
-- Spec §6 chưa có cột lưu đề xuất của model (ghi ở `docs/STATUS.md`, Câu hỏi mở); chủ dự án nên bổ sung `proposal_json` vào `AiCommand` trong spec.
+- ~~(đã sửa ở P4-R8)~~ Spec §6 chưa có cột lưu đề xuất của model (ghi ở `docs/STATUS.md`, Câu hỏi mở); chủ dự án nên bổ sung `proposal_json` vào `AiCommand` trong spec.
 
 ## OK
 

@@ -272,9 +272,20 @@ public sealed class AiCommandQueueWorker : BackgroundService
         catch (Exception ex)
         {
             _logger.Warning(ex, "Error executing model for AI command {CommandId}", command.Id);
+            if (await WasCancelledMeanwhileAsync(command, cancellationToken).ConfigureAwait(false))
+            {
+                return true;
+            }
+
             var errorResult = _errorMapper.Map(ex);
             await HandleFailureAsync(command, errorResult, cancellationToken).ConfigureAwait(false);
             return errorResult.Kind != AiChatErrorKind.NetworkUnavailable;
+        }
+
+        // The user may have cancelled the command while the model was working: that decision wins (P4-REVIEW).
+        if (await WasCancelledMeanwhileAsync(command, cancellationToken).ConfigureAwait(false))
+        {
+            return true;
         }
 
         switch (state)
@@ -329,6 +340,19 @@ public sealed class AiCommandQueueWorker : BackgroundService
                 return errorResult.Kind != AiChatErrorKind.NetworkUnavailable;
         }
 
+        return true;
+    }
+
+    /// <summary>True when the user cancelled <paramref name="command"/> while it was being processed; nothing is written then.</summary>
+    private async Task<bool> WasCancelledMeanwhileAsync(AiCommand command, CancellationToken cancellationToken)
+    {
+        var current = await _commandStore.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
+        if (current is null || current.Status != AiCommandStatus.Cancelled)
+        {
+            return false;
+        }
+
+        _logger.Information("AI command {CommandId} was cancelled while processing; its result is discarded", command.Id);
         return true;
     }
 

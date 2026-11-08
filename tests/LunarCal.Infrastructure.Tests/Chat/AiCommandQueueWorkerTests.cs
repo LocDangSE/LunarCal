@@ -51,6 +51,36 @@ public sealed class AiCommandQueueWorkerTests
     }
 
     [Fact]
+    public async Task FR_QUEUE_6_A_command_cancelled_while_the_model_works_is_not_brought_back_to_needs_confirmation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var command = CreateTestCommand();
+        _commandStore.GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { command });
+        _orchestrator.ProcessUserMessageAsync(Arg.Any<string>(), Arg.Any<PromptContext>(), Arg.Any<CancellationToken>())
+            .Returns(ChatOrchestratorState.AwaitingConfirmation);
+        _orchestrator.PendingToolCall.Returns(new ToolCall(ToolDefinitions.CreateEvent, "{}"));
+
+        // The user pressed "Huỷ" while the model was still working.
+        _commandStore.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
+            .Returns(CreateTestCommand(status: AiCommandStatus.Cancelled));
+
+        var worker = new AiCommandQueueWorker(_commandStore, _orchestrator, _networkStatus, _clock);
+
+        await worker.ProcessPendingBatchAsync(ct);
+
+        await _commandStore.DidNotReceive().SetProposalAsync(command.Id, Arg.Any<AiCommandProposal?>(), Arg.Any<CancellationToken>());
+        await _commandStore.DidNotReceive().UpdateStatusAsync(
+            command.Id,
+            AiCommandStatus.NeedsConfirmation,
+            Arg.Any<string?>(),
+            Arg.Any<int?>(),
+            Arg.Any<DateTimeOffset?>(),
+            Arg.Any<string?>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task FR_QUEUE_2_Worker_processes_pending_command_and_completes()
     {
         var ct = TestContext.Current.CancellationToken;
