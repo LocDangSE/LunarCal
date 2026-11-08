@@ -48,6 +48,11 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
     /// </summary>
     public event EventHandler<AiCommandItemViewModel>? CommandActionRequested;
 
+    /// <summary>
+    /// Raised when the user requests navigating to AI Settings (e.g. to fix an invalid API key, FR-CHAT-7).
+    /// </summary>
+    public event EventHandler? OpenAiSettingsRequested;
+
     public AiQueueDrawerViewModel(
         IAiCommandStore commandStore,
         ILocalizationService localizationService,
@@ -206,6 +211,13 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
         }
 
         CommandEditRequested?.Invoke(this, item.Text);
+        CloseDrawer();
+    }
+
+    [RelayCommand]
+    public void OpenAiSettings(AiCommandItemViewModel? item)
+    {
+        OpenAiSettingsRequested?.Invoke(this, EventArgs.Empty);
         CloseDrawer();
     }
 

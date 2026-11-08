@@ -27,6 +27,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
         viewModel.SettingsRequested += OnSettingsRequested;
+        viewModel.SettingsTabRequested += OnSettingsTabRequested;
         viewModel.EventEditorRequested += OnEventEditorRequested;
         viewModel.AiConfirmRequested += OnAiConfirmRequested;
 
@@ -35,10 +36,19 @@ public partial class MainWindow : Window
         StateChanged += (_, _) => viewModel.OnWindowMinimizedChanged(WindowState == WindowState.Minimized);
     }
 
-    // Opens Settings Window (Figma 04, S13, S20) as a modal window owned by the shell.
-    private void OnSettingsRequested(object? sender, EventArgs e)
+    // Opens Settings Window (Figma 04, S13, S20) as a modal window owned by the shell (FR-CHAT-7).
+    private void OnSettingsRequested(object? sender, EventArgs e) => OpenSettingsWindow(SettingsTab.General);
+
+    private void OnSettingsTabRequested(object? sender, SettingsTab tab) => OpenSettingsWindow(tab);
+
+    private void OpenSettingsWindow(SettingsTab initialTab)
     {
         var settingsWindow = _services.GetRequiredService<SettingsWindow>();
+        if (settingsWindow.DataContext is SettingsViewModel svm)
+        {
+            svm.SelectTab(initialTab);
+        }
+
         settingsWindow.Owner = this;
         settingsWindow.ShowDialog();
 

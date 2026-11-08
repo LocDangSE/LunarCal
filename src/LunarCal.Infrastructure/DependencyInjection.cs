@@ -321,6 +321,7 @@ public static class DependencyInjection
         // Phase 4: Versioned system prompt provider (P4-05, spec §7, FR-CHAT-6, FR-QUEUE-4, ADR-0030)
         services.AddSingleton<ISystemPromptProvider, SystemPromptProvider>();
         services.AddSingleton<IAiBusinessValidator, AiBusinessValidator>();
+        services.AddSingleton<IAiChatErrorMapper, AiChatErrorMapper>();
 
         // Phase 4: AI command queue store & background worker (P4-08, FR-QUEUE-1..9)
         services.AddSingleton<IAiCommandStore, SqliteAiCommandStore>();

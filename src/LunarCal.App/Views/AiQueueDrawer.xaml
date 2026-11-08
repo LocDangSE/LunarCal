@@ -323,6 +323,24 @@
                         </Button.Style>
                       </Button>
 
+                      <!-- Open AI Settings (When API Key is invalid, leaked, or missing - FR-CHAT-7) -->
+                      <Button Content="{loc:Loc Key=ai_queue.open_ai_settings}"
+                              AutomationProperties.AutomationId="BtnActionOpenAiSettings"
+                              Command="{Binding DataContext.OpenAiSettingsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerAccentActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanOpenAiSettings}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+
                       <!-- Edit (Error) -->
                       <Button Content="{loc:Loc Key=ai_queue.action_edit}"
                               AutomationProperties.AutomationId="BtnActionEdit"
