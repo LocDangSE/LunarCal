@@ -1639,4 +1639,55 @@
   <data name="ai_confirm.clarify_privacy_note" xml:space="preserve">
     <value>Câu trả lời được gửi tới Gemini cùng lệnh gốc.</value>
   </data>
+  <data name="ai_error.invalid_key" xml:space="preserve">
+    <value>API key không hợp lệ hoặc không có quyền. Vui lòng kiểm tra lại trong Cài đặt > AI.</value>
+  </data>
+  <data name="ai_error.missing_key" xml:space="preserve">
+    <value>Chưa cấu hình API key. Vui lòng mở Cài đặt > AI để nhập key.</value>
+  </data>
+  <data name="ai_error.leaked_key" xml:space="preserve">
+    <value>API key đã bị Google báo cáo là bị lộ và đã bị vô hiệu hóa. Vui lòng tạo key mới trong Cài đặt > AI.</value>
+  </data>
+  <data name="ai_error.free_tier" xml:space="preserve">
+    <value>Dự án yêu cầu xác minh thanh toán hoặc không đủ điều kiện dùng gói miễn phí.</value>
+  </data>
+  <data name="ai_error.failed_precondition" xml:space="preserve">
+    <value>Yêu cầu Gemini chưa đủ điều kiện (khu vực hoặc dịch vụ).</value>
+  </data>
+  <data name="ai_error.model_not_found" xml:space="preserve">
+    <value>Model AI đã chọn không tồn tại hoặc đã bị gỡ bỏ. Vui lòng chọn model khác trong Cài đặt > AI.</value>
+  </data>
+  <data name="ai_error.rate_limit" xml:space="preserve">
+    <value>Đã vượt quá giới hạn lệnh mỗi phút (429). Đang chờ thời gian thử lại...</value>
+  </data>
+  <data name="ai_error.rate_limit_with_time" xml:space="preserve">
+    <value>Đã vượt quá giới hạn lệnh mỗi phút (429). Thử lại sau {0} giây...</value>
+  </data>
+  <data name="ai_error.daily_quota" xml:space="preserve">
+    <value>Đã hết hạn mức sử dụng miễn phí trong ngày (429). Hạn mức sẽ được đặt lại vào nửa đêm giờ Pacific.</value>
+  </data>
+  <data name="ai_error.safety_blocked" xml:space="preserve">
+    <value>Yêu cầu bị từ chối bởi bộ lọc an toàn của Google Gemini.</value>
+  </data>
+  <data name="ai_error.network_offline" xml:space="preserve">
+    <value>Không có kết nối mạng. Lệnh đã được lưu vào hàng chờ và sẽ tự động xử lý khi có mạng.</value>
+  </data>
+  <data name="ai_error.transient" xml:space="preserve">
+    <value>Lỗi tạm thời từ dịch vụ AI. Đang tự động thử lại...</value>
+  </data>
+  <data name="ai_error.malformed" xml:space="preserve">
+    <value>Định dạng phản hồi từ AI không hợp lệ.</value>
+  </data>
+  <data name="ai_error.unknown" xml:space="preserve">
+    <value>Có lỗi xảy ra khi xử lý lệnh AI.</value>
+  </data>
+  <data name="ai_error.action_open_settings" xml:space="preserve">
+    <value>Mở Cài đặt AI</value>
+  </data>
+  <data name="ai_error.action_retry_now" xml:space="preserve">
+    <value>Thử lại ngay</value>
+  </data>
+  <data name="ai_queue.open_ai_settings" xml:space="preserve">
+    <value>Mở Cài đặt AI</value>
+  </data>
 </root>

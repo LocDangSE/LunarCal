@@ -175,6 +175,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         AiCommandBar.CommandEnqueued += OnAiCommandEnqueued;
         AiQueueDrawer.CommandEditRequested += OnAiCommandEditRequested;
         AiQueueDrawer.CommandActionRequested += (_, item) => AiConfirmRequested?.Invoke(this, item);
+        AiCommandBar.OpenAiSettingsRequested += (_, _) => OpenSettings(SettingsTab.Ai);
+        AiQueueDrawer.OpenAiSettingsRequested += (_, _) => OpenSettings(SettingsTab.Ai);
 
         _isLunarVisible = _preferences.LunarEnabled;
 
@@ -662,16 +664,30 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Event raised to request the Settings window (Figma 04, S13, S20).
     /// </summary>
+    /// <summary>
+    /// Event raised to request the Settings window with a specific initial tab (FR-CHAT-7).
+    /// </summary>
+    public event EventHandler<SettingsTab>? SettingsTabRequested;
+
+    /// <summary>
+    /// Event raised to request the Settings window (Figma 04, S13, S20).
+    /// </summary>
     public event EventHandler? SettingsRequested;
+
+    /// <summary>
+    /// Opens the application settings window, optionally navigating directly to a specific tab (FR-CHAT-7).
+    /// </summary>
+    public void OpenSettings(SettingsTab tab)
+    {
+        SettingsTabRequested?.Invoke(this, tab);
+        SettingsRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     /// <summary>
     /// Opens the application settings window.
     /// </summary>
     [RelayCommand]
-    public void OpenSettings()
-    {
-        SettingsRequested?.Invoke(this, EventArgs.Empty);
-    }
+    public void OpenSettings() => OpenSettings(SettingsTab.General);
 
     /// <summary>
     /// Loads calendar collections from the event store into the sidebar list.

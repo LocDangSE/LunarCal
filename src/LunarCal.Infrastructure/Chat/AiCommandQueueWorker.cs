@@ -6,9 +6,10 @@ using Serilog;
 namespace LunarCal.Infrastructure.Chat;
 
 /// <summary>
-/// FR-QUEUE-1..9: Background hosted service that processes AI commands from the SQLite queue.
+/// FR-QUEUE-1..9, FR-CHAT-7: Background hosted service that processes AI commands from the SQLite queue.
 /// Supports 6 lifecycle states, exponential backoff with jitter on errors (up to 5 retries),
-/// crash recovery (processing -> pending), idempotency tracking, and 30-day automatic retention cleanup.
+/// crash recovery (processing -> pending), idempotency tracking, 30-day automatic retention cleanup,
+/// and structured error mapping (stops unrecoverable errors from retrying, preserves offline commands).
 /// </summary>
 public sealed class AiCommandQueueWorker : BackgroundService
 {
@@ -17,10 +18,21 @@ public sealed class AiCommandQueueWorker : BackgroundService
     private readonly IChatOrchestrator? _orchestrator;
     private readonly INetworkStatusService _networkStatus;
     private readonly IClock _clock;
+    private readonly IAiChatErrorMapper _errorMapper;
     private readonly AiQueueWorkerOptions _options;
     private readonly AiQueueRetryPolicy _retryPolicy;
     private readonly ILogger _logger;
     private readonly SemaphoreSlim _signal = new(0, 1);
+
+    /// <summary>
+    /// Event raised when an AI execution error occurs and is mapped (FR-CHAT-7).
+    /// </summary>
+    public event EventHandler<AiChatErrorResult>? AiErrorOccurred;
+
+    /// <summary>
+    /// Gets the error mapper used by this worker.
+    /// </summary>
+    public IAiChatErrorMapper ErrorMapper => _errorMapper;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AiCommandQueueWorker"/> with a singleton orchestrator.
@@ -32,12 +44,14 @@ public sealed class AiCommandQueueWorker : BackgroundService
         IClock clock,
         AiQueueWorkerOptions? options = null,
         AiQueueRetryPolicy? retryPolicy = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        IAiChatErrorMapper? errorMapper = null)
     {
         _commandStore = commandStore ?? throw new ArgumentNullException(nameof(commandStore));
         _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
         _networkStatus = networkStatus ?? throw new ArgumentNullException(nameof(networkStatus));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _errorMapper = errorMapper ?? new AiChatErrorMapper();
         _options = options ?? new AiQueueWorkerOptions();
         _retryPolicy = retryPolicy ?? new AiQueueRetryPolicy(_options.BaseRetryDelay);
         _logger = logger ?? Log.ForContext<AiCommandQueueWorker>();
@@ -55,12 +69,14 @@ public sealed class AiCommandQueueWorker : BackgroundService
         IClock clock,
         AiQueueWorkerOptions? options = null,
         AiQueueRetryPolicy? retryPolicy = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        IAiChatErrorMapper? errorMapper = null)
     {
         _commandStore = commandStore ?? throw new ArgumentNullException(nameof(commandStore));
         _orchestratorFactory = orchestratorFactory ?? throw new ArgumentNullException(nameof(orchestratorFactory));
         _networkStatus = networkStatus ?? throw new ArgumentNullException(nameof(networkStatus));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _errorMapper = errorMapper ?? new AiChatErrorMapper();
         _options = options ?? new AiQueueWorkerOptions();
         _retryPolicy = retryPolicy ?? new AiQueueRetryPolicy(_options.BaseRetryDelay);
         _logger = logger ?? Log.ForContext<AiCommandQueueWorker>();
@@ -77,11 +93,13 @@ public sealed class AiCommandQueueWorker : BackgroundService
         IClock clock,
         AiQueueWorkerOptions? options = null,
         AiQueueRetryPolicy? retryPolicy = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        IAiChatErrorMapper? errorMapper = null)
     {
         _commandStore = commandStore ?? throw new ArgumentNullException(nameof(commandStore));
         _networkStatus = networkStatus ?? throw new ArgumentNullException(nameof(networkStatus));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _errorMapper = errorMapper ?? new AiChatErrorMapper();
         _options = options ?? new AiQueueWorkerOptions();
         _retryPolicy = retryPolicy ?? new AiQueueRetryPolicy(_options.BaseRetryDelay);
         _logger = logger ?? Log.ForContext<AiCommandQueueWorker>();
@@ -242,7 +260,8 @@ public sealed class AiCommandQueueWorker : BackgroundService
         catch (Exception ex)
         {
             _logger.Warning(ex, "Error executing model for AI command {CommandId}", command.Id);
-            await HandleFailureAsync(command, ex.Message, cancellationToken).ConfigureAwait(false);
+            var errorResult = _errorMapper.Map(ex);
+            await HandleFailureAsync(command, errorResult, cancellationToken).ConfigureAwait(false);
             return;
         }
 
@@ -284,20 +303,71 @@ public sealed class AiCommandQueueWorker : BackgroundService
                 break;
 
             default:
-                await HandleFailureAsync(command, orchestrator.ErrorMessage ?? "Execution failed", cancellationToken).ConfigureAwait(false);
+                var errorResult = _errorMapper.MapMessage(orchestrator.ErrorMessage ?? "Execution failed");
+                await HandleFailureAsync(command, errorResult, cancellationToken).ConfigureAwait(false);
                 break;
         }
     }
 
-    private async Task HandleFailureAsync(AiCommand command, string errorMessage, CancellationToken cancellationToken)
+    /// <summary>
+    /// Handles AI command failure using structured error mapping (FR-CHAT-7).
+    /// </summary>
+    public async Task HandleFailureAsync(AiCommand command, AiChatErrorResult errorResult, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(errorResult);
+
+        AiErrorOccurred?.Invoke(this, errorResult);
+
+        // 1. Offline / Network unavailable: preserve in queue as pending, wait for network restoration (FR-CHAT-7)
+        if (errorResult.Kind == AiChatErrorKind.NetworkUnavailable)
+        {
+            await _commandStore.UpdateStatusAsync(
+                command.Id,
+                AiCommandStatus.Pending,
+                lastError: errorResult.TechnicalDetails ?? errorResult.MessageKey,
+                nextRetryAt: null,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            _logger.Information("AI command {CommandId} preserved locally in queue waiting for network reconnection", command.Id);
+            return;
+        }
+
+        // 2. Unrecoverable errors (invalid key, leaked key, safety blocked, daily quota exhausted, precondition failed):
+        // Do not burn retry attempts, mark as Error with nextRetryAt = null (FR-CHAT-7, ADR-0016 §4).
+        if (!errorResult.CanRetry)
+        {
+            await _commandStore.UpdateStatusAsync(
+                command.Id,
+                AiCommandStatus.Error,
+                lastError: errorResult.TechnicalDetails ?? errorResult.MessageKey,
+                retryCount: command.RetryCount,
+                nextRetryAt: null,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            _logger.Warning("AI command {CommandId} failed permanently with {ErrorKind} (action: {Action}): {Details}",
+                command.Id, errorResult.Kind, errorResult.Action, errorResult.TechnicalDetails);
+            return;
+        }
+
+        // 3. Recoverable errors (RateLimitExceeded, TransientError):
         var nextRetry = command.RetryCount + 1;
-        var nextRetryAt = _retryPolicy.CalculateNextRetry(nextRetry, _clock.UtcNow);
+        DateTimeOffset? nextRetryAt;
+
+        if (errorResult.Kind == AiChatErrorKind.RateLimitExceeded && errorResult.RetryAfter.HasValue)
+        {
+            // Respect rate limit cooldown period
+            nextRetryAt = _clock.UtcNow.Add(errorResult.RetryAfter.Value);
+        }
+        else
+        {
+            nextRetryAt = _retryPolicy.CalculateNextRetry(nextRetry, _clock.UtcNow);
+        }
 
         await _commandStore.UpdateStatusAsync(
             command.Id,
             AiCommandStatus.Error,
-            lastError: errorMessage,
+            lastError: errorResult.TechnicalDetails ?? errorResult.MessageKey,
             retryCount: nextRetry,
             nextRetryAt: nextRetryAt,
             cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -305,13 +375,22 @@ public sealed class AiCommandQueueWorker : BackgroundService
         if (nextRetryAt.HasValue)
         {
             _logger.Warning("AI command {CommandId} failed (attempt {RetryCount}/{MaxRetries}), retrying at {NextRetryAt}: {Error}",
-                command.Id, nextRetry, AiQueueRetryPolicy.MaxRetries, nextRetryAt, errorMessage);
+                command.Id, nextRetry, AiQueueRetryPolicy.MaxRetries, nextRetryAt, errorResult.TechnicalDetails);
         }
         else
         {
             _logger.Error("AI command {CommandId} exceeded max retries ({MaxRetries}), manual intervention required: {Error}",
-                command.Id, AiQueueRetryPolicy.MaxRetries, errorMessage);
+                command.Id, AiQueueRetryPolicy.MaxRetries, errorResult.TechnicalDetails);
         }
+    }
+
+    /// <summary>
+    /// Legacy overload mapping raw error message string.
+    /// </summary>
+    public Task HandleFailureAsync(AiCommand command, string errorMessage, CancellationToken cancellationToken = default)
+    {
+        var errorResult = _errorMapper.MapMessage(errorMessage);
+        return HandleFailureAsync(command, errorResult, cancellationToken);
     }
 
     private async Task WaitForSignalOrDelayAsync(TimeSpan delay, CancellationToken cancellationToken)

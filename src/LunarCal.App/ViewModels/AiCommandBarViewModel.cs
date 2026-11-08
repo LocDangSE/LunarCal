@@ -58,6 +58,11 @@ public sealed partial class AiCommandBarViewModel : ObservableObject, IDisposabl
     /// </summary>
     public event EventHandler<AiCommand>? CommandEnqueued;
 
+    /// <summary>
+    /// Raised when navigation to AI Settings is requested (FR-CHAT-7).
+    /// </summary>
+    public event EventHandler? OpenAiSettingsRequested;
+
     public AiCommandBarViewModel(
         IAiCommandStore commandStore,
         ILocalizationService localizationService,
@@ -126,6 +131,12 @@ public sealed partial class AiCommandBarViewModel : ObservableObject, IDisposabl
             "en" => "EN",
             _ => "VI · EN",
         };
+    }
+
+    [RelayCommand]
+    public void OpenAiSettings()
+    {
+        OpenAiSettingsRequested?.Invoke(this, EventArgs.Empty);
     }
 
     [RelayCommand]

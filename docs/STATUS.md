@@ -3,7 +3,9 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-08 10:30 +07:00, Antigravity. Hoàn thành P4-11 (FR-CONFIRM-8: Trạng thái hỏi lại S16 `46:370`, dialog `46:862` khi model cần thêm thông tin: chip "Cần bổ sung" thay "Chờ xác nhận", hàng còn thiếu tô vàng nhạt `WarningSubtleBrush`, khối "CÂU HỎI CỦA AI" hỏi một thông tin mỗi lần kèm chip trả lời nhanh pill `QuickAnswers`, ô trả lời ngắn tự động focus khi mở, ghi chú gửi câu trả lời về Gemini, nút Hủy và Trả lời & tiếp tục, bỏ nút Sửa; phát lại ProviderState bảo toàn thoughtSignature cho Gemini qua ChatOrchestrator). Toàn bộ 724 test pass (177 Core, 316 Infra, 226 App, 5 UiTests), coverage Core 92.12%, Lunar 99.54%. Merge vào `phase/4`.
+**Cập nhật lần cuối:** 2026-11-08 12:55 +07:00, Antigravity. Hoàn thành P4-12 (FR-CHAT-7: Xử lý và ánh xạ lỗi Gemini: `AiChatErrorKind`, `AiChatErrorAction`, `AiChatErrorResult`, `IAiChatErrorMapper` và `AiChatErrorMapper`; Key sai/thiếu/lộ/billing/model not found → mở Settings > AI, không retry vô ích; 429 rate limit → cooldown 30s & backoff; 429 quota ngày → thông báo giờ đặt lại lúc nửa đêm giờ Pacific, không retry; bị chặn an toàn → thông báo rõ ràng bộ lọc an toàn, không retry; mất kết nối mạng → bảo tồn lệnh ở SQLite queue, tự động xử lý tiếp khi có mạng; che key theo SEC-KEY-3; nút "Mở Cài đặt AI" trong drawer khi gặp lỗi key). Toàn bộ 753 test pass (177 Core, 337 Infra, 234 App, 5 UiTests), coverage Core 91.59%, Lunar 99.54%.
+
+**Phiên trước:** 2026-11-08 10:30 +07:00, Antigravity. Hoàn thành P4-11 (FR-CONFIRM-8: Trạng thái hỏi lại S16 `46:370`, dialog `46:862` khi model cần thêm thông tin). Toàn bộ 724 test pass (177 Core, 316 Infra, 226 App, 5 UiTests), coverage Core 92.12%, Lunar 99.54%. Merge vào `phase/4`.
 
 **Phiên trước:** 2026-11-08 10:00 +07:00, Antigravity. Hoàn thành P4-10 (Hộp thoại xác nhận AI `Views/AiConfirmDialog` Figma 02 `2:2`/`2:494`, heuristic độ tin cậy `AiConfidenceEvaluator`, validator nghiệp vụ cục bộ trên SQLite cache `IAiBusinessValidator`/`AiBusinessValidator`, khoá nút Xác nhận khi độ tin cậy < 60% hoặc validator có lỗi, nút Sửa mở EventEditorDialog, ghi chú opt-in). Merge commit daa398d trên phase/4.
 
@@ -11,13 +13,13 @@
 
 ## Phase và task
 
-- **Phase hiện tại:** Phase 4, nhánh `phase/4`. `P4-00`, `P4-01`, `P4-02`, `P4-03`, `P4-04`, `P4-05`, `P4-06`, `P4-07`, `P4-08`, `P4-09`, `P4-10`, `P4-11`, `P4-R1`, `P4-R2`, `P4-R3` `[x]`. Sẵn sàng làm `P4-12` (FR-CHAT-7: Key sai → mở Settings AI; 429 → thời gian chờ; bị chặn an toàn → báo rõ; mất mạng → vào hàng chờ). Còn P4-12..P4-13.
+- **Phase hiện tại:** Phase 4, nhánh `phase/4`. `P4-00`, `P4-01`, `P4-02`, `P4-03`, `P4-04`, `P4-05`, `P4-06`, `P4-07`, `P4-08`, `P4-09`, `P4-10`, `P4-11`, `P4-12`, `P4-R1`, `P4-R2`, `P4-R3` `[x]`. Sẵn sàng làm `P4-13` (spec §13: Kết thúc Phase 4: TRACEABILITY, commit phase; CI xanh).
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
   - **Claude Code:** không giữ branch. P4-R2 xong và đã merge vào `phase/4`. Review Phase 4 khi cổng `P4-REVIEW` ở `[r]`.
-  - **Antigravity:** Hoàn thành P4-11 trên branch `task/P4-11`, merge vào `phase/4`. Tiếp theo nhận P4-12 (FR-CHAT-7). Toàn bộ 724 test pass, format sạch, coverage gate đạt (Lunar 99.54%, Core 92.12%).
+  - **Antigravity:** Hoàn thành P4-12 trên branch `task/P4-12`, merge vào `phase/4`. Tiếp theo nhận P4-13 (Kết thúc Phase 4). Toàn bộ 753 test pass, format sạch, coverage gate đạt (Lunar 99.54%, Core 91.59%).
     - Đọc trước khi làm Phase 4 (spec đã cập nhật 2026-11-07): ADR-0016 (Gemini, bảo vệ key), ADR-0029 (một tài khoản), ADR-0030 (vị trí prompt), spec §4.5 (FR-BYOK-1..7), §5.1 (SEC-KEY-6..11), §7 (Tích hợp Gemini), FR-CONFIRM-8, FR-QUEUE-2 (mã trạng thái `AiCommand`: `pending`, `processing`, `needs_confirmation`, `error`, `completed`, `cancelled`) và §13. Thiết kế đã duyệt, node id ở `.agents/rules/ui.md`: Figma 01 (`1:2`), Figma 02 (`2:2`, `2:494`), Figma 03 (`3:2`, `3:493`), S14 1.3, S16 4.4, S18 7.1, S20 5.3.
 - **Task tiếp theo đề xuất:**
-  1. Antigravity: Bắt đầu P4-12 (FR-CHAT-7: Ánh xạ lỗi Gemini: key sai -> mở Settings AI; 429 -> đếm ngược thời gian chờ; safety block -> báo rõ lý do; mất mạng -> vào hàng chờ).
+  1. Antigravity: Bắt đầu P4-13 (spec §13: Kết thúc Phase 4: TRACEABILITY, commit phase; chuyển cổng P4-REVIEW sang [r]).
   2. Chủ dự án: push `phase/4`, `main` và `task/P4-R2` rồi xem CI trên GitHub (tab Actions).
   3. Chủ dự án: kiểm tra thủ công đăng nhập tài khoản Google khác trên app thật: hộp thoại hiện, huỷ giữ nguyên dữ liệu, đồng ý thì lịch mới được tải về.
 
@@ -36,14 +38,14 @@ Còn thiếu so với spec §10 (CI): `release.yml` (P8-02). Các mục gitleaks
 
 ## Build, test, format (chạy ngày 2026-11-08, Windows 11, .NET SDK 10.0.403, Release)
 
-Lần chạy mới nhất 2026-11-08 10:30 (Release, `task/P4-11`): build 0 warning, format pass, 724 test (177 Core, 316 Infra, 226 App, 5 UiTests): 724 pass, 0 fail, 0 skip. Coverage gate: Lunar 99.54%, Core 92.12% (ngưỡng 95% và 85%).
+Lần chạy mới nhất 2026-11-08 12:55 (Release, `task/P4-12`): build 0 warning, format pass, 753 test (177 Core, 337 Infra, 234 App, 5 UiTests): 753 pass, 0 fail, 0 skip. Coverage gate: Lunar 99.54%, Core 91.59% (ngưỡng 95% và 85%).
 
 | Lệnh | Kết quả |
 | --- | --- |
 | `dotnet build LunarCal.slnx -c Release` | Pass, 0 warning |
 | `dotnet format LunarCal.slnx --verify-no-changes` | Pass |
-| `dotnet test --solution LunarCal.slnx` | 724 test: 724 pass, 0 fail, 0 skip (2026-11-08 10:30) |
-| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99.54%, Core 92.12% (ngưỡng 95% và 85%; đo 2026-11-08 10:25) |
+| `dotnet test --solution LunarCal.slnx` | 753 test: 753 pass, 0 fail, 0 skip (2026-11-08 12:55) |
+| Cổng coverage (`eng/Test-Coverage.ps1`) | Lunar 99.54%, Core 91.59% (ngưỡng 95% và 85%; đo 2026-11-08 12:50) |
 | UI smoke (`tests/LunarCal.App.UiTests`, 5 test) | Pass 5/5 (bao gồm Ai_confirm_dialog_smoke_test, Ai_command_bar_and_queue_drawer_smoke_test) |
 | `docker build --target test .` (Linux) | Chưa chạy lại trong phiên này |
 

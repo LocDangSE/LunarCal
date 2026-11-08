@@ -1639,4 +1639,55 @@
   <data name="ai_confirm.clarify_privacy_note" xml:space="preserve">
     <value>Your reply will be sent to Gemini along with the original command.</value>
   </data>
+  <data name="ai_error.invalid_key" xml:space="preserve">
+    <value>API key is invalid or lacks permission. Please check Settings > AI.</value>
+  </data>
+  <data name="ai_error.missing_key" xml:space="preserve">
+    <value>API key is not configured. Please open Settings > AI to enter your key.</value>
+  </data>
+  <data name="ai_error.leaked_key" xml:space="preserve">
+    <value>API key was reported as leaked by Google and has been disabled. Please create a new key in Settings > AI.</value>
+  </data>
+  <data name="ai_error.free_tier" xml:space="preserve">
+    <value>Project requires billing verification or is ineligible for the free tier.</value>
+  </data>
+  <data name="ai_error.failed_precondition" xml:space="preserve">
+    <value>Gemini request failed precondition (region or service requirements).</value>
+  </data>
+  <data name="ai_error.model_not_found" xml:space="preserve">
+    <value>Selected AI model not found or deprecated. Please choose another model in Settings > AI.</value>
+  </data>
+  <data name="ai_error.rate_limit" xml:space="preserve">
+    <value>Rate limit exceeded (429). Waiting for retry delay...</value>
+  </data>
+  <data name="ai_error.rate_limit_with_time" xml:space="preserve">
+    <value>Rate limit exceeded (429). Retrying in {0} seconds...</value>
+  </data>
+  <data name="ai_error.daily_quota" xml:space="preserve">
+    <value>Daily quota exhausted (429). Quota will reset at midnight Pacific Time.</value>
+  </data>
+  <data name="ai_error.safety_blocked" xml:space="preserve">
+    <value>Request was blocked by Google Gemini safety filters.</value>
+  </data>
+  <data name="ai_error.network_offline" xml:space="preserve">
+    <value>No internet connection. Command saved to queue and will automatically process when online.</value>
+  </data>
+  <data name="ai_error.transient" xml:space="preserve">
+    <value>Transient error from AI service. Retrying automatically...</value>
+  </data>
+  <data name="ai_error.malformed" xml:space="preserve">
+    <value>Malformed response format from AI.</value>
+  </data>
+  <data name="ai_error.unknown" xml:space="preserve">
+    <value>An error occurred while processing the AI command.</value>
+  </data>
+  <data name="ai_error.action_open_settings" xml:space="preserve">
+    <value>Open AI Settings</value>
+  </data>
+  <data name="ai_error.action_retry_now" xml:space="preserve">
+    <value>Retry now</value>
+  </data>
+  <data name="ai_queue.open_ai_settings" xml:space="preserve">
+    <value>Open AI Settings</value>
+  </data>
 </root>
