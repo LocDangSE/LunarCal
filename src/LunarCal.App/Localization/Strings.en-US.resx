@@ -1449,4 +1449,67 @@
   <data name="settings.advanced.gemini_model_desc" xml:space="preserve">
     <value>Active model configured for natural language AI commands (FR-BYOK-5, ADR-0016).</value>
   </data>
+  <data name="ai.offline_banner" xml:space="preserve">
+    <value>No connection. New requests will be saved locally and processed when back online.</value>
+  </data>
+  <data name="ai.disabled_tooltip" xml:space="preserve">
+    <value>AI command bar is disabled because Gemini is not enabled or API key is missing.</value>
+  </data>
+  <data name="ai_queue.title" xml:space="preserve">
+    <value>AI Queue</value>
+  </data>
+  <data name="ai_queue.pending_count" xml:space="preserve">
+    <value>{0} requests</value>
+  </data>
+  <data name="ai_queue.empty" xml:space="preserve">
+    <value>No commands in queue</value>
+  </data>
+  <data name="ai_queue.close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ai_queue.status_pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="ai_queue.status_processing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="ai_queue.status_needs_confirmation" xml:space="preserve">
+    <value>Awaiting confirmation</value>
+  </data>
+  <data name="ai_queue.status_error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ai_queue.status_completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="ai_queue.status_cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="ai_queue.action_view" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="ai_queue.action_confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="ai_queue.action_retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="ai_queue.action_edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ai_queue.action_cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ai_queue.destructive_warning" xml:space="preserve">
+    <value>Deletion requires confirmation – AI never deletes without confirmation</value>
+  </data>
+  <data name="ai_queue.retry_format" xml:space="preserve">
+    <value>Retry {0}/{1} (wait {2} min)</value>
+  </data>
+  <data name="ai_queue.time_just_now" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="ai_queue.time_minutes_ago" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
 </root>

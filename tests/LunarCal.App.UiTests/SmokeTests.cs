@@ -242,4 +242,43 @@ public sealed class SmokeTests
             CloseApp(app);
         }
     }
+
+    [Fact]
+    public void Ai_command_bar_and_queue_drawer_smoke_test()
+    {
+        var exePath = FindAppPath();
+        using var automation = new UIA3Automation();
+        using var app = LaunchApp(exePath);
+
+        try
+        {
+            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
+                ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
+
+            // FR-UI-5: AI command bar input and submit button exist
+            var aiInput = WaitFor(window, "AiCommandInput");
+            aiInput.Should().NotBeNull("the shell must host the AI command input");
+
+            var btnSubmit = WaitFor(window, "BtnAiSubmit");
+            btnSubmit.Should().NotBeNull("the shell must host the AI submit button");
+
+            // FR-QUEUE-2: Clicking sync status block opens the AI Queue Drawer
+            var syncBlock = WaitFor(window, "SyncStatusBlock").AsButton();
+            syncBlock.Should().NotBeNull();
+            syncBlock!.Invoke();
+
+            var drawer = WaitFor(window, "AiQueueDrawer");
+            drawer.Should().NotBeNull("clicking sync status block must open the AI Queue Drawer");
+
+            var btnCloseDrawer = WaitFor(drawer, "BtnCloseAiQueueDrawer").AsButton();
+            btnCloseDrawer.Should().NotBeNull();
+            btnCloseDrawer!.Invoke();
+
+            WaitGone(window, "AiQueueDrawer");
+        }
+        finally
+        {
+            CloseApp(app);
+        }
+    }
 }
