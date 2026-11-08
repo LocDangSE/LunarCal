@@ -41,7 +41,7 @@ public sealed class SmokeTests
         throw new FileNotFoundException($"LunarCal.exe and LunarCal.dll ({config}) not found in {appDir}");
     }
 
-    private static Application LaunchApp(string exePath)
+    private static Application LaunchApp(string exePath, bool disableAiQueueWorker = false)
     {
         foreach (var p in Process.GetProcessesByName("LunarCal"))
         {
@@ -54,6 +54,13 @@ public sealed class SmokeTests
             WorkingDirectory = Path.GetDirectoryName(exePath)!,
             Arguments = "--skip-first-run",
         };
+
+        if (disableAiQueueWorker)
+        {
+            // The queued command must stay where the test left it instead of being sent to the user's Gemini key.
+            psi.Environment["LunarCal__Ai__QueueWorkerEnabled"] = "false";
+        }
+
         return Application.Launch(psi);
     }
 
@@ -250,7 +257,7 @@ public sealed class SmokeTests
     {
         var exePath = FindAppPath();
         using var automation = new UIA3Automation();
-        using var app = LaunchApp(exePath);
+        using var app = LaunchApp(exePath, disableAiQueueWorker: true);
 
         try
         {
@@ -289,7 +296,7 @@ public sealed class SmokeTests
     {
         var exePath = FindAppPath();
         using var automation = new UIA3Automation();
-        using var app = LaunchApp(exePath);
+        using var app = LaunchApp(exePath, disableAiQueueWorker: true);
 
         try
         {

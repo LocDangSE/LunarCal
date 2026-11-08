@@ -18,7 +18,7 @@ public sealed class SqliteMigrationRunner
         // An empty list is never what a caller wants (the schema would never be created); use the built-in set.
         _migrations = list is { Count: > 0 }
             ? list
-            : [new Migration001InitialSchema(), new Migration002EventDetails(), new Migration003EventCompositeKey()];
+            : [new Migration001InitialSchema(), new Migration002EventDetails(), new Migration003EventCompositeKey(), new Migration004AiCommandProposal()];
     }
 
     /// <summary>Gets the list of registered migrations.</summary>

@@ -50,6 +50,12 @@ public sealed record AiCommand
     /// </summary>
     public string? BatchId { get; init; }
 
+    /// <summary>
+    /// The model's proposal waiting for the user (tool call or clarification question), null before the model answered
+    /// (FR-QUEUE-2, FR-CONFIRM-1, FR-CONFIRM-8, ADR-0031).
+    /// </summary>
+    public AiCommandProposal? Proposal { get; init; }
+
     /// <summary>Timestamp when this command was initially saved to the queue.</summary>
     public required DateTimeOffset CreatedAt { get; init; }
 

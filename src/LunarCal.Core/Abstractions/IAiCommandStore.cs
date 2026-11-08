@@ -54,6 +54,11 @@ public interface IAiCommandStore
     /// <summary>
     /// FR-QUEUE-8: Crash recovery. Resets any commands stuck in <c>processing</c> back to <c>pending</c>.
     /// </summary>
+    /// <summary>
+    /// Stores (or clears, when null) the model's proposal for a command (FR-QUEUE-2, FR-CONFIRM-1, ADR-0031).
+    /// </summary>
+    Task SetProposalAsync(string id, AiCommandProposal? proposal, CancellationToken cancellationToken = default);
+
     Task<int> RecoverProcessingCommandsAsync(
         DateTimeOffset now,
         CancellationToken cancellationToken = default);

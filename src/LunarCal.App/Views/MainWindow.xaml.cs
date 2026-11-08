@@ -106,36 +106,40 @@ public partial class MainWindow : Window
         var localization = _services.GetRequiredService<ILocalizationService>();
         var preferences = _services.GetRequiredService<IDisplayPreferences>();
 
-        var defaultStart = item.TypedAt.AddDays(1);
-        var toolCall = new ToolCall(
-            ToolDefinitions.CreateEvent,
-            JsonSerializer.Serialize(new
-            {
-                summary = item.Text,
-                start = defaultStart.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
-                end = defaultStart.AddHours(1).ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture)
-            }));
+        // The proposal comes from the model and was stored by the queue worker; it is never rebuilt from the raw text.
+        var storedCommand = await _services.GetRequiredService<IAiCommandStore>().GetByIdAsync(item.Id).ConfigureAwait(true);
+        if (storedCommand is null)
+        {
+            return;
+        }
 
-        var valResult = await validator.ValidateAsync(toolCall, eventStore, item.TypedAt).ConfigureAwait(true);
+        // "Xem" on a command that is not waiting for the user (queued, failed, done) opens the same dialog read-only:
+        // with no real proposal to show, an empty create_event makes the validator block Confirm (FR-QUEUE-6).
+        var isActionable = storedCommand.Status == AiCommandStatus.NeedsConfirmation;
+        var proposal = storedCommand.Proposal ?? new AiCommandProposal(null);
+        var askingQuestion = isActionable && proposal.ToolCall is null && proposal.ClarificationQuestion is not null;
+        var toolCall = proposal.ToolCall ?? (askingQuestion ? null : new ToolCall(ToolDefinitions.CreateEvent, "{}"));
+        var valResult = toolCall is null
+            ? AiBusinessValidationResult.Success()
+            : await validator.ValidateAsync(toolCall, eventStore, item.TypedAt).ConfigureAwait(true);
         var confResult = AiConfidenceEvaluator.Evaluate(toolCall, item.Text, item.TypedAt, valResult);
 
         var optIn = await settingsStore.GetBoolAsync(SettingKeys.TrainingOptIn).ConfigureAwait(true);
 
-        var command = new AiCommand
-        {
-            Id = item.Id,
-            DisplayNo = (int)item.DisplayNo,
-            Text = item.Text,
-            TypedAt = item.TypedAt,
-            TimeZone = TimeZoneInfo.Local.Id,
-            InputLang = item.InputLang,
-            Status = item.Status,
-            CreatedAt = item.TypedAt,
-            UpdatedAt = item.TypedAt
-        };
-
         var confirmVm = new AiConfirmDialogViewModel(localization);
-        confirmVm.Initialize(command, toolCall, confResult, valResult, preferences.LunarEnabled, optIn);
+        if (toolCall is null)
+        {
+            // FR-CONFIRM-8: the model asked a question instead of proposing an action.
+            confirmVm.InitializeForClarification(
+                storedCommand,
+                proposal.ClarificationQuestion ?? storedCommand.LastError ?? string.Empty,
+                isLunarEnabled: preferences.LunarEnabled,
+                isTrainingOptIn: optIn);
+        }
+        else
+        {
+            confirmVm.Initialize(storedCommand, toolCall, confResult, valResult, preferences.LunarEnabled, optIn);
+        }
 
         var dialog = new AiConfirmDialog(confirmVm)
         {
@@ -144,7 +148,7 @@ public partial class MainWindow : Window
         };
 
         var dialogResult = dialog.ShowDialog();
-        if (dialogResult == true && DataContext is MainWindowViewModel mwVm)
+        if (dialogResult == true && isActionable && DataContext is MainWindowViewModel mwVm)
         {
             if (confirmVm.ClarificationSubmitted)
             {
@@ -152,7 +156,8 @@ public partial class MainWindow : Window
             }
             else
             {
-                await mwVm.AiQueueDrawer.ConfirmCommandAsync(item).ConfigureAwait(true);
+                // Only here, after the user pressed Confirm, is the calendar written (FR-CHAT-2).
+                await mwVm.AiQueueDrawer.CompleteConfirmationAsync(item).ConfigureAwait(true);
             }
             await mwVm.ReloadActiveViewAsync().ConfigureAwait(true);
         }

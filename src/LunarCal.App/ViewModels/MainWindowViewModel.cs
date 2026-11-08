@@ -153,7 +153,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IGoogleOAuthClient? oauthClient = null,
         IAccountSessionService? accountSession = null,
         IAccountSwitchPrompt? switchPrompt = null,
-        IAiCommandStore? aiCommandStore = null)
+        IAiCommandStore? aiCommandStore = null,
+        IAiCommandConfirmationService? aiConfirmation = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
@@ -170,7 +171,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _aiCommandStore = aiCommandStore ?? new NullAiCommandStore();
 
         AiCommandBar = new AiCommandBarViewModel(_aiCommandStore, _localizationService, _networkStatusService, _settingsStore, _preferences);
-        AiQueueDrawer = new AiQueueDrawerViewModel(_aiCommandStore, _localizationService, _networkStatusService);
+        AiQueueDrawer = new AiQueueDrawerViewModel(_aiCommandStore, _localizationService, _networkStatusService, aiConfirmation);
 
         AiCommandBar.CommandEnqueued += OnAiCommandEnqueued;
         AiQueueDrawer.CommandEditRequested += OnAiCommandEditRequested;
@@ -909,6 +910,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         public Task<IReadOnlyList<AiCommand>> GetPendingQueueAsync(DateTimeOffset now, int limit = 50, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<AiCommand>>([]);
         public Task<IReadOnlyList<AiCommand>> GetAllAsync(int limit = 100, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<AiCommand>>([]);
         public Task UpdateStatusAsync(string id, string status, string? lastError = null, int? retryCount = null, DateTimeOffset? nextRetryAt = null, string? batchId = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task SetProposalAsync(string id, AiCommandProposal? proposal, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<int> RecoverProcessingCommandsAsync(DateTimeOffset now, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<int> CleanupOldCommandsAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<int> GetActiveCountAsync(CancellationToken cancellationToken = default) => Task.FromResult(0);

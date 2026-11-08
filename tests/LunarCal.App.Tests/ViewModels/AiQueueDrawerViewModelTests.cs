@@ -194,4 +194,43 @@ public sealed class AiQueueDrawerViewModelTests
         editedText.Should().Be("Sửa lại câu lệnh");
         vm.IsOpen.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task FR_CHAT_2_Confirm_button_only_opens_the_dialog_and_never_changes_the_command()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var confirmation = Substitute.For<IAiCommandConfirmationService>();
+        _commandStore.GetAllAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { CreateCommand("c1", 1000, "họp 9h", AiCommandStatus.NeedsConfirmation) });
+        var vm = new AiQueueDrawerViewModel(_commandStore, _localizationService, _networkStatusService, confirmation);
+        await vm.RefreshCommandsAsync(ct);
+        var raised = 0;
+        vm.CommandActionRequested += (_, _) => raised++;
+
+        vm.ConfirmCommandCommand.Execute(vm.Commands[0]);
+
+        raised.Should().Be(1, "the button opens the confirmation dialog exactly once");
+        await _commandStore.DidNotReceiveWithAnyArgs().UpdateStatusAsync(default!, default!, cancellationToken: ct);
+        await confirmation.DidNotReceiveWithAnyArgs().ConfirmAsync(default!, cancellationToken: ct);
+    }
+
+    [Fact]
+    public async Task FR_CHAT_1_CompleteConfirmationAsync_runs_the_stored_proposal_without_reopening_the_dialog()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var confirmation = Substitute.For<IAiCommandConfirmationService>();
+        confirmation.ConfirmAsync("c1", null, Arg.Any<CancellationToken>()).Returns(ToolExecutionResult.Success("Họp"));
+        _commandStore.GetAllAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { CreateCommand("c1", 1000, "họp 9h", AiCommandStatus.NeedsConfirmation) });
+        var vm = new AiQueueDrawerViewModel(_commandStore, _localizationService, _networkStatusService, confirmation);
+        await vm.RefreshCommandsAsync(ct);
+        var raised = 0;
+        vm.CommandActionRequested += (_, _) => raised++;
+
+        var result = await vm.CompleteConfirmationAsync(vm.Commands[0], cancellationToken: ct);
+
+        result!.IsSuccess.Should().BeTrue();
+        raised.Should().Be(0, "confirming must not raise the open-dialog event again (it looped before)");
+        await confirmation.Received(1).ConfirmAsync("c1", null, Arg.Any<CancellationToken>());
+    }
 }

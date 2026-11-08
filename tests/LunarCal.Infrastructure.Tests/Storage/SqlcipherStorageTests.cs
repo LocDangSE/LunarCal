@@ -55,7 +55,7 @@ public sealed class SqlcipherStorageTests : IDisposable
 
         // Verify the latest schema version (V3, P4-R3) is recorded in __schema_version
         int version = await SqliteMigrationRunner.GetCurrentVersionAsync(connection, ct);
-        version.Should().Be(3);
+        version.Should().Be(4);
 
         // Verify all 9 tables from spec §6 are created
         var expectedTables = new[]
@@ -222,7 +222,7 @@ public sealed class SqlcipherStorageTests : IDisposable
 
         SqliteConnection.ClearAllPools();
 
-        // 2. Upgrade with the production runner (V1 + V2 + V3, P3-R1/P3-R2/P4-R3)
+        // 2. Upgrade with the production runner (V1..V4, P3-R1/P3-R2/P4-R3/P4-REVIEW)
         using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
         {
             await factory.EnsureInitializedAsync(ct);
@@ -230,9 +230,9 @@ public sealed class SqlcipherStorageTests : IDisposable
             using var conn = await factory.CreateConnectionAsync(ct);
             await conn.OpenAsync(ct);
 
-            // Verify version is now 3
+            // Verify version is now 4
             int version = await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct);
-            version.Should().Be(3);
+            version.Should().Be(4);
 
             // Verify existing V1 data was preserved
             using var queryCmd = conn.CreateCommand();
@@ -285,7 +285,7 @@ public sealed class SqlcipherStorageTests : IDisposable
 
         SqliteConnection.ClearAllPools();
 
-        // 2. Upgrade to latest (V3)
+        // 2. Upgrade to latest (V4)
         using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
         {
             await factory.EnsureInitializedAsync(ct);
@@ -294,7 +294,7 @@ public sealed class SqlcipherStorageTests : IDisposable
             await conn.OpenAsync(ct);
 
             int v3 = await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct);
-            v3.Should().Be(3);
+            v3.Should().Be(4);
 
             // Existing data is preserved
             using (var queryCmd = conn.CreateCommand())
@@ -334,6 +334,50 @@ public sealed class SqlcipherStorageTests : IDisposable
                 countCmd.CommandText = "SELECT COUNT(*) FROM Event WHERE id = 'evt-shared';";
                 Convert.ToInt32(await countCmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture).Should().Be(2);
             }
+        }
+    }
+
+    [Fact]
+    public async Task FR_QUEUE_2_Migration_V3_to_V4_adds_proposal_column_and_keeps_queued_commands()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var secretStore = new DpapiSecretStore(_secretsDirectory);
+        var options = new SqliteStorageOptions { DatabasePath = _dbPath };
+
+        using (var factory = new SqliteConnectionFactory(
+            secretStore,
+            options,
+            new SqliteMigrationRunner([new Migration001InitialSchema(), new Migration002EventDetails(), new Migration003EventCompositeKey()])))
+        {
+            await factory.EnsureInitializedAsync(ct);
+
+            using var conn = await factory.CreateConnectionAsync(ct);
+            await conn.OpenAsync(ct);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = """
+                INSERT INTO AiCommand (id, display_no, text, typed_at, timezone, input_lang, status, retry_count, created_at, updated_at)
+                VALUES ('cmd-1', 1000, 'họp 9h', '2026-11-02T01:00:00Z', 'SE Asia Standard Time', 'vi', 'needs_confirmation', 0, '2026-11-02T01:00:00Z', '2026-11-02T01:00:00Z');
+                """;
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+
+        SqliteConnection.ClearAllPools();
+
+        using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
+        {
+            await factory.EnsureInitializedAsync(ct);
+
+            using var conn = await factory.CreateConnectionAsync(ct);
+            await conn.OpenAsync(ct);
+            (await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct)).Should().Be(4);
+
+            using var query = conn.CreateCommand();
+            query.CommandText = "SELECT text, status, proposal_json IS NULL FROM AiCommand WHERE id = 'cmd-1';";
+            using var reader = await query.ExecuteReaderAsync(ct);
+            (await reader.ReadAsync(ct)).Should().BeTrue();
+            reader.GetString(0).Should().Be("họp 9h");
+            reader.GetString(1).Should().Be("needs_confirmation");
+            reader.GetInt32(2).Should().Be(1, "upgraded commands have no stored proposal yet");
         }
     }
 }

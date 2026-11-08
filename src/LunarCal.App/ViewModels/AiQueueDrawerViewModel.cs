@@ -19,6 +19,7 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
     private readonly IAiCommandStore _commandStore;
     private readonly ILocalizationService _localizationService;
     private readonly INetworkStatusService? _networkStatusService;
+    private readonly IAiCommandConfirmationService? _confirmation;
     private readonly SynchronizationContext? _uiContext = SynchronizationContext.Current;
 
     [ObservableProperty]
@@ -56,8 +57,10 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
     public AiQueueDrawerViewModel(
         IAiCommandStore commandStore,
         ILocalizationService localizationService,
-        INetworkStatusService? networkStatusService = null)
+        INetworkStatusService? networkStatusService = null,
+        IAiCommandConfirmationService? confirmation = null)
     {
+        _confirmation = confirmation;
         _commandStore = commandStore ?? throw new ArgumentNullException(nameof(commandStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
         _networkStatusService = networkStatusService;
@@ -167,8 +170,12 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
         PendingCount = Commands.Count(c => c.Status != AiCommandStatus.Completed && c.Status != AiCommandStatus.Cancelled);
     }
 
+    /// <summary>
+    /// "Xem và xác nhận" (FR-QUEUE-6): opens the confirmation dialog. It never writes anything itself; the calendar is
+    /// only changed by <see cref="CompleteConfirmationAsync"/> after the user pressed Confirm in the dialog (FR-CHAT-2).
+    /// </summary>
     [RelayCommand]
-    public async Task ConfirmCommandAsync(AiCommandItemViewModel? item, CancellationToken cancellationToken = default)
+    public void ConfirmCommand(AiCommandItemViewModel? item)
     {
         if (item is null)
         {
@@ -176,30 +183,37 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
         }
 
         CommandActionRequested?.Invoke(this, item);
-
-        // Transition to Completed upon user confirmation
-        await _commandStore.UpdateStatusAsync(item.Id, AiCommandStatus.Completed, cancellationToken: cancellationToken)
-            .ConfigureAwait(true);
-
-        item.Status = AiCommandStatus.Completed;
-        PendingCount = Commands.Count(c => c.Status != AiCommandStatus.Completed && c.Status != AiCommandStatus.Cancelled);
     }
 
+    /// <summary>
+    /// Runs the stored proposal after the user confirmed it in the dialog (FR-CHAT-2, FR-CONFIRM-6). Returns null when
+    /// no confirmation service is available.
+    /// </summary>
+    public async Task<ToolExecutionResult?> CompleteConfirmationAsync(
+        AiCommandItemViewModel? item,
+        ToolCall? editedCall = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (item is null || _confirmation is null)
+        {
+            return null;
+        }
+
+        var result = await _confirmation.ConfirmAsync(item.Id, editedCall, cancellationToken).ConfigureAwait(true);
+        await RefreshCommandsAsync(cancellationToken).ConfigureAwait(true);
+        return result;
+    }
+
+    /// <summary>Sends the user's answer to the model's question by putting the command back in the queue (FR-CONFIRM-8).</summary>
     public async Task SubmitClarificationAsync(AiCommandItemViewModel? item, string answer, CancellationToken cancellationToken = default)
     {
-        if (item is null || string.IsNullOrWhiteSpace(answer))
+        if (item is null || string.IsNullOrWhiteSpace(answer) || _confirmation is null)
         {
             return;
         }
 
-        CommandActionRequested?.Invoke(this, item);
-
-        // Transition to Completed upon submitting clarification answer and executing the resolved action
-        await _commandStore.UpdateStatusAsync(item.Id, AiCommandStatus.Completed, cancellationToken: cancellationToken)
-            .ConfigureAwait(true);
-
-        item.Status = AiCommandStatus.Completed;
-        PendingCount = Commands.Count(c => c.Status != AiCommandStatus.Completed && c.Status != AiCommandStatus.Cancelled);
+        await _confirmation.SubmitClarificationAsync(item.Id, answer, cancellationToken).ConfigureAwait(true);
+        await RefreshCommandsAsync(cancellationToken).ConfigureAwait(true);
     }
 
     [RelayCommand]

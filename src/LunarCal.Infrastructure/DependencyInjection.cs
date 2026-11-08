@@ -326,7 +326,20 @@ public static class DependencyInjection
         // Phase 4: AI command queue store & background worker (P4-08, FR-QUEUE-1..9)
         services.AddSingleton<IAiCommandStore, SqliteAiCommandStore>();
         services.AddSingleton<AiQueueRetryPolicy>();
-        services.AddHostedService<AiCommandQueueWorker>();
+
+        // Phase 4: chat pipeline. The orchestrator turns a queued command into a proposal; the tool executor is only
+        // reached after the user confirmed it (AiCommandConfirmationService) or when auto-confirm is on (FR-CHAT-2).
+        // Without these registrations the worker had no orchestrator and no AI command could ever be processed.
+        services.AddSingleton<IToolExecutor, CalendarToolExecutor>();
+        services.AddTransient<IChatOrchestrator, ChatOrchestrator>();
+        services.AddSingleton<IAiCommandConfirmationService, AiCommandConfirmationService>();
+
+        // The queue worker can be switched off by configuration (LunarCal:Ai:QueueWorkerEnabled=false), used by the UI
+        // smoke tests so that they never call the user's Gemini key; it is on by default.
+        if (!string.Equals(configuration["LunarCal:Ai:QueueWorkerEnabled"], "false", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHostedService<AiCommandQueueWorker>();
+        }
 
         return services;
     }

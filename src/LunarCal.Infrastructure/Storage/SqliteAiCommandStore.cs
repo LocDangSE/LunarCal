@@ -110,7 +110,7 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
         command.CommandText = @"
             SELECT id, display_no, text, typed_at, timezone, input_lang,
                    status, retry_count, next_retry_at, last_error, batch_id,
-                   created_at, updated_at
+                   created_at, updated_at, proposal_json
             FROM AiCommand
             WHERE id = @id;";
         command.Parameters.AddWithValue("@id", id);
@@ -135,7 +135,7 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
         command.CommandText = @"
             SELECT id, display_no, text, typed_at, timezone, input_lang,
                    status, retry_count, next_retry_at, last_error, batch_id,
-                   created_at, updated_at
+                   created_at, updated_at, proposal_json
             FROM AiCommand
             WHERE status = @pendingStatus
                OR (status = @errorStatus AND retry_count < 5 AND next_retry_at IS NOT NULL AND next_retry_at <= @now)
@@ -167,7 +167,7 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
         command.CommandText = @"
             SELECT id, display_no, text, typed_at, timezone, input_lang,
                    status, retry_count, next_retry_at, last_error, batch_id,
-                   created_at, updated_at
+                   created_at, updated_at, proposal_json
             FROM AiCommand
             ORDER BY created_at DESC
             LIMIT @limit;";
@@ -243,6 +243,25 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         _logger.Debug("Updated status of AI command {CommandId} to {Status}", id, status);
+    }
+
+    /// <inheritdoc />
+    public async Task SetProposalAsync(string id, AiCommandProposal? proposal, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
+        using var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE AiCommand
+            SET proposal_json = @proposal_json,
+                updated_at = @updated_at
+            WHERE id = @id;";
+        command.Parameters.AddWithValue("@proposal_json", proposal is null ? DBNull.Value : proposal.ToJson());
+        command.Parameters.AddWithValue("@updated_at", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("@id", id);
+
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -356,6 +375,7 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
         var batchId = reader.IsDBNull(10) ? null : reader.GetString(10);
         var createdAtStr = reader.GetString(11);
         var updatedAtStr = reader.GetString(12);
+        var proposal = AiCommandProposal.FromJson(reader.IsDBNull(13) ? null : reader.GetString(13));
 
         var typedAt = DateTimeOffset.TryParse(typedAtStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var ta)
             ? ta
@@ -389,7 +409,8 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
             LastError = lastError,
             BatchId = batchId,
             CreatedAt = createdAt,
-            UpdatedAt = updatedAt
+            UpdatedAt = updatedAt,
+            Proposal = proposal
         };
     }
 }

@@ -208,6 +208,9 @@ public sealed class AiCommandQueueWorker : BackgroundService
             return 0;
         }
 
+        // Only commands that moved forward count: a command that stays pending (no orchestrator, network down) must not
+        // make the worker loop spin without waiting (P4-REVIEW).
+        var progressed = 0;
         foreach (var command in pendingCommands)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -215,14 +218,24 @@ public sealed class AiCommandQueueWorker : BackgroundService
                 break;
             }
 
-            await ProcessSingleCommandAsync(command, cancellationToken).ConfigureAwait(false);
+            if (await ProcessSingleCommandAsync(command, cancellationToken).ConfigureAwait(false))
+            {
+                progressed++;
+            }
         }
 
-        return pendingCommands.Count;
+        return progressed;
     }
 
-    private async Task ProcessSingleCommandAsync(AiCommand command, CancellationToken cancellationToken)
+    private async Task<bool> ProcessSingleCommandAsync(AiCommand command, CancellationToken cancellationToken)
     {
+        var orchestrator = _orchestratorFactory is not null ? _orchestratorFactory() : _orchestrator;
+        if (orchestrator is null)
+        {
+            _logger.Warning("No chat orchestrator configured; AI command {CommandId} stays pending", command.Id);
+            return false;
+        }
+
         // SEC-LOG-2: chat content is only logged at Debug (off by default).
         _logger.Information("Processing AI command {CommandId} (#{DisplayNo})", command.Id, command.DisplayNo);
         _logger.Debug("AI command {CommandId} text: {Text}", command.Id, command.Text);
@@ -239,20 +252,17 @@ public sealed class AiCommandQueueWorker : BackgroundService
             TimeZoneId: command.TimeZone,
             Locale: string.Equals(command.InputLang, "en", StringComparison.OrdinalIgnoreCase) ? "en-US" : "vi-VN");
 
-        var orchestrator = _orchestratorFactory is not null ? _orchestratorFactory() : _orchestrator;
-        if (orchestrator is null)
-        {
-            _logger.Warning("No chat orchestrator configured, reverting command {CommandId} to pending", command.Id);
-            await _commandStore.UpdateStatusAsync(command.Id, AiCommandStatus.Pending, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
         orchestrator.Reset();
+
+        // FR-CONFIRM-8: after the user answered the model's question, send the original text together with the exchange.
+        var message = command.Proposal is { ClarificationAnswer: { Length: > 0 } answer }
+            ? string.Concat(command.Text, "\n\n", command.Proposal.ClarificationQuestion, "\n", answer)
+            : command.Text;
 
         ChatOrchestratorState state;
         try
         {
-            state = await orchestrator.ProcessUserMessageAsync(command.Text, promptContext, cancellationToken).ConfigureAwait(false);
+            state = await orchestrator.ProcessUserMessageAsync(message, promptContext, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -264,7 +274,7 @@ public sealed class AiCommandQueueWorker : BackgroundService
             _logger.Warning(ex, "Error executing model for AI command {CommandId}", command.Id);
             var errorResult = _errorMapper.Map(ex);
             await HandleFailureAsync(command, errorResult, cancellationToken).ConfigureAwait(false);
-            return;
+            return errorResult.Kind != AiChatErrorKind.NetworkUnavailable;
         }
 
         switch (state)
@@ -279,7 +289,12 @@ public sealed class AiCommandQueueWorker : BackgroundService
                 break;
 
             case ChatOrchestratorState.AwaitingConfirmation:
-                // FR-QUEUE-7: Destructive or non-auto-confirmed actions stop at NeedsConfirmation
+                // FR-QUEUE-7: Destructive or non-auto-confirmed actions stop at NeedsConfirmation. The proposal is
+                // persisted first so the confirmation dialog can show (and later run) exactly what the model proposed.
+                await _commandStore.SetProposalAsync(
+                    command.Id,
+                    new AiCommandProposal(orchestrator.PendingToolCall),
+                    cancellationToken).ConfigureAwait(false);
                 await _commandStore.UpdateStatusAsync(
                     command.Id,
                     AiCommandStatus.NeedsConfirmation,
@@ -289,6 +304,10 @@ public sealed class AiCommandQueueWorker : BackgroundService
 
             case ChatOrchestratorState.AwaitingClarification:
                 // FR-CONFIRM-8: Model asked for clarification
+                await _commandStore.SetProposalAsync(
+                    command.Id,
+                    new AiCommandProposal(null, orchestrator.ClarificationQuestion),
+                    cancellationToken).ConfigureAwait(false);
                 await _commandStore.UpdateStatusAsync(
                     command.Id,
                     AiCommandStatus.NeedsConfirmation,
@@ -307,8 +326,10 @@ public sealed class AiCommandQueueWorker : BackgroundService
             default:
                 var errorResult = _errorMapper.MapMessage(orchestrator.ErrorMessage ?? "Execution failed");
                 await HandleFailureAsync(command, errorResult, cancellationToken).ConfigureAwait(false);
-                break;
+                return errorResult.Kind != AiChatErrorKind.NetworkUnavailable;
         }
+
+        return true;
     }
 
     /// <summary>
