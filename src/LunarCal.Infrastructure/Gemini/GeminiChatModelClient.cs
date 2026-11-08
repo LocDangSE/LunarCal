@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Chat;
+using LunarCal.Core.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,26 +18,37 @@ namespace LunarCal.Infrastructure.Gemini;
 public sealed class GeminiChatModelClient : IChatModelClient
 {
     private readonly HttpClient _httpClient;
+    private readonly ISettingsStore? _settingsStore;
     private readonly GeminiOptions _options;
     private readonly ILogger<GeminiChatModelClient>? _logger;
 
     public GeminiChatModelClient(
         HttpClient httpClient,
         IOptions<GeminiOptions>? options = null,
-        ILogger<GeminiChatModelClient>? logger = null)
+        ILogger<GeminiChatModelClient>? logger = null,
+        ISettingsStore? settingsStore = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _options = options?.Value ?? new GeminiOptions();
         _logger = logger;
+        _settingsStore = settingsStore;
     }
 
     public async Task<ChatResponse> SendAsync(ChatRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        string? configuredModel = null;
+        if (string.IsNullOrWhiteSpace(request.ModelId) && _settingsStore != null)
+        {
+            configuredModel = await _settingsStore.GetStringAsync(SettingKeys.GeminiModelId, cancellationToken).ConfigureAwait(false);
+        }
+
         var modelId = !string.IsNullOrWhiteSpace(request.ModelId)
             ? request.ModelId
-            : _options.DefaultModelId;
+            : !string.IsNullOrWhiteSpace(configuredModel)
+                ? configuredModel
+                : _options.DefaultModelId;
 
         if (string.IsNullOrWhiteSpace(modelId))
         {

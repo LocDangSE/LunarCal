@@ -277,7 +277,7 @@ public static class DependencyInjection
             var httpClient = factory.CreateClient(GeminiClientName);
             var options = sp.GetRequiredService<IOptions<GeminiOptions>>();
             var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<GeminiChatModelClient>>();
-            return new GeminiChatModelClient(httpClient, options, logger);
+            return new GeminiChatModelClient(httpClient, options, logger, sp.GetService<ISettingsStore>());
         });
 
         // Key validator: queries GET /v1beta/models with header x-goog-api-key directly (P4-03, FR-BYOK-2, ADR-0016)
@@ -302,6 +302,18 @@ public static class DependencyInjection
             var validator = sp.GetRequiredService<IAiKeyValidator>();
             var logger = sp.GetService<Serilog.ILogger>();
             return new GeminiKeyService(secretStore, validator, logger);
+        });
+
+        // Phase 4: Gemini model selection & function calling probe service (P4-04, FR-BYOK-5, ADR-0016)
+        services.AddSingleton<IAiModelService>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = factory.CreateClient(GeminiValidationClientName);
+            var settingsStore = sp.GetRequiredService<ISettingsStore>();
+            var secretStore = sp.GetRequiredService<ISecretStore>();
+            var options = sp.GetService<IOptions<GeminiOptions>>();
+            var logger = sp.GetService<Serilog.ILogger>();
+            return new GeminiModelService(httpClient, settingsStore, secretStore, options, logger);
         });
 
         return services;

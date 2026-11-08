@@ -20,7 +20,10 @@ public sealed class AiSettingsViewModelTests
     private readonly IClipboardService _clipboardService = Substitute.For<IClipboardService>();
     private readonly INetworkStatusService _networkStatus = Substitute.For<INetworkStatusService>();
 
-    private AiSettingsViewModel Create() => new(_aiKeyService, _localization, _clipboardService, _networkStatus);
+    private readonly IAiModelService _aiModelService = Substitute.For<IAiModelService>();
+
+    private AiSettingsViewModel Create(bool includeModelService = true) =>
+        new(_aiKeyService, _localization, _clipboardService, _networkStatus, includeModelService ? _aiModelService : null);
 
     [Fact]
     public async Task FR_BYOK_3_InitializeAsync_loads_key_status_and_masked_key()
@@ -143,5 +146,73 @@ public sealed class AiSettingsViewModelTests
         vm.MaskedKey.Should().BeNull();
         vm.IsSuspectLeaked.Should().BeTrue();
         await _aiKeyService.Received(1).SuspectLeakedAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FR_BYOK_5_InitializeAsync_loads_models_and_selects_active_model()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var model1 = new AiModelInfo("gemini-3.8-flash", "Gemini 3.8 Flash", "Fast", 1000, 1000, IsDefault: true, IsRecommended: true);
+        var model2 = new AiModelInfo("gemini-3.6-flash", "Gemini 3.6 Flash", "Previous", 1000, 1000, IsDefault: false, IsRecommended: false);
+
+        _aiModelService.GetAvailableModelsAsync(Arg.Any<CancellationToken>())
+            .Returns([model1, model2]);
+        _aiModelService.GetSelectedModelIdAsync(Arg.Any<CancellationToken>())
+            .Returns("gemini-3.6-flash");
+
+        var vm = Create();
+        await vm.InitializeAsync(ct);
+
+        vm.AvailableModels.Should().HaveCount(2);
+        vm.SelectedModel.Should().Be(model2);
+        vm.IsLoadingModels.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FR_BYOK_5_SelectModelAsync_success_updates_selected_model_and_shows_saved_status()
+    {
+        var model = new AiModelInfo("gemini-3.8-flash", "Gemini 3.8 Flash", "Fast", 1000, 1000, IsDefault: true, IsRecommended: true);
+        _aiModelService.SetSelectedModelAsync("gemini-3.8-flash", true, Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var vm = Create();
+        await vm.SelectModelAsync(model);
+
+        vm.SelectedModel.Should().Be(model);
+        vm.IsModelStatusError.Should().BeFalse();
+        vm.ModelStatusMessage.Should().Be(_localization["settings.ai.model_saved"]);
+        vm.IsValidatingModel.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FR_BYOK_5_SelectModelAsync_unsupported_function_calling_shows_error()
+    {
+        var model = new AiModelInfo("unsupported-model", "Unsupported", null, null, null, false, false);
+        _aiModelService.SetSelectedModelAsync("unsupported-model", true, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var vm = Create();
+        await vm.SelectModelAsync(model);
+
+        vm.IsModelStatusError.Should().BeTrue();
+        vm.ModelStatusMessage.Should().Be(_localization["settings.ai.err_function_calling_unsupported"]);
+        vm.IsValidatingModel.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FR_BYOK_5_RefreshModelsAsync_reloads_models_from_service()
+    {
+        var model = new AiModelInfo("gemini-3.8-flash", "Gemini 3.8 Flash", "Fast", 1000, 1000, IsDefault: true, IsRecommended: true);
+        _aiModelService.GetAvailableModelsAsync(Arg.Any<CancellationToken>())
+            .Returns([model]);
+        _aiModelService.GetSelectedModelIdAsync(Arg.Any<CancellationToken>())
+            .Returns("gemini-3.8-flash");
+
+        var vm = Create();
+        await vm.RefreshModelsAsync();
+
+        vm.AvailableModels.Should().ContainSingle();
+        vm.SelectedModel.Should().Be(model);
+        await _aiModelService.Received(1).GetAvailableModelsAsync(Arg.Any<CancellationToken>());
     }
 }
