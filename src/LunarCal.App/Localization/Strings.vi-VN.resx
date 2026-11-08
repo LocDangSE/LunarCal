@@ -1316,4 +1316,92 @@
   <data name="event.timezone.note" xml:space="preserve">
     <value>Chỉ áp dụng cho sự kiện này</value>
   </data>
+  <data name="settings.nav.ai" xml:space="preserve">
+    <value>AI &amp; Dữ liệu</value>
+  </data>
+  <data name="settings.ai.title" xml:space="preserve">
+    <value>Gemini API key của bạn (BYOK)</value>
+  </data>
+  <data name="settings.ai.desc" xml:space="preserve">
+    <value>Key được mã hóa bằng DPAPI và chỉ lưu trên máy này; ứng dụng gọi trực tiếp Google Gemini không qua máy chủ trung gian.</value>
+  </data>
+  <data name="settings.ai.privacy_notice" xml:space="preserve">
+    <value>Lưu ý quyền riêng tư: Gói miễn phí của Google có thể sử dụng câu lệnh để cải thiện sản phẩm. Gói trả phí thì không. LunarCal chỉ gửi câu lệnh, múi giờ và tên lịch, không bao giờ gửi nội dung sự kiện của bạn.</value>
+  </data>
+  <data name="settings.ai.get_key_link" xml:space="preserve">
+    <value>Lấy API key tại Google AI Studio ↗</value>
+  </data>
+  <data name="settings.ai.key_label" xml:space="preserve">
+    <value>Gemini API Key</value>
+  </data>
+  <data name="settings.ai.key_placeholder" xml:space="preserve">
+    <value>Dán API key tại đây...</value>
+  </data>
+  <data name="settings.ai.check_and_save" xml:space="preserve">
+    <value>Kiểm tra và lưu</value>
+  </data>
+  <data name="settings.ai.save_offline" xml:space="preserve">
+    <value>Lưu không kiểm tra (Ngoại tuyến)</value>
+  </data>
+  <data name="settings.ai.change_key" xml:space="preserve">
+    <value>Đổi key</value>
+  </data>
+  <data name="settings.ai.delete_key" xml:space="preserve">
+    <value>Xóa key</value>
+  </data>
+  <data name="settings.ai.suspect_leaked" xml:space="preserve">
+    <value>Tôi nghi key bị lộ</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_title" xml:space="preserve">
+    <value>Cảnh báo bảo mật: Nghi ngờ lộ key</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_guide" xml:space="preserve">
+    <value>Key đã bị xóa khỏi ứng dụng ngay lập tức và hàng chờ AI đã tạm dừng. Các bước khuyến nghị từ Google:
+1. Mở AI Studio và tạo một API key mới.
+2. Cập nhật key mới vào LunarCal.
+3. Xóa key cũ bị nghi ngờ trên Google AI Studio.
+4. Kiểm tra lại mức sử dụng trong Google Cloud Console.</value>
+  </data>
+  <data name="settings.ai.clipboard_cleared" xml:space="preserve">
+    <value>Đã xóa API key khỏi clipboard vì lý do an toàn.</value>
+  </data>
+  <data name="settings.ai.status_saved" xml:space="preserve">
+    <value>Đã cấu hình key</value>
+  </data>
+  <data name="settings.ai.checking" xml:space="preserve">
+    <value>Đang kiểm tra key với Google...</value>
+  </data>
+  <data name="settings.ai.err_empty" xml:space="preserve">
+    <value>Vui lòng nhập API key.</value>
+  </data>
+  <data name="settings.ai.err_invalid" xml:space="preserve">
+    <value>API key không hợp lệ hoặc không có quyền truy cập Gemini API (lỗi 400/401/403).</value>
+  </data>
+  <data name="settings.ai.err_leaked" xml:space="preserve">
+    <value>Google thông báo API key này đã bị lộ và bị vô hiệu hóa. Vui lòng tạo key mới.</value>
+  </data>
+  <data name="settings.ai.err_freetier" xml:space="preserve">
+    <value>Dự án Google Cloud cần xác minh thanh toán hoặc không đủ điều kiện cho gói miễn phí.</value>
+  </data>
+  <data name="settings.ai.err_quota" xml:space="preserve">
+    <value>Hạn mức API đã hết (lỗi 429). Vui lòng thử lại sau hoặc kiểm tra quota.</value>
+  </data>
+  <data name="settings.ai.err_network" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ Google (ngoại tuyến). Bạn có thể chọn Lưu không kiểm tra.</value>
+  </data>
+  <data name="settings.ai.err_precondition" xml:space="preserve">
+    <value>Không đáp ứng điều kiện tiên quyết của Google (khu vực hoặc dự án không hỗ trợ).</value>
+  </data>
+  <data name="settings.ai.err_unexpected" xml:space="preserve">
+    <value>Đã xảy ra lỗi không xác định khi kiểm tra key: {0}</value>
+  </data>
+  <data name="firstrun.step3_title" xml:space="preserve">
+    <value>Trợ lý AI tạo lịch (Tùy chọn)</value>
+  </data>
+  <data name="firstrun.step3_desc" xml:space="preserve">
+    <value>Nhập Gemini API key để sử dụng tính năng tạo lịch bằng ngôn ngữ tự nhiên. Bạn có thể bỏ qua và thêm key sau trong Cài đặt.</value>
+  </data>
+  <data name="firstrun.btn_skip_ai" xml:space="preserve">
+    <value>Để sau, hoàn tất cài đặt</value>
+  </data>
 </root>
