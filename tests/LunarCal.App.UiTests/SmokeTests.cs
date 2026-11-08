@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using FlaUI.Core;
@@ -7,8 +11,6 @@ using FlaUI.Core.Definitions;
 using FlaUI.Core.Tools;
 using FlaUI.UIA3;
 using Xunit;
-
-
 
 namespace LunarCal.App.UiTests;
 
@@ -275,6 +277,74 @@ public sealed class SmokeTests
             btnCloseDrawer!.Invoke();
 
             WaitGone(window, "AiQueueDrawer");
+        }
+        finally
+        {
+            CloseApp(app);
+        }
+    }
+
+    [Fact]
+    public void Ai_confirm_dialog_smoke_test()
+    {
+        var exePath = FindAppPath();
+        using var automation = new UIA3Automation();
+        using var app = LaunchApp(exePath);
+
+        try
+        {
+            var window = app.GetMainWindow(automation, TimeSpan.FromSeconds(10))
+                ?? throw new InvalidOperationException("Main window did not appear within 10 seconds");
+
+            // 1. Enter an AI command in the command bar
+            var aiInput = WaitFor(window, "AiCommandInput").AsTextBox();
+            aiInput.Should().NotBeNull();
+            aiInput!.Text = "họp chiến lược Q4";
+
+            var btnSubmit = WaitFor(window, "BtnAiSubmit").AsButton();
+            btnSubmit.Should().NotBeNull();
+            btnSubmit!.Invoke();
+
+            // 2. Open the AI Queue Drawer from sidebar sync status
+            var syncBlock = WaitFor(window, "SyncStatusBlock").AsButton();
+            syncBlock.Should().NotBeNull();
+            syncBlock!.Invoke();
+
+            var drawer = WaitFor(window, "AiQueueDrawer");
+            drawer.Should().NotBeNull();
+
+            // 3. Find the action button to confirm the command
+            var btnConfirmAction = Retry.WhileNull(
+                () => drawer.FindFirstDescendant(cf => cf.ByAutomationId("BtnActionConfirm"))
+                      ?? drawer.FindFirstDescendant(cf => cf.ByAutomationId("BtnActionView")),
+                TimeSpan.FromSeconds(8))?.Result;
+            btnConfirmAction.Should().NotBeNull("the queued command should have a confirm or view action button");
+            btnConfirmAction!.AsButton()!.Invoke();
+
+            // 4. Modal AiConfirmDialog (Figma 02 2:2 / 2:494) must appear
+            var modalDialog = Retry.WhileNull(
+                () => window.ModalWindows.FirstOrDefault(w => w.AutomationId == "AiConfirmDialog")
+                      ?? app.GetAllTopLevelWindows(automation).FirstOrDefault(w => w.AutomationId == "AiConfirmDialog"),
+                TimeSpan.FromSeconds(8))?.Result;
+
+            modalDialog.Should().NotBeNull("AiConfirmDialog must appear when user clicks confirm/view");
+
+            // Verify elements of Figma 02
+            var title = WaitFor(modalDialog!, "AiConfirmTitle");
+            title.Should().NotBeNull();
+
+            var statusBadge = WaitFor(modalDialog!, "AiConfirmStatusBadge");
+            statusBadge.Should().NotBeNull();
+
+            var originalText = WaitFor(modalDialog!, "AiConfirmOriginalText");
+            originalText.Should().NotBeNull();
+
+            var btnCancel = WaitFor(modalDialog!, "BtnAiConfirmCancel").AsButton();
+            btnCancel.Should().NotBeNull();
+            btnCancel!.Invoke();
+
+            // Verify dialog closes cleanly
+            Retry.WhileFalse(() => modalDialog!.IsOffscreen, TimeSpan.FromSeconds(5));
         }
         finally
         {

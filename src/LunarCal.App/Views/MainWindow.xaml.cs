@@ -1,8 +1,14 @@
+using System;
+using System.Globalization;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.App.ViewModels;
 using LunarCal.Core.Abstractions;
+using LunarCal.Core.Chat;
+using LunarCal.Core.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LunarCal.App.Views;
@@ -22,6 +28,7 @@ public partial class MainWindow : Window
         DataContext = viewModel;
         viewModel.SettingsRequested += OnSettingsRequested;
         viewModel.EventEditorRequested += OnEventEditorRequested;
+        viewModel.AiConfirmRequested += OnAiConfirmRequested;
 
         // FR-SYNC-3: sync on focus; poll less often while minimized.
         Activated += (_, _) => viewModel.OnWindowActivated();
@@ -72,6 +79,73 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog() == true && DataContext is MainWindowViewModel mwVm)
         {
             _ = mwVm.ReloadActiveViewAsync();
+        }
+    }
+
+    // Opens AI Confirmation Dialog (Figma 02, FR-CONFIRM-1..6) as a modal dialog owned by the shell.
+    private async void OnAiConfirmRequested(object? sender, AiCommandItemViewModel item)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        var validator = _services.GetService<IAiBusinessValidator>() ?? new AiBusinessValidator();
+        var eventStore = _services.GetRequiredService<IEventStore>();
+        var settingsStore = _services.GetRequiredService<ISettingsStore>();
+        var localization = _services.GetRequiredService<ILocalizationService>();
+        var preferences = _services.GetRequiredService<IDisplayPreferences>();
+
+        var defaultStart = item.TypedAt.AddDays(1);
+        var toolCall = new ToolCall(
+            ToolDefinitions.CreateEvent,
+            JsonSerializer.Serialize(new
+            {
+                summary = item.Text,
+                start = defaultStart.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
+                end = defaultStart.AddHours(1).ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture)
+            }));
+
+        var valResult = await validator.ValidateAsync(toolCall, eventStore, item.TypedAt).ConfigureAwait(true);
+        var confResult = AiConfidenceEvaluator.Evaluate(toolCall, item.Text, item.TypedAt, valResult);
+
+        var optIn = await settingsStore.GetBoolAsync(SettingKeys.TrainingOptIn).ConfigureAwait(true);
+
+        var command = new AiCommand
+        {
+            Id = item.Id,
+            DisplayNo = (int)item.DisplayNo,
+            Text = item.Text,
+            TypedAt = item.TypedAt,
+            TimeZone = TimeZoneInfo.Local.Id,
+            InputLang = item.InputLang,
+            Status = item.Status,
+            CreatedAt = item.TypedAt,
+            UpdatedAt = item.TypedAt
+        };
+
+        var confirmVm = new AiConfirmDialogViewModel(localization);
+        confirmVm.Initialize(command, toolCall, confResult, valResult, preferences.LunarEnabled, optIn);
+
+        var dialog = new AiConfirmDialog(confirmVm)
+        {
+            Owner = this,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
+        };
+
+        var dialogResult = dialog.ShowDialog();
+        if (dialogResult == true && DataContext is MainWindowViewModel mwVm)
+        {
+            await mwVm.AiQueueDrawer.ConfirmCommandAsync(item).ConfigureAwait(true);
+            await mwVm.ReloadActiveViewAsync().ConfigureAwait(true);
+        }
+        else if (confirmVm.RequestEdit)
+        {
+            var req = new EventEditorRequest(
+                Mode: EventEditorMode.Create,
+                Date: DateOnly.FromDateTime(item.TypedAt.LocalDateTime),
+                Time: TimeOnly.FromDateTime(item.TypedAt.LocalDateTime));
+            OnEventEditorRequested(this, req);
         }
     }
 }

@@ -1512,4 +1512,104 @@
   <data name="ai_queue.time_minutes_ago" xml:space="preserve">
     <value>{0} phút trước</value>
   </data>
+  <!-- FR-CONFIRM-1..6 AI Confirmation Dialog (Figma 02 2:2 / 2:494) -->
+  <data name="ai_confirm.title" xml:space="preserve">
+    <value>AI đã hiểu yêu cầu của bạn</value>
+  </data>
+  <data name="ai_confirm.subtitle" xml:space="preserve">
+    <value>Kiểm tra lại trước khi tạo sự kiện – AI không tự thay đổi lịch</value>
+  </data>
+  <data name="ai_confirm.status_pending" xml:space="preserve">
+    <value>Chờ xác nhận</value>
+  </data>
+  <data name="ai_confirm.section_user_input" xml:space="preserve">
+    <value>BẠN ĐÃ NHẬP</value>
+  </data>
+  <data name="ai_confirm.time_anchor_hint" xml:space="preserve">
+    <value>Mốc thời gian để hiểu câu lệnh</value>
+  </data>
+  <data name="ai_confirm.section_analysis" xml:space="preserve">
+    <value>KẾT QUẢ PHÂN TÍCH</value>
+  </data>
+  <data name="ai_confirm.label_action" xml:space="preserve">
+    <value>Hành động</value>
+  </data>
+  <data name="ai_confirm.label_title" xml:space="preserve">
+    <value>Tiêu đề</value>
+  </data>
+  <data name="ai_confirm.label_date" xml:space="preserve">
+    <value>Ngày</value>
+  </data>
+  <data name="ai_confirm.label_time" xml:space="preserve">
+    <value>Giờ</value>
+  </data>
+  <data name="ai_confirm.label_recurrence" xml:space="preserve">
+    <value>Lặp lại</value>
+  </data>
+  <data name="ai_confirm.label_reminder" xml:space="preserve">
+    <value>Nhắc trước</value>
+  </data>
+  <data name="ai_confirm.label_calendar" xml:space="preserve">
+    <value>Lịch đích</value>
+  </data>
+  <data name="ai_confirm.label_confidence" xml:space="preserve">
+    <value>Độ tin cậy</value>
+  </data>
+  <data name="ai_confirm.confidence_high" xml:space="preserve">
+    <value>Rõ ràng</value>
+  </data>
+  <data name="ai_confirm.confidence_medium" xml:space="preserve">
+    <value>Cần kiểm tra</value>
+  </data>
+  <data name="ai_confirm.confidence_low" xml:space="preserve">
+    <value>Không chắc</value>
+  </data>
+  <data name="ai_confirm.section_validation" xml:space="preserve">
+    <value>KIỂM TRA NGHIỆP VỤ</value>
+  </data>
+  <data name="ai_confirm.val_all_good" xml:space="preserve">
+    <value>Đã qua kiểm tra nghiệp vụ: giờ hợp lệ, không xung đột với lịch hiện tại.</value>
+  </data>
+  <data name="ai_confirm.val_conflict" xml:space="preserve">
+    <value>Trùng giờ với sự kiện '{0}' ({1} – {2})</value>
+  </data>
+  <data name="ai_confirm.val_past_event" xml:space="preserve">
+    <value>Lưu ý: Sự kiện được đặt ở quá khứ.</value>
+  </data>
+  <data name="ai_confirm.val_end_before_start" xml:space="preserve">
+    <value>Lỗi: Giờ kết thúc phải sau giờ bắt đầu.</value>
+  </data>
+  <data name="ai_confirm.btn_edit" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="ai_confirm.btn_cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="ai_confirm.btn_confirm" xml:space="preserve">
+    <value>Xác nhận &amp; thêm vào Google</value>
+  </data>
+  <data name="ai_confirm.btn_confirm_disabled_hint" xml:space="preserve">
+    <value>Cần sửa trước khi xác nhận khi độ tin cậy dưới 60% hoặc có lỗi</value>
+  </data>
+  <data name="ai_confirm.all_day" xml:space="preserve">
+    <value>Cả ngày</value>
+  </data>
+  <data name="ai_confirm.no_recurrence" xml:space="preserve">
+    <value>Không lặp</value>
+  </data>
+  <data name="ai_confirm.default_reminder" xml:space="preserve">
+    <value>10 phút trước</value>
+  </data>
+  <data name="ai_confirm.action_create_event" xml:space="preserve">
+    <value>Tạo sự kiện mới</value>
+  </data>
+  <data name="ai_confirm.action_update_event" xml:space="preserve">
+    <value>Cập nhật sự kiện</value>
+  </data>
+  <data name="ai_confirm.action_delete_event" xml:space="preserve">
+    <value>Xóa sự kiện</value>
+  </data>
+  <data name="ai_confirm.action_bulk_create" xml:space="preserve">
+    <value>Tạo nhiều sự kiện</value>
+  </data>
 </root>

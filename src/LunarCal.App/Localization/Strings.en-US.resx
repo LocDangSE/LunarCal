@@ -1512,4 +1512,104 @@
   <data name="ai_queue.time_minutes_ago" xml:space="preserve">
     <value>{0} min ago</value>
   </data>
+  <!-- FR-CONFIRM-1..6 AI Confirmation Dialog (Figma 02 2:2 / 2:494) -->
+  <data name="ai_confirm.title" xml:space="preserve">
+    <value>AI understood your request</value>
+  </data>
+  <data name="ai_confirm.subtitle" xml:space="preserve">
+    <value>Review before creating – AI does not modify your calendar on its own</value>
+  </data>
+  <data name="ai_confirm.status_pending" xml:space="preserve">
+    <value>Awaiting confirmation</value>
+  </data>
+  <data name="ai_confirm.section_user_input" xml:space="preserve">
+    <value>YOU ENTERED</value>
+  </data>
+  <data name="ai_confirm.time_anchor_hint" xml:space="preserve">
+    <value>Time anchor for understanding command</value>
+  </data>
+  <data name="ai_confirm.section_analysis" xml:space="preserve">
+    <value>ANALYSIS RESULT</value>
+  </data>
+  <data name="ai_confirm.label_action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="ai_confirm.label_title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="ai_confirm.label_date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="ai_confirm.label_time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="ai_confirm.label_recurrence" xml:space="preserve">
+    <value>Recurrence</value>
+  </data>
+  <data name="ai_confirm.label_reminder" xml:space="preserve">
+    <value>Reminder</value>
+  </data>
+  <data name="ai_confirm.label_calendar" xml:space="preserve">
+    <value>Target calendar</value>
+  </data>
+  <data name="ai_confirm.label_confidence" xml:space="preserve">
+    <value>Confidence</value>
+  </data>
+  <data name="ai_confirm.confidence_high" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ai_confirm.confidence_medium" xml:space="preserve">
+    <value>Needs review</value>
+  </data>
+  <data name="ai_confirm.confidence_low" xml:space="preserve">
+    <value>Uncertain</value>
+  </data>
+  <data name="ai_confirm.section_validation" xml:space="preserve">
+    <value>BUSINESS VALIDATION</value>
+  </data>
+  <data name="ai_confirm.val_all_good" xml:space="preserve">
+    <value>Passed business validation: valid time, no conflict with existing calendar.</value>
+  </data>
+  <data name="ai_confirm.val_conflict" xml:space="preserve">
+    <value>Time conflict with '{0}' ({1} – {2})</value>
+  </data>
+  <data name="ai_confirm.val_past_event" xml:space="preserve">
+    <value>Notice: Event is set in the past.</value>
+  </data>
+  <data name="ai_confirm.val_end_before_start" xml:space="preserve">
+    <value>Error: End time must be after start time.</value>
+  </data>
+  <data name="ai_confirm.btn_edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ai_confirm.btn_cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ai_confirm.btn_confirm" xml:space="preserve">
+    <value>Confirm &amp; add to Google</value>
+  </data>
+  <data name="ai_confirm.btn_confirm_disabled_hint" xml:space="preserve">
+    <value>Must be edited before confirming when confidence is below 60% or has errors</value>
+  </data>
+  <data name="ai_confirm.all_day" xml:space="preserve">
+    <value>All day</value>
+  </data>
+  <data name="ai_confirm.no_recurrence" xml:space="preserve">
+    <value>Does not repeat</value>
+  </data>
+  <data name="ai_confirm.default_reminder" xml:space="preserve">
+    <value>10 minutes before</value>
+  </data>
+  <data name="ai_confirm.action_create_event" xml:space="preserve">
+    <value>Create new event</value>
+  </data>
+  <data name="ai_confirm.action_update_event" xml:space="preserve">
+    <value>Update event</value>
+  </data>
+  <data name="ai_confirm.action_delete_event" xml:space="preserve">
+    <value>Delete event</value>
+  </data>
+  <data name="ai_confirm.action_bulk_create" xml:space="preserve">
+    <value>Create multiple events</value>
+  </data>
 </root>

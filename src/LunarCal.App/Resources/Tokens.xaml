@@ -141,4 +141,7 @@
   <!-- Drawer (Figma 03 3:493 & .agents/rules/ui.md) -->
   <sys:Double x:Key="DrawerWidth">400</sys:Double>
 
+  <!-- AI Confirmation Dialog (Figma 02 2:494) -->
+  <sys:Double x:Key="AiConfirmDialogWidth">520</sys:Double>
+
 </ResourceDictionary>
