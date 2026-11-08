@@ -6,7 +6,7 @@
 #   docker build --target test -t lunarcal-core-test .
 #
 # Base image pinned by digest (SEC-SC-1). SDK version must satisfy global.json (10.0.403, latestFeature).
-FROM mcr.microsoft.com/dotnet/sdk:10.0.403-noble@sha256:de4fe90a98845d75910b9769662465c84de1a934665c431279d1382b2bddc02b AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.403-noble@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e AS build
 ENV DOTNET_NOLOGO=true \
     DOTNET_CLI_TELEMETRY_OPTOUT=true \
     CI=true
