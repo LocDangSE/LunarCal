@@ -1,4 +1,5 @@
 using LunarCal.Core.Abstractions;
+using LunarCal.Core.Chat;
 using LunarCal.Infrastructure.Gemini;
 using LunarCal.Infrastructure.Google;
 using LunarCal.Infrastructure.Google.OAuth;
@@ -315,6 +316,9 @@ public static class DependencyInjection
             var logger = sp.GetService<Serilog.ILogger>();
             return new GeminiModelService(httpClient, settingsStore, secretStore, options, logger);
         });
+
+        // Phase 4: Versioned system prompt provider (P4-05, spec §7, FR-CHAT-6, FR-QUEUE-4, ADR-0030)
+        services.AddSingleton<ISystemPromptProvider, SystemPromptProvider>();
 
         return services;
     }
