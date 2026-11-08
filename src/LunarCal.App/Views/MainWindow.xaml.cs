@@ -82,7 +82,7 @@ public partial class MainWindow : Window
         }
     }
 
-    // Opens AI Confirmation Dialog (Figma 02, FR-CONFIRM-1..6) as a modal dialog owned by the shell.
+    // Opens AI Confirmation Dialog (Figma 02, FR-CONFIRM-1..6, and S16 FR-CONFIRM-8) as a modal dialog owned by the shell.
     private async void OnAiConfirmRequested(object? sender, AiCommandItemViewModel item)
     {
         if (item is null)
@@ -136,7 +136,14 @@ public partial class MainWindow : Window
         var dialogResult = dialog.ShowDialog();
         if (dialogResult == true && DataContext is MainWindowViewModel mwVm)
         {
-            await mwVm.AiQueueDrawer.ConfirmCommandAsync(item).ConfigureAwait(true);
+            if (confirmVm.ClarificationSubmitted)
+            {
+                await mwVm.AiQueueDrawer.SubmitClarificationAsync(item, confirmVm.ClarificationAnswer).ConfigureAwait(true);
+            }
+            else
+            {
+                await mwVm.AiQueueDrawer.ConfirmCommandAsync(item).ConfigureAwait(true);
+            }
             await mwVm.ReloadActiveViewAsync().ConfigureAwait(true);
         }
         else if (confirmVm.RequestEdit)

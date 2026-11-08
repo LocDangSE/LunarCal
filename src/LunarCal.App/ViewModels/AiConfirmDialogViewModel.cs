@@ -12,9 +12,11 @@ using LunarCal.Core.Lunar;
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// View model for the AI Confirmation Dialog (FR-CONFIRM-1..6, FR-CHAT-4, Figma 02 2:2 / 2:494).
+/// View model for the AI Confirmation Dialog (FR-CONFIRM-1..6, FR-CHAT-4, Figma 02 2:2 / 2:494)
+/// and AI Clarification State (FR-CONFIRM-8, Figma S16 46:370, dialog 46:862).
 /// Presents user input, analysis breakdown, local confidence score, business validation, and privacy notice.
 /// Strictly locks confirmation when confidence is below 60% or when validation reports blocking errors.
+/// In clarification mode, replaces the "Sửa" button with a focused short answer input and quick suggestions.
 /// </summary>
 public partial class AiConfirmDialogViewModel : ObservableObject
 {
@@ -102,7 +104,30 @@ public partial class AiConfirmDialogViewModel : ObservableObject
     [ObservableProperty]
     private bool _requestEdit;
 
-    public bool CanConfirm => ConfidenceScore >= 60 && ValidationSeverity != AiBusinessValidationSeverity.Error;
+    // S16 Clarification state properties (FR-CONFIRM-8)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanConfirm))]
+    private bool _isClarificationMode;
+
+    [ObservableProperty]
+    private string _clarificationQuestion = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSubmitClarification))]
+    private string _clarificationAnswer = string.Empty;
+
+    [ObservableProperty]
+    private IReadOnlyList<string> _quickAnswers = ["09:00", "14:00", "19:00", "Cả ngày"];
+
+    [ObservableProperty]
+    private bool _isMissingTime;
+
+    [ObservableProperty]
+    private bool _clarificationSubmitted;
+
+    public bool CanSubmitClarification => !string.IsNullOrWhiteSpace(ClarificationAnswer);
+
+    public bool CanConfirm => !IsClarificationMode && ConfidenceScore >= 60 && ValidationSeverity != AiBusinessValidationSeverity.Error;
 
     public double ConfidenceProgressRatio => Math.Clamp(ConfidenceScore / 100.0, 0.0, 1.0);
 
@@ -110,6 +135,11 @@ public partial class AiConfirmDialogViewModel : ObservableObject
     {
         get
         {
+            if (IsClarificationMode)
+            {
+                return GetString("ai_confirm.clarify_submit", "Trả lời câu hỏi của AI để tiếp tục");
+            }
+
             if (ValidationSeverity == AiBusinessValidationSeverity.Error)
             {
                 return GetString("ai_confirm.val_end_before_start", "Lỗi: Giờ kết thúc phải sau giờ bắt đầu.");
@@ -151,9 +181,36 @@ public partial class AiConfirmDialogViewModel : ObservableObject
     [RelayCommand]
     private void Edit()
     {
+        if (IsClarificationMode)
+        {
+            return; // S16 removes Edit button
+        }
+
         RequestEdit = true;
         DialogResult = false;
         CloseRequested?.Invoke(this, false);
+    }
+
+    [RelayCommand]
+    private void SelectQuickAnswer(string? answer)
+    {
+        if (!string.IsNullOrWhiteSpace(answer))
+        {
+            ClarificationAnswer = answer;
+        }
+    }
+
+    [RelayCommand]
+    private void SubmitClarification()
+    {
+        if (!CanSubmitClarification)
+        {
+            return;
+        }
+
+        ClarificationSubmitted = true;
+        DialogResult = true;
+        CloseRequested?.Invoke(this, true);
     }
 
     /// <summary>
@@ -167,7 +224,11 @@ public partial class AiConfirmDialogViewModel : ObservableObject
         bool isLunarEnabled,
         bool isTrainingOptIn,
         string targetCalendarName = "Cá nhân",
-        string targetCalendarColor = "#2F6BFF")
+        string targetCalendarColor = "#2F6BFF",
+        bool isClarificationMode = false,
+        string? clarificationQuestion = null,
+        IReadOnlyList<string>? quickAnswers = null,
+        bool isMissingTime = false)
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(toolCall);
@@ -225,6 +286,76 @@ public partial class AiConfirmDialogViewModel : ObservableObject
         RemindersDisplay = GetString("ai_confirm.default_reminder", "10 phút trước");
 
         ParseArguments(toolCall);
+
+        // Clarification setup (FR-CONFIRM-8, S16)
+        IsClarificationMode = isClarificationMode;
+        IsMissingTime = isMissingTime;
+
+        if (quickAnswers is not null && quickAnswers.Count > 0)
+        {
+            QuickAnswers = quickAnswers;
+        }
+
+        if (isClarificationMode)
+        {
+            ClarificationQuestion = !string.IsNullOrWhiteSpace(clarificationQuestion)
+                ? clarificationQuestion
+                : GetString("ai_confirm.missing_time_warning", "Bạn muốn sự kiện diễn ra lúc mấy giờ?");
+
+            if (isMissingTime)
+            {
+                EventTimeDisplay = GetString("ai_confirm.missing_time_warning", "Chưa rõ giờ cụ thể");
+            }
+        }
+    }
+
+    /// <summary>
+    /// FR-CONFIRM-8: Directly initializes the view model in Clarification Mode (S16 46:370, dialog 46:862).
+    /// </summary>
+    public void InitializeForClarification(
+        AiCommand command,
+        string question,
+        IReadOnlyList<string>? quickAnswers = null,
+        ToolCall? preliminaryToolCall = null,
+        bool isMissingTime = true,
+        bool isLunarEnabled = true,
+        bool isTrainingOptIn = false,
+        string targetCalendarName = "Cá nhân",
+        string targetCalendarColor = "#2F6BFF")
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentException.ThrowIfNullOrWhiteSpace(question);
+
+        var toolCall = preliminaryToolCall ?? new ToolCall(
+            ToolDefinitions.CreateEvent,
+            JsonSerializer.Serialize(new
+            {
+                summary = command.Text,
+                start = command.TypedAt.AddDays(1).ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture)
+            }));
+
+        var confidence = new AiConfidenceResult(
+            50,
+            AiConfidenceLevel.Low,
+            ["Model requested additional information (clarification needed)."]);
+
+        var validation = isMissingTime
+            ? AiBusinessValidationResult.WithWarnings([new AiBusinessValidationMessage(AiBusinessValidationSeverity.Warning, "Chưa rõ giờ cụ thể, cần bổ sung trước khi tiếp tục.")])
+            : AiBusinessValidationResult.Success();
+
+        Initialize(
+            command,
+            toolCall,
+            confidence,
+            validation,
+            isLunarEnabled,
+            isTrainingOptIn,
+            targetCalendarName,
+            targetCalendarColor,
+            isClarificationMode: true,
+            clarificationQuestion: question,
+            quickAnswers: quickAnswers,
+            isMissingTime: isMissingTime);
     }
 
     private string GetString(string key, string fallback)

@@ -1612,4 +1612,31 @@
   <data name="ai_confirm.action_bulk_create" xml:space="preserve">
     <value>Tạo nhiều sự kiện</value>
   </data>
+  <data name="ai_confirm.status_clarify" xml:space="preserve">
+    <value>Cần bổ sung</value>
+  </data>
+  <data name="ai_confirm.clarify_title" xml:space="preserve">
+    <value>AI cần thêm thông tin</value>
+  </data>
+  <data name="ai_confirm.clarify_subtitle" xml:space="preserve">
+    <value>Kiểm tra lại thông tin bên dưới trước khi thêm vào lịch.</value>
+  </data>
+  <data name="ai_confirm.ai_question_header" xml:space="preserve">
+    <value>CÂU HỎI CỦA AI</value>
+  </data>
+  <data name="ai_confirm.missing_time_warning" xml:space="preserve">
+    <value>Chưa rõ giờ cụ thể</value>
+  </data>
+  <data name="ai_confirm.quick_answers_label" xml:space="preserve">
+    <value>Gợi ý trả lời:</value>
+  </data>
+  <data name="ai_confirm.clarify_placeholder" xml:space="preserve">
+    <value>Nhập giờ hoặc câu trả lời...</value>
+  </data>
+  <data name="ai_confirm.clarify_submit" xml:space="preserve">
+    <value>Trả lời &amp; tiếp tục</value>
+  </data>
+  <data name="ai_confirm.clarify_privacy_note" xml:space="preserve">
+    <value>Câu trả lời được gửi tới Gemini cùng lệnh gốc.</value>
+  </data>
 </root>
