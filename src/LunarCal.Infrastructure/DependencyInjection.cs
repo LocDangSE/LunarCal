@@ -1,5 +1,6 @@
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Chat;
+using LunarCal.Infrastructure.Chat;
 using LunarCal.Infrastructure.Gemini;
 using LunarCal.Infrastructure.Google;
 using LunarCal.Infrastructure.Google.OAuth;
@@ -319,6 +320,11 @@ public static class DependencyInjection
 
         // Phase 4: Versioned system prompt provider (P4-05, spec §7, FR-CHAT-6, FR-QUEUE-4, ADR-0030)
         services.AddSingleton<ISystemPromptProvider, SystemPromptProvider>();
+
+        // Phase 4: AI command queue store & background worker (P4-08, FR-QUEUE-1..9)
+        services.AddSingleton<IAiCommandStore, SqliteAiCommandStore>();
+        services.AddSingleton<AiQueueRetryPolicy>();
+        services.AddHostedService<AiCommandQueueWorker>();
 
         return services;
     }
