@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,22 +12,24 @@ using LunarCal.Infrastructure.Google.OAuth;
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// First run wizard (Figma S14 39:280, 39:336; FR-AUTH-1, FR-I18N-1, FR-LUNAR-6). Step 1 picks the UI language
-/// (with that language's week start and clock defaults) and the lunar toggle; step 2 connects Google Calendar or
-/// skips to a lunar-only calendar. Step 3 (Gemini API key, optional) is drawn in the stepper but belongs to Phase 4
-/// (P4-00, P4-03), so "Tiếp tục" on step 2 finishes the wizard for now.
+/// First run wizard (Figma S14 39:280, 39:336, 39:395; FR-AUTH-1, FR-I18N-1, FR-LUNAR-6, FR-BYOK-1..3).
+/// Step 1: UI language &amp; defaults; Step 2: Google Calendar connection; Step 3: Optional Gemini API Key.
 /// </summary>
 public sealed partial class FirstRunViewModel : ObservableObject
 {
-    /// <summary>Steps shown in the stepper (S14), including the Phase 4 Gemini step.</summary>
     public const int StepCount = 3;
+    private const string AiStudioUrl = "https://aistudio.google.com/apikey";
 
     private readonly ISettingsStore _settingsStore;
     private readonly IDisplayPreferences _preferences;
     private readonly ILocalizationService _localization;
     private readonly IGoogleOAuthClient _oauthClient;
     private readonly IAccountStore _accountStore;
+    private readonly IAccountSessionService _accountSession;
+    private readonly IAccountSwitchPrompt? _switchPrompt;
     private readonly ISyncScheduler? _syncScheduler;
+    private readonly IAiKeyService? _aiKeyService;
+    private readonly IClipboardService? _clipboardService;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StepLabel))]
@@ -46,6 +49,7 @@ public sealed partial class FirstRunViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(FinishCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ContinueStep2Command))]
     private bool _isSignedIn;
 
     [ObservableProperty]
@@ -54,25 +58,41 @@ public sealed partial class FirstRunViewModel : ObservableObject
     [ObservableProperty]
     private string? _errorMessage;
 
+    [ObservableProperty]
+    private bool _isCheckingAiKey;
+
+    [ObservableProperty]
+    private string? _aiErrorMessage;
+
+    [ObservableProperty]
+    private bool _isAiOffline;
+
     /// <summary>Raised when the first run wizard is finished or dismissed.</summary>
     public event EventHandler? Finished;
 
-    /// <summary>Creates the view model.</summary>
     public FirstRunViewModel(
         ISettingsStore settingsStore,
         IDisplayPreferences preferences,
         ILocalizationService localization,
         IGoogleOAuthClient oauthClient,
         IAccountStore accountStore,
+        IAccountSessionService accountSession,
         ISyncScheduler? syncScheduler = null,
-        GoogleOAuthOptions? oauthOptions = null)
+        GoogleOAuthOptions? oauthOptions = null,
+        IAccountSwitchPrompt? switchPrompt = null,
+        IAiKeyService? aiKeyService = null,
+        IClipboardService? clipboardService = null)
     {
         _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _accountStore = accountStore ?? throw new ArgumentNullException(nameof(accountStore));
+        _accountSession = accountSession ?? throw new ArgumentNullException(nameof(accountSession));
         _syncScheduler = syncScheduler;
+        _switchPrompt = switchPrompt;
+        _aiKeyService = aiKeyService;
+        _clipboardService = clipboardService;
         IsTestingMode = oauthOptions?.IsTestingConsentMode ?? false;
 
         _isVietnamese = _localization.CurrentCulture.Name.StartsWith("vi", StringComparison.OrdinalIgnoreCase);
@@ -89,18 +109,16 @@ public sealed partial class FirstRunViewModel : ObservableObject
     /// <summary>"Bước 1 / 3".</summary>
     public string StepLabel => _localization.Format("firstrun.step_of", CurrentStep, StepCount);
 
-    /// <summary>"vi-VN · tuần bắt đầu Thứ 2 · 24 giờ · 22/10/2026": the defaults that step 1 applies for Vietnamese.</summary>
+    /// <summary>Defaults applied for Vietnamese.</summary>
     public string VietnameseDescription => _localization.Format(
         "firstrun.lang_vi_desc", DateTime.Today.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN")));
 
-    /// <summary>"en-US · week starts Sunday · 12-hour · Oct 22, 2026": the defaults that step 1 applies for English.</summary>
+    /// <summary>Defaults applied for English.</summary>
     public string EnglishDescription => _localization.Format(
         "firstrun.lang_en_desc", DateTime.Today.ToString("MMM d, yyyy", CultureInfo.GetCultureInfo("en-US")));
 
-    /// <summary>Consent screen in Testing: Google shows "unverified app" (ADR-0026), so S14 warns about it.</summary>
     public bool IsTestingMode { get; }
 
-    /// <summary>Selects the UI language and switches the wizard to it immediately.</summary>
     [RelayCommand]
     public void SelectLanguage(string lang)
     {
@@ -110,10 +128,6 @@ public sealed partial class FirstRunViewModel : ObservableObject
         _localization.SetCulture(new CultureInfo(english ? "en-US" : "vi-VN"));
     }
 
-    /// <summary>
-    /// Step 1 "Tiếp tục": stores the language with the defaults its card describes (week start, 12/24-hour clock;
-    /// FR-I18N-1, FR-UI-7) and the lunar toggle (FR-LUNAR-6).
-    /// </summary>
     [RelayCommand]
     public async Task ContinueStep1Async(CancellationToken cancellationToken = default)
     {
@@ -126,7 +140,6 @@ public sealed partial class FirstRunViewModel : ObservableObject
         CurrentStep = 2;
     }
 
-    /// <summary>Step 2 "Quay lại".</summary>
     [RelayCommand]
     public void Back()
     {
@@ -134,10 +147,25 @@ public sealed partial class FirstRunViewModel : ObservableObject
         CurrentStep = 1;
     }
 
-    /// <summary>
-    /// "Đăng nhập bằng Google" (FR-AUTH-1): system browser + loopback; "Huỷ" cancels the wait. On success the
-    /// account is saved and the first sync starts; the user then presses "Tiếp tục".
-    /// </summary>
+    [RelayCommand(CanExecute = nameof(IsSignedIn))]
+    public void ContinueStep2()
+    {
+        CurrentStep = 3;
+    }
+
+    [RelayCommand]
+    public void SkipStep2()
+    {
+        SignInCancelCommand.Execute(null);
+        CurrentStep = 3;
+    }
+
+    [RelayCommand]
+    public void BackStep3()
+    {
+        CurrentStep = 2;
+    }
+
     [RelayCommand(IncludeCancelCommand = true)]
     public async Task SignInAsync(CancellationToken cancellationToken = default)
     {
@@ -155,9 +183,12 @@ public sealed partial class FirstRunViewModel : ObservableObject
             if (authResult.Success && authResult.UserInfo is not null)
             {
                 var info = authResult.UserInfo;
-                await _accountStore.SaveAccountAsync(
-                    new AccountInfo { Id = info.Id, Email = info.Email, DisplayName = info.DisplayName },
-                    cancellationToken).ConfigureAwait(true);
+                var outcome = await _accountSession.ApplySignInAsync(info, AccountSwitchPrompts.ToDelegate(_switchPrompt), cancellationToken).ConfigureAwait(true);
+                if (outcome == AccountSignInOutcome.Cancelled)
+                {
+                    ErrorMessage = _localization["settings.account.switch_cancelled"];
+                    return;
+                }
 
                 IsSignedIn = true;
                 SignedInText = _localization.Format("firstrun.signed_in", info.Email);
@@ -176,7 +207,6 @@ public sealed partial class FirstRunViewModel : ObservableObject
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            // "Huỷ": the user stopped waiting; nothing to report.
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -188,19 +218,85 @@ public sealed partial class FirstRunViewModel : ObservableObject
         }
     }
 
-    /// <summary>Step 2 "Tiếp tục" after signing in: the wizard is done.</summary>
+    /// <summary>Completes the wizard.</summary>
     [RelayCommand(CanExecute = nameof(IsSignedIn))]
     public async Task FinishAsync(CancellationToken cancellationToken = default)
     {
         await CompleteAsync(cancellationToken).ConfigureAwait(true);
     }
 
-    /// <summary>"Để sau, chỉ xem âm lịch": finish without a Google account.</summary>
+    /// <summary>Completes the wizard without a Google account.</summary>
     [RelayCommand]
     public async Task SkipAsync(CancellationToken cancellationToken = default)
     {
         SignInCancelCommand.Execute(null);
         await CompleteAsync(cancellationToken).ConfigureAwait(true);
+    }
+
+    [RelayCommand]
+    public static void OpenAiStudio()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(AiStudioUrl) { UseShellExecute = true });
+        }
+        catch
+        {
+        }
+    }
+
+    /// <summary>Validates and saves the Gemini key on Step 3, then finishes the wizard (FR-BYOK-1, SEC-KEY-6).</summary>
+    public async Task<bool> SaveAiKeyAndCompleteAsync(
+        string? rawKey,
+        bool saveOffline = false,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(rawKey))
+        {
+            await CompleteAsync(cancellationToken).ConfigureAwait(true);
+            return true;
+        }
+
+        if (_aiKeyService is null)
+        {
+            await CompleteAsync(cancellationToken).ConfigureAwait(true);
+            return true;
+        }
+
+        IsCheckingAiKey = true;
+        AiErrorMessage = null;
+
+        try
+        {
+            var result = await _aiKeyService.ValidateAndSaveKeyAsync(rawKey, saveOffline, cancellationToken).ConfigureAwait(true);
+            if (result.IsSuccess)
+            {
+                _clipboardService?.ClearIfMatches(rawKey);
+                await CompleteAsync(cancellationToken).ConfigureAwait(true);
+                return true;
+            }
+
+            AiErrorMessage = result.Status switch
+            {
+                KeyValidationStatus.InvalidKey => _localization["settings.ai.err_invalid"],
+                KeyValidationStatus.LeakedKey => _localization["settings.ai.err_leaked"],
+                KeyValidationStatus.FreeTierVerificationRequired => _localization["settings.ai.err_freetier"],
+                KeyValidationStatus.QuotaExceeded => _localization["settings.ai.err_quota"],
+                KeyValidationStatus.NetworkError => _localization["settings.ai.err_network"],
+                _ => _localization.Format("settings.ai.err_unexpected", result.Message ?? "Unknown")
+            };
+
+            if (result.Status == KeyValidationStatus.NetworkError)
+            {
+                IsAiOffline = true;
+            }
+
+            return false;
+        }
+        finally
+        {
+            IsCheckingAiKey = false;
+        }
     }
 
     private async Task CompleteAsync(CancellationToken cancellationToken)

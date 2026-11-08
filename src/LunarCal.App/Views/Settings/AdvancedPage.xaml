@@ -35,11 +35,6 @@
           <DockPanel>
             <Button DockPanel.Dock="Right" Content="{loc:Loc Key=settings.advanced.signout}" Command="{Binding Account.SignOutCommand}"
                     Style="{StaticResource SecondaryButtonStyle}" Margin="16,0,0,0" AutomationProperties.AutomationId="BtnAdvancedSignOut" />
-            <Border DockPanel.Dock="Right" Background="{DynamicResource SuccessSubtleBrush}" CornerRadius="{DynamicResource CornerRadiusPill}"
-                    Padding="8,3" VerticalAlignment="Center">
-              <TextBlock Text="{loc:Loc Key=settings.advanced.account_active}" FontSize="{DynamicResource FontSizeBadge}"
-                         FontWeight="{DynamicResource FontWeightSemiBold}" Foreground="{DynamicResource SuccessTextBrush}" />
-            </Border>
             <Border DockPanel.Dock="Left" Width="32" Height="32" CornerRadius="{DynamicResource CornerRadiusFull}"
                     Background="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0">
               <TextBlock Text="{Binding Account.AccountInitials}" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -57,17 +52,11 @@
         <Border Style="{StaticResource SettingsLastRowStyle}">
           <DockPanel>
             <Button DockPanel.Dock="Right" Command="{Binding Account.SignInCommand}" Style="{StaticResource PrimaryButtonStyle}"
-                    IsEnabled="{Binding Account.IsSignedIn, Converter={StaticResource InverseBool}}"
-                    AutomationProperties.AutomationId="BtnAddAccount">
-              <StackPanel Orientation="Horizontal">
-                <Path Width="16" Height="16" Data="{DynamicResource IconPlus16}" Stretch="None" Stroke="{DynamicResource OnAccentBrush}"
-                      StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
-                <TextBlock Text="{loc:Loc Key=settings.advanced.add_account}" Margin="6,0,0,0" />
-              </StackPanel>
-            </Button>
+                    Content="{Binding Account.SignInButtonText}"
+                    AutomationProperties.AutomationId="BtnChangeAccount" />
             <StackPanel VerticalAlignment="Center">
-              <TextBlock Text="{loc:Loc Key=settings.advanced.add_account_title}" Style="{StaticResource SettingsRowTitleStyle}" />
-              <TextBlock Text="{loc:Loc Key=settings.advanced.add_account_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.change_account_title}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{loc:Loc Key=settings.advanced.change_account_desc}" Style="{StaticResource SettingsRowDescStyle}" />
             </StackPanel>
           </DockPanel>
         </Border>
@@ -133,6 +122,27 @@
                     Style="{StaticResource SecondaryButtonStyle}" AutomationProperties.AutomationId="BtnUseDefaultClient" />
           </StackPanel>
         </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Section · Model Gemini (34:372) — FR-BYOK-5, ADR-0016 -->
+    <TextBlock Text="{loc:Loc Key=settings.advanced.gemini_model_title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.advanced.gemini_model_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+    <Border Style="{StaticResource SettingsCardStyle}">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Text="{Binding Ai.SelectedModel.Id, FallbackValue='gemini-3.8-flash'}"
+                       FontFamily="Consolas, Segoe UI Variable" FontSize="{DynamicResource FontSizeBody}"
+                       Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"
+                       AutomationProperties.AutomationId="AdvancedModelIdText" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{Binding Ai.SelectedModel.DisplayName, FallbackValue='Gemini 3.8 Flash'}" Style="{StaticResource SettingsRowTitleStyle}"
+                         AutomationProperties.AutomationId="AdvancedModelDisplayNameText" />
+              <TextBlock Text="{loc:Loc Key=settings.ai.models_desc}" Style="{StaticResource SettingsRowDescStyle}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
       </StackPanel>
     </Border>
 

@@ -62,6 +62,7 @@ public partial class App : Application
             builder.Services.AddSerilog(Log.Logger, dispose: true);
             builder.Services.AddSingleton(sp => new LogLevelService(levelSwitch, sp.GetRequiredService<ISettingsStore>()));
             builder.Services.AddSingleton<IConfirmationService, DialogConfirmationService>();
+            builder.Services.AddSingleton<IAccountSwitchPrompt, DialogAccountSwitchPrompt>();
 
             builder.Services.AddLunarCalInfrastructure(builder.Configuration);
 
@@ -71,11 +72,13 @@ public partial class App : Application
 
             builder.Services.AddSingleton<IThemeService, ThemeService>();
             builder.Services.AddSingleton<IDisplayPreferences, DisplayPreferences>();
+            builder.Services.AddSingleton<IClipboardService, WpfClipboardService>();
             builder.Services.AddSingleton<MainWindowViewModel>();
             builder.Services.AddSingleton<MainWindow>();
 
             builder.Services.AddTransient<AppearanceSettingsViewModel>();
             builder.Services.AddTransient<GoogleAccountViewModel>();
+            builder.Services.AddTransient<AiSettingsViewModel>();
             builder.Services.AddTransient<AdvancedSettingsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsWindow>();

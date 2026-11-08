@@ -1089,22 +1089,10 @@
     <value>Mặc định theo ngôn ngữ: Thứ 2 và 24 giờ (vi-VN), Chủ nhật và 12 giờ (en-US)</value>
   </data>
   <data name="settings.advanced.accounts_desc" xml:space="preserve">
-    <value>Đăng nhập trong trình duyệt hệ thống; token chỉ lưu trên máy này</value>
-  </data>
-  <data name="settings.advanced.account_active" xml:space="preserve">
-    <value>Đang dùng</value>
+    <value>Chỉ một tài khoản tại một thời điểm. Đổi tài khoản sẽ xoá dữ liệu của tài khoản hiện tại khỏi máy này.</value>
   </data>
   <data name="settings.advanced.signout" xml:space="preserve">
     <value>Đăng xuất</value>
-  </data>
-  <data name="settings.advanced.add_account_title" xml:space="preserve">
-    <value>Thêm tài khoản Google</value>
-  </data>
-  <data name="settings.advanced.add_account_desc" xml:space="preserve">
-    <value>Đăng nhập trong trình duyệt hệ thống. Mỗi tài khoản có cache và token riêng.</value>
-  </data>
-  <data name="settings.advanced.add_account" xml:space="preserve">
-    <value>Thêm tài khoản</value>
   </data>
   <data name="settings.advanced.custom_client" xml:space="preserve">
     <value>Dùng OAuth client riêng</value>
@@ -1257,5 +1245,449 @@
   </data>
   <data name="common.hide" xml:space="preserve">
     <value>Ẩn</value>
+  </data>
+  <data name="settings.advanced.change_account_title" xml:space="preserve">
+    <value>Đổi tài khoản Google</value>
+  </data>
+  <data name="settings.advanced.change_account_desc" xml:space="preserve">
+    <value>Đăng nhập trong trình duyệt hệ thống. Dữ liệu của tài khoản hiện tại chỉ bị xoá sau khi bạn xác nhận.</value>
+  </data>
+  <data name="settings.advanced.change_account" xml:space="preserve">
+    <value>Đổi tài khoản…</value>
+  </data>
+  <data name="account_switch.title" xml:space="preserve">
+    <value>Đổi sang tài khoản Google khác?</value>
+  </data>
+  <data name="account_switch.subtitle" xml:space="preserve">
+    <value>Đang đăng nhập: {0} · tài khoản mới: {1}</value>
+  </data>
+  <data name="account_switch.body" xml:space="preserve">
+    <value>LunarCal chỉ làm việc với một tài khoản Google. Nếu tiếp tục, dữ liệu của {0} trên máy này sẽ bị xoá và lịch của {1} được tải về.</value>
+  </data>
+  <data name="account_switch.warn_title" xml:space="preserve">
+    <value>Sẽ bị xoá khỏi máy này</value>
+  </data>
+  <data name="account_switch.warn_pending" xml:space="preserve">
+    <value>{0} thay đổi chưa đồng bộ lên Google</value>
+  </data>
+  <data name="account_switch.warn_ai" xml:space="preserve">
+    <value>{0} lệnh AI đang chờ trong hàng chờ</value>
+  </data>
+  <data name="account_switch.warn_lunar" xml:space="preserve">
+    <value>{0} luật lặp âm lịch chỉ lưu trên máy</value>
+  </data>
+  <data name="account_switch.kept" xml:space="preserve">
+    <value>Được giữ lại: cài đặt, ngôn ngữ và Gemini API key</value>
+  </data>
+  <data name="account_switch.keep_button" xml:space="preserve">
+    <value>Giữ tài khoản hiện tại</value>
+  </data>
+  <data name="account_switch.confirm_button" xml:space="preserve">
+    <value>Xoá dữ liệu cũ và đổi tài khoản</value>
+  </data>
+  <data name="settings.account.switch_cancelled" xml:space="preserve">
+    <value>Đã giữ nguyên tài khoản hiện tại.</value>
+  </data>
+  <!-- Event Editor S10 (P4-R1, Figma 52:370, 52:971) -->
+  <data name="event.overnight_chip" xml:space="preserve">
+    <value>+{0} ngày · kết thúc {1}</value>
+  </data>
+  <data name="event.custom_end_date_link" xml:space="preserve">
+    <value>Ngày kết thúc khác…</value>
+  </data>
+  <data name="recurrence.solar_rule.daily" xml:space="preserve">
+    <value>Hằng ngày</value>
+  </data>
+  <data name="recurrence.solar_rule.weekly" xml:space="preserve">
+    <value>Lặp vào {0} hàng tuần</value>
+  </data>
+  <data name="recurrence.solar_rule.monthly" xml:space="preserve">
+    <value>Lặp vào ngày {0} hàng tháng</value>
+  </data>
+  <data name="recurrence.solar_rule.yearly" xml:space="preserve">
+    <value>Hằng năm vào ngày {0} tháng {1}</value>
+  </data>
+  <data name="recurrence.solar_rule.next" xml:space="preserve">
+    <value>Lần tới: {0}</value>
+  </data>
+  <data name="event.timezone.default" xml:space="preserve">
+    <value>Theo Cài đặt ({0})</value>
+  </data>
+  <data name="event.timezone.note" xml:space="preserve">
+    <value>Chỉ áp dụng cho sự kiện này</value>
+  </data>
+  <data name="settings.nav.ai" xml:space="preserve">
+    <value>AI &amp; Dữ liệu</value>
+  </data>
+  <data name="settings.ai.title" xml:space="preserve">
+    <value>Gemini API key của bạn (BYOK)</value>
+  </data>
+  <data name="settings.ai.desc" xml:space="preserve">
+    <value>Key được mã hóa bằng DPAPI và chỉ lưu trên máy này; ứng dụng gọi trực tiếp Google Gemini không qua máy chủ trung gian.</value>
+  </data>
+  <data name="settings.ai.privacy_notice" xml:space="preserve">
+    <value>Lưu ý quyền riêng tư: Gói miễn phí của Google có thể sử dụng câu lệnh để cải thiện sản phẩm. Gói trả phí thì không. LunarCal chỉ gửi câu lệnh, múi giờ và tên lịch, không bao giờ gửi nội dung sự kiện của bạn.</value>
+  </data>
+  <data name="settings.ai.get_key_link" xml:space="preserve">
+    <value>Lấy API key tại Google AI Studio ↗</value>
+  </data>
+  <data name="settings.ai.key_label" xml:space="preserve">
+    <value>Gemini API Key</value>
+  </data>
+  <data name="settings.ai.key_placeholder" xml:space="preserve">
+    <value>Dán API key tại đây...</value>
+  </data>
+  <data name="settings.ai.check_and_save" xml:space="preserve">
+    <value>Kiểm tra và lưu</value>
+  </data>
+  <data name="settings.ai.save_offline" xml:space="preserve">
+    <value>Lưu không kiểm tra (Ngoại tuyến)</value>
+  </data>
+  <data name="settings.ai.change_key" xml:space="preserve">
+    <value>Đổi key</value>
+  </data>
+  <data name="settings.ai.delete_key" xml:space="preserve">
+    <value>Xóa key</value>
+  </data>
+  <data name="settings.ai.suspect_leaked" xml:space="preserve">
+    <value>Tôi nghi key bị lộ</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_title" xml:space="preserve">
+    <value>Cảnh báo bảo mật: Nghi ngờ lộ key</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_guide" xml:space="preserve">
+    <value>Key đã bị xóa khỏi ứng dụng ngay lập tức và hàng chờ AI đã tạm dừng. Các bước khuyến nghị từ Google:
+1. Mở AI Studio và tạo một API key mới.
+2. Cập nhật key mới vào LunarCal.
+3. Xóa key cũ bị nghi ngờ trên Google AI Studio.
+4. Kiểm tra lại mức sử dụng trong Google Cloud Console.</value>
+  </data>
+  <data name="settings.ai.clipboard_cleared" xml:space="preserve">
+    <value>Đã xóa API key khỏi clipboard vì lý do an toàn.</value>
+  </data>
+  <data name="settings.ai.status_saved" xml:space="preserve">
+    <value>Đã cấu hình key</value>
+  </data>
+  <data name="settings.ai.checking" xml:space="preserve">
+    <value>Đang kiểm tra key với Google...</value>
+  </data>
+  <data name="settings.ai.err_empty" xml:space="preserve">
+    <value>Vui lòng nhập API key.</value>
+  </data>
+  <data name="settings.ai.err_invalid" xml:space="preserve">
+    <value>API key không hợp lệ hoặc không có quyền truy cập Gemini API (lỗi 400/401/403).</value>
+  </data>
+  <data name="settings.ai.err_leaked" xml:space="preserve">
+    <value>Google thông báo API key này đã bị lộ và bị vô hiệu hóa. Vui lòng tạo key mới.</value>
+  </data>
+  <data name="settings.ai.err_freetier" xml:space="preserve">
+    <value>Dự án Google Cloud cần xác minh thanh toán hoặc không đủ điều kiện cho gói miễn phí.</value>
+  </data>
+  <data name="settings.ai.err_quota" xml:space="preserve">
+    <value>Hạn mức API đã hết (lỗi 429). Vui lòng thử lại sau hoặc kiểm tra quota.</value>
+  </data>
+  <data name="settings.ai.err_network" xml:space="preserve">
+    <value>Không thể kết nối đến máy chủ Google (ngoại tuyến). Bạn có thể chọn Lưu không kiểm tra.</value>
+  </data>
+  <data name="settings.ai.err_precondition" xml:space="preserve">
+    <value>Không đáp ứng điều kiện tiên quyết của Google (khu vực hoặc dự án không hỗ trợ).</value>
+  </data>
+  <data name="settings.ai.err_unexpected" xml:space="preserve">
+    <value>Đã xảy ra lỗi không xác định khi kiểm tra key: {0}</value>
+  </data>
+  <data name="firstrun.step3_title" xml:space="preserve">
+    <value>Trợ lý AI tạo lịch (Tùy chọn)</value>
+  </data>
+  <data name="firstrun.step3_desc" xml:space="preserve">
+    <value>Nhập Gemini API key để sử dụng tính năng tạo lịch bằng ngôn ngữ tự nhiên. Bạn có thể bỏ qua và thêm key sau trong Cài đặt.</value>
+  </data>
+  <data name="firstrun.btn_skip_ai" xml:space="preserve">
+    <value>Để sau, hoàn tất cài đặt</value>
+  </data>
+  <data name="settings.ai.models_title" xml:space="preserve">
+    <value>Mô hình Gemini</value>
+  </data>
+  <data name="settings.ai.models_desc" xml:space="preserve">
+    <value>Chọn mô hình Gemini xử lý câu lệnh tự nhiên. Chỉ các mô hình hỗ trợ gọi hàm (function calling) mới có thể tạo và quản lý sự kiện.</value>
+  </data>
+  <data name="settings.ai.model_select_label" xml:space="preserve">
+    <value>Mô hình đang dùng</value>
+  </data>
+  <data name="settings.ai.model_default_tag" xml:space="preserve">
+    <value>Mặc định</value>
+  </data>
+  <data name="settings.ai.model_recommended_tag" xml:space="preserve">
+    <value>Khuyên dùng</value>
+  </data>
+  <data name="settings.ai.model_refresh" xml:space="preserve">
+    <value>Tải lại danh sách</value>
+  </data>
+  <data name="settings.ai.model_saved" xml:space="preserve">
+    <value>Đã cập nhật mô hình Gemini thành công.</value>
+  </data>
+  <data name="settings.ai.model_validating" xml:space="preserve">
+    <value>Đang kiểm tra khả năng hỗ trợ gọi hàm với Google...</value>
+  </data>
+  <data name="settings.ai.err_function_calling_unsupported" xml:space="preserve">
+    <value>Mô hình này không hỗ trợ gọi hàm (function calling/tools) theo yêu cầu của LunarCal. Vui lòng chọn mô hình khác.</value>
+  </data>
+  <data name="settings.ai.pricing_title" xml:space="preserve">
+    <value>Chi phí, hạn mức &amp; quyền riêng tư (FR-BYOK-5)</value>
+  </data>
+  <data name="settings.ai.quota_notice" xml:space="preserve">
+    <value>• Hạn mức (Quota) và chi phí được tính theo Google Cloud Project của bạn, không tính theo từng API key riêng lẻ. Hạn mức ngày (RPD) đặt lại vào nửa đêm giờ Thái Bình Dương (Pacific Time).</value>
+  </data>
+  <data name="settings.ai.free_tier_notice" xml:space="preserve">
+    <value>• Gói miễn phí: Google có thể sử dụng dữ liệu câu lệnh để huấn luyện và cải thiện sản phẩm. Gói trả phí không sử dụng dữ liệu này. Ứng dụng chỉ gửi câu lệnh, múi giờ và tên lịch, không bao giờ gửi nội dung sự kiện.</value>
+  </data>
+  <data name="settings.ai.pricing_notice" xml:space="preserve">
+    <value>• Giá tham khảo gói trả phí (Gemini 3.8 Flash): $0,75 / 1 triệu token đầu vào và $3,75 / 1 triệu token đầu ra (áp dụng đến hết 31/12/2026; sau đó $1,50 và $7,50).</value>
+  </data>
+  <data name="settings.advanced.gemini_model_title" xml:space="preserve">
+    <value>Mô hình Gemini (Model)</value>
+  </data>
+  <data name="settings.advanced.gemini_model_desc" xml:space="preserve">
+    <value>Mô hình hiện được cấu hình cho trợ lý AI thanh lệnh (FR-BYOK-5, ADR-0016).</value>
+  </data>
+  <data name="ai.offline_banner" xml:space="preserve">
+    <value>Không có kết nối. Yêu cầu mới sẽ được lưu cục bộ và chờ xử lý lại khi có mạng.</value>
+  </data>
+  <data name="ai.disabled_tooltip" xml:space="preserve">
+    <value>Thanh lệnh AI đang tắt vì Gemini chưa được bật hoặc chưa có API key.</value>
+  </data>
+  <data name="ai_queue.title" xml:space="preserve">
+    <value>Hàng chờ AI</value>
+  </data>
+  <data name="ai_queue.pending_count" xml:space="preserve">
+    <value>{0} yêu cầu</value>
+  </data>
+  <data name="ai_queue.empty" xml:space="preserve">
+    <value>Không có lệnh nào trong hàng chờ</value>
+  </data>
+  <data name="ai_queue.close" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="ai_queue.status_pending" xml:space="preserve">
+    <value>Chờ xử lý</value>
+  </data>
+  <data name="ai_queue.status_processing" xml:space="preserve">
+    <value>Đang xử lý</value>
+  </data>
+  <data name="ai_queue.status_needs_confirmation" xml:space="preserve">
+    <value>Chờ xác nhận</value>
+  </data>
+  <data name="ai_queue.status_error" xml:space="preserve">
+    <value>Lỗi</value>
+  </data>
+  <data name="ai_queue.status_completed" xml:space="preserve">
+    <value>Hoàn tất</value>
+  </data>
+  <data name="ai_queue.status_cancelled" xml:space="preserve">
+    <value>Đã huỷ</value>
+  </data>
+  <data name="ai_queue.action_view" xml:space="preserve">
+    <value>Xem</value>
+  </data>
+  <data name="ai_queue.action_confirm" xml:space="preserve">
+    <value>Xem và xác nhận</value>
+  </data>
+  <data name="ai_queue.action_retry" xml:space="preserve">
+    <value>Thử lại</value>
+  </data>
+  <data name="ai_queue.action_edit" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="ai_queue.action_cancel" xml:space="preserve">
+    <value>Huỷ</value>
+  </data>
+  <data name="ai_queue.destructive_warning" xml:space="preserve">
+    <value>Lệnh xóa cần xác nhận – AI không tự xóa khi chưa xác nhận</value>
+  </data>
+  <data name="ai_queue.retry_format" xml:space="preserve">
+    <value>Thử lại {0}/{1} (chờ {2} phút)</value>
+  </data>
+  <data name="ai_queue.time_just_now" xml:space="preserve">
+    <value>Vừa xong</value>
+  </data>
+  <data name="ai_queue.time_minutes_ago" xml:space="preserve">
+    <value>{0} phút trước</value>
+  </data>
+  <!-- FR-CONFIRM-1..6 AI Confirmation Dialog (Figma 02 2:2 / 2:494) -->
+  <data name="ai_confirm.title" xml:space="preserve">
+    <value>AI đã hiểu yêu cầu của bạn</value>
+  </data>
+  <data name="ai_confirm.subtitle" xml:space="preserve">
+    <value>Kiểm tra lại trước khi tạo sự kiện – AI không tự thay đổi lịch</value>
+  </data>
+  <data name="ai_confirm.status_pending" xml:space="preserve">
+    <value>Chờ xác nhận</value>
+  </data>
+  <data name="ai_confirm.section_user_input" xml:space="preserve">
+    <value>BẠN ĐÃ NHẬP</value>
+  </data>
+  <data name="ai_confirm.time_anchor_hint" xml:space="preserve">
+    <value>Mốc thời gian để hiểu câu lệnh</value>
+  </data>
+  <data name="ai_confirm.section_analysis" xml:space="preserve">
+    <value>KẾT QUẢ PHÂN TÍCH</value>
+  </data>
+  <data name="ai_confirm.label_action" xml:space="preserve">
+    <value>Hành động</value>
+  </data>
+  <data name="ai_confirm.label_title" xml:space="preserve">
+    <value>Tiêu đề</value>
+  </data>
+  <data name="ai_confirm.label_date" xml:space="preserve">
+    <value>Ngày</value>
+  </data>
+  <data name="ai_confirm.label_time" xml:space="preserve">
+    <value>Giờ</value>
+  </data>
+  <data name="ai_confirm.label_recurrence" xml:space="preserve">
+    <value>Lặp lại</value>
+  </data>
+  <data name="ai_confirm.label_reminder" xml:space="preserve">
+    <value>Nhắc trước</value>
+  </data>
+  <data name="ai_confirm.label_calendar" xml:space="preserve">
+    <value>Lịch đích</value>
+  </data>
+  <data name="ai_confirm.label_confidence" xml:space="preserve">
+    <value>Độ tin cậy</value>
+  </data>
+  <data name="ai_confirm.confidence_high" xml:space="preserve">
+    <value>Rõ ràng</value>
+  </data>
+  <data name="ai_confirm.confidence_medium" xml:space="preserve">
+    <value>Cần kiểm tra</value>
+  </data>
+  <data name="ai_confirm.confidence_low" xml:space="preserve">
+    <value>Không chắc</value>
+  </data>
+  <data name="ai_confirm.section_validation" xml:space="preserve">
+    <value>KIỂM TRA NGHIỆP VỤ</value>
+  </data>
+  <data name="ai_confirm.val_all_good" xml:space="preserve">
+    <value>Đã qua kiểm tra nghiệp vụ: giờ hợp lệ, không xung đột với lịch hiện tại.</value>
+  </data>
+  <data name="ai_confirm.val_conflict" xml:space="preserve">
+    <value>Trùng giờ với sự kiện '{0}' ({1} – {2})</value>
+  </data>
+  <data name="ai_confirm.val_past_event" xml:space="preserve">
+    <value>Lưu ý: Sự kiện được đặt ở quá khứ.</value>
+  </data>
+  <data name="ai_confirm.val_end_before_start" xml:space="preserve">
+    <value>Lỗi: Giờ kết thúc phải sau giờ bắt đầu.</value>
+  </data>
+  <data name="ai_confirm.btn_edit" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="ai_confirm.btn_cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="ai_confirm.btn_confirm" xml:space="preserve">
+    <value>Xác nhận &amp; thêm vào Google</value>
+  </data>
+  <data name="ai_confirm.btn_confirm_disabled_hint" xml:space="preserve">
+    <value>Cần sửa trước khi xác nhận khi độ tin cậy dưới 60% hoặc có lỗi</value>
+  </data>
+  <data name="ai_confirm.all_day" xml:space="preserve">
+    <value>Cả ngày</value>
+  </data>
+  <data name="ai_confirm.no_recurrence" xml:space="preserve">
+    <value>Không lặp</value>
+  </data>
+  <data name="ai_confirm.default_reminder" xml:space="preserve">
+    <value>10 phút trước</value>
+  </data>
+  <data name="ai_confirm.action_create_event" xml:space="preserve">
+    <value>Tạo sự kiện mới</value>
+  </data>
+  <data name="ai_confirm.action_update_event" xml:space="preserve">
+    <value>Cập nhật sự kiện</value>
+  </data>
+  <data name="ai_confirm.action_delete_event" xml:space="preserve">
+    <value>Xóa sự kiện</value>
+  </data>
+  <data name="ai_confirm.action_bulk_create" xml:space="preserve">
+    <value>Tạo nhiều sự kiện</value>
+  </data>
+  <data name="ai_confirm.status_clarify" xml:space="preserve">
+    <value>Cần bổ sung</value>
+  </data>
+  <data name="ai_confirm.clarify_title" xml:space="preserve">
+    <value>AI cần thêm thông tin</value>
+  </data>
+  <data name="ai_confirm.clarify_subtitle" xml:space="preserve">
+    <value>Kiểm tra lại thông tin bên dưới trước khi thêm vào lịch.</value>
+  </data>
+  <data name="ai_confirm.ai_question_header" xml:space="preserve">
+    <value>CÂU HỎI CỦA AI</value>
+  </data>
+  <data name="ai_confirm.missing_time_warning" xml:space="preserve">
+    <value>Chưa rõ giờ cụ thể</value>
+  </data>
+  <data name="ai_confirm.quick_answers_label" xml:space="preserve">
+    <value>Gợi ý trả lời:</value>
+  </data>
+  <data name="ai_confirm.clarify_placeholder" xml:space="preserve">
+    <value>Nhập giờ hoặc câu trả lời...</value>
+  </data>
+  <data name="ai_confirm.clarify_submit" xml:space="preserve">
+    <value>Trả lời &amp; tiếp tục</value>
+  </data>
+  <data name="ai_confirm.clarify_privacy_note" xml:space="preserve">
+    <value>Câu trả lời được gửi tới Gemini cùng lệnh gốc.</value>
+  </data>
+  <data name="ai_error.invalid_key" xml:space="preserve">
+    <value>API key không hợp lệ hoặc không có quyền. Vui lòng kiểm tra lại trong Cài đặt > AI.</value>
+  </data>
+  <data name="ai_error.missing_key" xml:space="preserve">
+    <value>Chưa cấu hình API key. Vui lòng mở Cài đặt > AI để nhập key.</value>
+  </data>
+  <data name="ai_error.leaked_key" xml:space="preserve">
+    <value>API key đã bị Google báo cáo là bị lộ và đã bị vô hiệu hóa. Vui lòng tạo key mới trong Cài đặt > AI.</value>
+  </data>
+  <data name="ai_error.free_tier" xml:space="preserve">
+    <value>Dự án yêu cầu xác minh thanh toán hoặc không đủ điều kiện dùng gói miễn phí.</value>
+  </data>
+  <data name="ai_error.failed_precondition" xml:space="preserve">
+    <value>Yêu cầu Gemini chưa đủ điều kiện (khu vực hoặc dịch vụ).</value>
+  </data>
+  <data name="ai_error.model_not_found" xml:space="preserve">
+    <value>Model AI đã chọn không tồn tại hoặc đã bị gỡ bỏ. Vui lòng chọn model khác trong Cài đặt > AI.</value>
+  </data>
+  <data name="ai_error.rate_limit" xml:space="preserve">
+    <value>Đã vượt quá giới hạn lệnh mỗi phút (429). Đang chờ thời gian thử lại...</value>
+  </data>
+  <data name="ai_error.rate_limit_with_time" xml:space="preserve">
+    <value>Đã vượt quá giới hạn lệnh mỗi phút (429). Thử lại sau {0} giây...</value>
+  </data>
+  <data name="ai_error.daily_quota" xml:space="preserve">
+    <value>Đã hết hạn mức sử dụng miễn phí trong ngày (429). Hạn mức sẽ được đặt lại vào nửa đêm giờ Pacific.</value>
+  </data>
+  <data name="ai_error.safety_blocked" xml:space="preserve">
+    <value>Yêu cầu bị từ chối bởi bộ lọc an toàn của Google Gemini.</value>
+  </data>
+  <data name="ai_error.network_offline" xml:space="preserve">
+    <value>Không có kết nối mạng. Lệnh đã được lưu vào hàng chờ và sẽ tự động xử lý khi có mạng.</value>
+  </data>
+  <data name="ai_error.transient" xml:space="preserve">
+    <value>Lỗi tạm thời từ dịch vụ AI. Đang tự động thử lại...</value>
+  </data>
+  <data name="ai_error.malformed" xml:space="preserve">
+    <value>Định dạng phản hồi từ AI không hợp lệ.</value>
+  </data>
+  <data name="ai_error.unknown" xml:space="preserve">
+    <value>Có lỗi xảy ra khi xử lý lệnh AI.</value>
+  </data>
+  <data name="ai_error.action_open_settings" xml:space="preserve">
+    <value>Mở Cài đặt AI</value>
+  </data>
+  <data name="ai_error.action_retry_now" xml:space="preserve">
+    <value>Thử lại ngay</value>
+  </data>
+  <data name="ai_queue.open_ai_settings" xml:space="preserve">
+    <value>Mở Cài đặt AI</value>
   </data>
 </root>

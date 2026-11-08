@@ -35,18 +35,34 @@ public sealed partial class EventChipViewModel : ObservableObject
     public void Show(CalendarEvent calendarEvent, string label, string? calendarColor)
     {
         ArgumentNullException.ThrowIfNull(calendarEvent);
-        Event = calendarEvent;
         var palette = CalendarColors.Palette(calendarColor);
+        var isAi = CalendarColors.IsAiEvent(calendarEvent);
+        if (ReferenceEquals(Event, calendarEvent) &&
+            Title == label &&
+            Background == palette.Subtle &&
+            Foreground == palette.Text &&
+            IsAi == isAi &&
+            IsVisible)
+        {
+            return;
+        }
+
+        Event = calendarEvent;
         Title = label;
         Background = palette.Subtle;
         Foreground = palette.Text;
-        IsAi = CalendarColors.IsAiEvent(calendarEvent);
+        IsAi = isAi;
         IsVisible = true;
     }
 
     /// <summary>Hides this chip slot.</summary>
     public void Hide()
     {
+        if (!IsVisible && Event is null)
+        {
+            return;
+        }
+
         Event = null;
         Title = string.Empty;
         IsAi = false;

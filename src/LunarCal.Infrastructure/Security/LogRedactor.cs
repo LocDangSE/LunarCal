@@ -95,6 +95,8 @@ public static partial class LogRedactor
         }
 
         var result = input;
+        // 0. SecretValueRegistry exact-value matching (ADR-0016, SEC-KEY-1)
+        result = SecretValueRegistry.Redact(result, RedactedApiKey);
 
         // 1. Authorization header: Authorization: Bearer ... or Authorization: Basic ...
         result = AuthorizationHeaderRegex().Replace(result, $"$1{RedactedBearerToken}");

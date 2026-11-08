@@ -1,0 +1,406 @@
+<UserControl x:Class="LunarCal.App.Views.AiQueueDrawer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AiQueueDrawerViewModel}"
+             Width="{DynamicResource DrawerWidth}"
+             Background="{DynamicResource SurfaceBackgroundBrush}"
+             AutomationProperties.AutomationId="AiQueueDrawer">
+
+  <UserControl.Resources>
+    <!-- Secondary action button template -->
+    <Style x:Key="DrawerActionButtonStyle" TargetType="Button">
+      <Setter Property="Padding" Value="10,4" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBodyBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusSmall}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Accent action button template (Confirm / Retry) -->
+    <Style x:Key="DrawerAccentActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DrawerActionButtonStyle}">
+      <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    </Style>
+  </UserControl.Resources>
+
+  <Border BorderBrush="{DynamicResource ShellBorderBrush}"
+          BorderThickness="1,0,0,0"
+          Effect="{DynamicResource ShadowDrawer}">
+    <Grid Background="{DynamicResource SurfaceBackgroundBrush}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <!-- Drawer Header (Figma 03: 3:493) -->
+      <Grid Grid.Row="0" Margin="20,16,16,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Title & badge -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="{loc:Loc Key=ai_queue.title}"
+                     FontSize="{DynamicResource FontSizeTitle}"
+                     FontWeight="{DynamicResource FontWeightBold}"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     VerticalAlignment="Center" />
+
+          <!-- Count badge -->
+          <Border Background="{DynamicResource AiChipBrush}"
+                  BorderBrush="{DynamicResource AiBorderSubtleBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource CornerRadiusPill}"
+                  Padding="8,2"
+                  Margin="10,0,0,0"
+                  VerticalAlignment="Center">
+            <TextBlock Text="{Binding PendingCountText}"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       FontWeight="{DynamicResource FontWeightSemiBold}"
+                       Foreground="{DynamicResource AiTextBrush}" />
+          </Border>
+        </StackPanel>
+
+        <!-- Close button (✕) -->
+        <Button Grid.Column="1"
+                Command="{Binding CloseDrawerCommand}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="6"
+                Cursor="Hand"
+                AutomationProperties.AutomationId="BtnCloseAiQueueDrawer"
+                AutomationProperties.Name="{loc:Loc Key=ai_queue.close}">
+          <Path Data="{DynamicResource IconClose32}"
+                Stroke="{DynamicResource TextSecondaryBrush}"
+                StrokeThickness="1.5"
+                Width="14" Height="14" />
+        </Button>
+      </Grid>
+
+      <!-- Offline notification banner in drawer (FR-QUEUE-3) -->
+      <Border Grid.Row="1"
+              Background="{DynamicResource WarningSubtleBrush}"
+              BorderBrush="{DynamicResource WarningBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{DynamicResource CornerRadiusMedium}"
+              Padding="12,8"
+              Margin="16,0,16,12">
+        <Border.Style>
+          <Style TargetType="Border">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsOffline}" Value="True">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <Ellipse Width="8" Height="8" Fill="{DynamicResource WarningBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+          <TextBlock Text="{loc:Loc Key=ai.offline_banner}"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     FontWeight="{DynamicResource FontWeightMedium}"
+                     Foreground="{DynamicResource WarningTextBrush}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <!-- Command List ScrollArea -->
+      <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="16,0,16,16">
+          <!-- Empty state -->
+          <TextBlock Text="{loc:Loc Key=ai_queue.empty}"
+                     FontSize="{DynamicResource FontSizeBody}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Margin="0,48,0,0">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Commands.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+
+          <!-- Queue Items -->
+          <ItemsControl ItemsSource="{Binding Commands}" AutomationProperties.AutomationId="AiCommandList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type vm:AiCommandItemViewModel}">
+                <Border Background="{DynamicResource SurfaceMutedBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{DynamicResource CornerRadiusMedium}"
+                        Padding="12"
+                        Margin="0,0,0,12">
+                  <StackPanel>
+                    <!-- Item Header: #1000 & Time, Status Badge -->
+                    <DockPanel LastChildFill="False">
+                      <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DisplayNumberText}"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   FontWeight="{DynamicResource FontWeightBold}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}" />
+                        <TextBlock Text=" · "
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}" />
+                        <TextBlock Text="{Binding RelativeTimeText}"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}" />
+                      </StackPanel>
+
+                      <!-- Status Badge -->
+                      <Border DockPanel.Dock="Right"
+                              CornerRadius="{DynamicResource CornerRadiusPill}"
+                              Padding="8,2"
+                              VerticalAlignment="Center">
+                        <Border.Style>
+                          <Style TargetType="Border">
+                            <Setter Property="Background" Value="{DynamicResource ControlTrackBrush}" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AiSubtleBrush}" />
+                              </DataTrigger>
+                              <DataTrigger Binding="{Binding IsNeedsConfirmation}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource WarningSubtleBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource WarningBorderBrush}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                              </DataTrigger>
+                              <DataTrigger Binding="{Binding IsError}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource DangerSubtleBrush}" />
+                              </DataTrigger>
+                              <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding StatusText}"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   FontWeight="{DynamicResource FontWeightSemiBold}">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                              <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                  <Setter Property="Foreground" Value="{DynamicResource AiTextBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsNeedsConfirmation}" Value="True">
+                                  <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                  <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                  <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsCancelled}" Value="True">
+                                  <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                      </Border>
+                    </DockPanel>
+
+                    <!-- Command text -->
+                    <TextBlock Text="{Binding Text}"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,8" />
+
+                    <!-- Destructive Action Warning (FR-QUEUE-7) -->
+                    <Border CornerRadius="{DynamicResource CornerRadiusSmall}"
+                            Background="{DynamicResource WarningSubtleBrush}"
+                            BorderBrush="{DynamicResource WarningBorderBrush}"
+                            BorderThickness="1"
+                            Padding="8,4"
+                            Margin="0,0,0,8">
+                      <Border.Style>
+                        <Style TargetType="Border">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                          <Style.Triggers>
+                            <MultiDataTrigger>
+                              <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsDestructive}" Value="True" />
+                                <Condition Binding="{Binding IsNeedsConfirmation}" Value="True" />
+                              </MultiDataTrigger.Conditions>
+                              <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </Border.Style>
+                      <TextBlock Text="{Binding DestructiveWarningText}"
+                                 FontSize="{DynamicResource FontSizeCaption}"
+                                 FontWeight="{DynamicResource FontWeightMedium}"
+                                 Foreground="{DynamicResource WarningTextBrush}"
+                                 TextWrapping="Wrap" />
+                    </Border>
+
+                    <!-- Retry information / error message (FR-QUEUE-5) -->
+                    <TextBlock Text="{Binding RetryInfoText}"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               Foreground="{DynamicResource DangerBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,8">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsError}" Value="True">
+                              <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Action buttons according to FR-QUEUE-6 -->
+                    <WrapPanel Orientation="Horizontal" Margin="0,2,0,0">
+                      <!-- Confirm (Needs confirmation) -->
+                      <Button Content="{loc:Loc Key=ai_queue.action_confirm}"
+                              AutomationProperties.AutomationId="BtnActionConfirm"
+                              Command="{Binding DataContext.ConfirmCommandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerAccentActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanConfirm}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+
+                      <!-- Retry (Error) -->
+                      <Button Content="{loc:Loc Key=ai_queue.action_retry}"
+                              AutomationProperties.AutomationId="BtnActionRetry"
+                              Command="{Binding DataContext.RetryCommandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerAccentActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanRetry}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+
+                      <!-- Open AI Settings (When API Key is invalid, leaked, or missing - FR-CHAT-7) -->
+                      <Button Content="{loc:Loc Key=ai_queue.open_ai_settings}"
+                              AutomationProperties.AutomationId="BtnActionOpenAiSettings"
+                              Command="{Binding DataContext.OpenAiSettingsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerAccentActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanOpenAiSettings}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+
+                      <!-- Edit (Error) -->
+                      <Button Content="{loc:Loc Key=ai_queue.action_edit}"
+                              AutomationProperties.AutomationId="BtnActionEdit"
+                              Command="{Binding DataContext.EditCommandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanEdit}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+
+                      <!-- View (View command details) -->
+                      <Button Content="{loc:Loc Key=ai_queue.action_view}"
+                              AutomationProperties.AutomationId="BtnActionView"
+                              Command="{Binding DataContext.ViewCommandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanView}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+
+                      <!-- Cancel (Pending, Needs confirmation, Error) -->
+                      <Button Content="{loc:Loc Key=ai_queue.action_cancel}"
+                              Command="{Binding DataContext.CancelCommandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}"
+                              Margin="0,0,8,4">
+                        <Button.Style>
+                          <Style TargetType="Button" BasedOn="{StaticResource DrawerActionButtonStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding CanCancel}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Button.Style>
+                      </Button>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</UserControl>

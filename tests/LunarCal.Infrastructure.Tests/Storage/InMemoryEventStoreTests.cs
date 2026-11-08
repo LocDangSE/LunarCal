@@ -202,4 +202,53 @@ public sealed class InMemoryEventStoreTests
             EndUtc = end,
         };
     }
+
+    [Fact]
+    public async Task FR_SYNC_1_InMemoryStore_GetEventById_and_DeleteEvent_with_calendar_id_isolates_events()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryEventStore(seedSampleData: false);
+
+        await store.UpsertCalendarAsync(new CalendarInfo { Id = "cal-a", AccountId = "acc-1", Summary = "Calendar A" }, ct);
+        await store.UpsertCalendarAsync(new CalendarInfo { Id = "cal-b", AccountId = "acc-1", Summary = "Calendar B" }, ct);
+
+        var eventInA = new CalendarEvent
+        {
+            Id = "shared-id",
+            CalendarId = "cal-a",
+            Title = "Event in Calendar A",
+            StartUtc = DateTimeOffset.UtcNow,
+            EndUtc = DateTimeOffset.UtcNow.AddHours(1)
+        };
+        var eventInB = new CalendarEvent
+        {
+            Id = "shared-id",
+            CalendarId = "cal-b",
+            Title = "Event in Calendar B",
+            StartUtc = DateTimeOffset.UtcNow,
+            EndUtc = DateTimeOffset.UtcNow.AddHours(1)
+        };
+
+        await store.UpsertEventAsync(eventInA, ct);
+        await store.UpsertEventAsync(eventInB, ct);
+
+        // Fetch each independently using (calendarId, eventId)
+        var fetchedA = await store.GetEventByIdAsync("cal-a", "shared-id", ct);
+        var fetchedB = await store.GetEventByIdAsync("cal-b", "shared-id", ct);
+
+        fetchedA.Should().NotBeNull();
+        fetchedA!.Title.Should().Be("Event in Calendar A");
+
+        fetchedB.Should().NotBeNull();
+        fetchedB!.Title.Should().Be("Event in Calendar B");
+
+        // Delete from Calendar A only
+        await store.DeleteEventAsync("cal-a", "shared-id", ct);
+
+        // Verification: Calendar A's event is gone, Calendar B's event remains intact
+        (await store.GetEventByIdAsync("cal-a", "shared-id", ct)).Should().BeNull();
+        var remainingB = await store.GetEventByIdAsync("cal-b", "shared-id", ct);
+        remainingB.Should().NotBeNull();
+        remainingB!.Title.Should().Be("Event in Calendar B");
+    }
 }

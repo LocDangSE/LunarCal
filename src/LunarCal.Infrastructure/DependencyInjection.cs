@@ -1,4 +1,7 @@
 using LunarCal.Core.Abstractions;
+using LunarCal.Core.Chat;
+using LunarCal.Infrastructure.Chat;
+using LunarCal.Infrastructure.Gemini;
 using LunarCal.Infrastructure.Google;
 using LunarCal.Infrastructure.Google.OAuth;
 using LunarCal.Infrastructure.Network;
@@ -17,6 +20,9 @@ namespace LunarCal.Infrastructure;
 public static class DependencyInjection
 {
     /// <summary>Adds LunarCal infrastructure services. Registrations are added phase by phase (spec §13).</summary>
+    public const string GeminiClientName = "LunarCal.Gemini";
+    public const string GeminiValidationClientName = "LunarCal.Gemini.Validation";
+
     public static IServiceCollection AddLunarCalInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -246,6 +252,94 @@ public static class DependencyInjection
             var logger = sp.GetService<ILogger>();
             return new SqliteAccountStore(connectionFactory, logger);
         });
+
+        // One Google account at a time; switching accounts wipes the old data (FR-AUTH-5, ADR-0029)
+        services.AddSingleton(sp => new AccountDataPurger(sp.GetRequiredService<ISqliteConnectionFactory>()));
+        services.AddSingleton<IAccountSessionService, AccountSessionService>();
+
+        // Phase 4: Gemini REST generateContent client & key security (P4-02, SEC-KEY-2, SEC-KEY-3, ADR-0016)
+        GeminiConfigurationValidator.WarnIfApiKeyInConfiguration(configuration, Log.Logger);
+
+        services.Configure<GeminiOptions>(configuration.GetSection(GeminiOptions.SectionName));
+
+        services.AddTransient<GeminiApiKeyDelegatingHandler>();
+
+        services.AddHttpClient(GeminiClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                // ADR-0016: Disable auto-redirect so x-goog-api-key header never leaks across host boundaries
+                AllowAutoRedirect = false
+            })
+            .AddHttpMessageHandler<NetworkSecurityDelegatingHandler>()
+            .AddHttpMessageHandler<GeminiApiKeyDelegatingHandler>();
+
+        services.AddSingleton<IChatModelClient, GeminiChatModelClient>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = factory.CreateClient(GeminiClientName);
+            var options = sp.GetRequiredService<IOptions<GeminiOptions>>();
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<GeminiChatModelClient>>();
+            return new GeminiChatModelClient(httpClient, options, logger, sp.GetService<ISettingsStore>());
+        });
+
+        // Key validator: queries GET /v1beta/models with header x-goog-api-key directly (P4-03, FR-BYOK-2, ADR-0016)
+        services.AddHttpClient(GeminiValidationClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false
+            })
+            .AddHttpMessageHandler<NetworkSecurityDelegatingHandler>();
+
+        services.AddSingleton<IAiKeyValidator>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = factory.CreateClient(GeminiValidationClientName);
+            var logger = sp.GetService<Serilog.ILogger>();
+            return new GeminiKeyValidator(httpClient, logger);
+        });
+
+        services.AddSingleton<IAiKeyService>(sp =>
+        {
+            var secretStore = sp.GetRequiredService<ISecretStore>();
+            var validator = sp.GetRequiredService<IAiKeyValidator>();
+            var logger = sp.GetService<Serilog.ILogger>();
+            return new GeminiKeyService(secretStore, validator, logger);
+        });
+
+        // Phase 4: Gemini model selection & function calling probe service (P4-04, FR-BYOK-5, ADR-0016)
+        services.AddSingleton<IAiModelService>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = factory.CreateClient(GeminiValidationClientName);
+            var settingsStore = sp.GetRequiredService<ISettingsStore>();
+            var secretStore = sp.GetRequiredService<ISecretStore>();
+            var options = sp.GetService<IOptions<GeminiOptions>>();
+            var logger = sp.GetService<Serilog.ILogger>();
+            return new GeminiModelService(httpClient, settingsStore, secretStore, options, logger);
+        });
+
+        // Phase 4: Versioned system prompt provider (P4-05, spec §7, FR-CHAT-6, FR-QUEUE-4, ADR-0030)
+        services.AddSingleton<ISystemPromptProvider, SystemPromptProvider>();
+        services.AddSingleton<IAiBusinessValidator, AiBusinessValidator>();
+        services.AddSingleton<IAiChatErrorMapper, AiChatErrorMapper>();
+
+        // Phase 4: AI command queue store & background worker (P4-08, FR-QUEUE-1..9)
+        services.AddSingleton<IAiCommandStore, SqliteAiCommandStore>();
+        services.AddSingleton<AiQueueRetryPolicy>();
+
+        // Phase 4: chat pipeline. The orchestrator turns a queued command into a proposal; the tool executor is only
+        // reached after the user confirmed it (AiCommandConfirmationService) or when auto-confirm is on (FR-CHAT-2).
+        // Without these registrations the worker had no orchestrator and no AI command could ever be processed.
+        services.AddSingleton<IToolExecutor, CalendarToolExecutor>();
+        services.AddTransient<IChatOrchestrator, ChatOrchestrator>();
+        services.AddSingleton<IAiCommandConfirmationService, AiCommandConfirmationService>();
+
+        // The queue worker can be switched off by configuration (LunarCal:Ai:QueueWorkerEnabled=false), used by the UI
+        // smoke tests so that they never call the user's Gemini key; it is on by default.
+        if (!string.Equals(configuration["LunarCal:Ai:QueueWorkerEnabled"], "false", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHostedService<AiCommandQueueWorker>();
+        }
 
         return services;
     }

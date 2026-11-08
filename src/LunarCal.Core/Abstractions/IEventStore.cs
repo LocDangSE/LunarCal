@@ -56,6 +56,14 @@ public interface IEventStore
     Task<CalendarEvent?> GetEventByIdAsync(string eventId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a single event by its identifier within a specific calendar (FR-SYNC-1, P4-R3).
+    /// </summary>
+    /// <param name="calendarId">The calendar identifier.</param>
+    /// <param name="eventId">The event identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<CalendarEvent?> GetEventByIdAsync(string calendarId, string eventId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds or updates an event.
     /// </summary>
     /// <param name="calendarEvent">The event to persist.</param>
@@ -68,4 +76,12 @@ public interface IEventStore
     /// <param name="eventId">The event identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteEventAsync(string eventId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes an event by its identifier within a specific calendar (FR-SYNC-1, P4-R3).
+    /// </summary>
+    /// <param name="calendarId">The calendar identifier.</param>
+    /// <param name="eventId">The event identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task DeleteEventAsync(string calendarId, string eventId, CancellationToken cancellationToken = default);
 }

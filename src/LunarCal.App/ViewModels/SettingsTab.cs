@@ -1,8 +1,7 @@
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// Settings navigation entries implemented so far (Figma 04, S13, S20). "AI &amp; dữ liệu" (Phase 4/6a),
-/// "Thông báo" (Phase 7) and "Giới thiệu" (Phase 8) are added with their phases.
+/// Settings navigation entries (Figma 04, S13, S20). "Thông báo" (Phase 7) and "Giới thiệu" (Phase 8) are added with their phases.
 /// </summary>
 public enum SettingsTab
 {
@@ -11,6 +10,9 @@ public enum SettingsTab
 
     /// <summary>Tài khoản Google (Figma 04 section "Tài khoản Google").</summary>
     GoogleAccount,
+
+    /// <summary>AI và dữ liệu huấn luyện (Figma 04, FR-BYOK, P4-03, P6a-01).</summary>
+    Ai,
 
     /// <summary>Giao diện (S13).</summary>
     Appearance,

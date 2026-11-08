@@ -44,6 +44,13 @@
           </MultiDataTrigger.Conditions>
           <Setter Property="Visibility" Value="Visible" />
         </MultiDataTrigger>
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Binding="{Binding CurrentStep}" Value="3" />
+            <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="3" />
+          </MultiDataTrigger.Conditions>
+          <Setter Property="Visibility" Value="Visible" />
+        </MultiDataTrigger>
       </Style.Triggers>
     </Style>
 
@@ -384,6 +391,60 @@
         </Border>
       </StackPanel>
 
+      <!-- Step 3: Gemini API key (39:395) -->
+      <StackPanel Grid.Row="1" Tag="3" Style="{StaticResource StepPanelStyle}">
+        <TextBlock Text="{loc:Loc Key=firstrun.step3_title}" Margin="0,6,0,0" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeWizardTitle}" FontWeight="{DynamicResource FontWeightBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}" />
+        <TextBlock Text="{loc:Loc Key=firstrun.step3_desc}" Margin="0,6,0,16" TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBodyStrong}" Foreground="{DynamicResource TextSecondaryBrush}" />
+
+        <Border Style="{StaticResource SettingsCardStyle}">
+          <StackPanel>
+            <Border Style="{StaticResource SettingsRowStyle}">
+              <StackPanel>
+                <Border Background="{DynamicResource ControlTrackBrush}" CornerRadius="{DynamicResource CornerRadiusMedium}" Padding="14,12" Margin="0,0,0,12">
+                  <TextBlock Text="{loc:Loc Key=settings.ai.privacy_notice}" TextWrapping="Wrap"
+                             FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Border>
+                <Button Content="{loc:Loc Key=settings.ai.get_key_link}"
+                        Command="{Binding OpenAiStudioCommand}"
+                        Style="{StaticResource LinkButtonStyle}"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="BtnFirstRunOpenAiStudio" />
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource SettingsLastRowStyle}">
+              <StackPanel>
+                <TextBlock Text="{loc:Loc Key=settings.ai.key_label}"
+                           FontSize="{DynamicResource FontSizeSubtitle}"
+                           FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Margin="0,0,0,8" />
+                <PasswordBox x:Name="Step3PasswordBox"
+                             Height="38"
+                             FontSize="{DynamicResource FontSizeBodyStrong}"
+                             Padding="10,8"
+                             VerticalContentAlignment="Center"
+                             BorderBrush="{DynamicResource BorderStrongBrush}"
+                             BorderThickness="1"
+                             Background="{DynamicResource SurfaceBackgroundBrush}"
+                             AutomationProperties.AutomationId="PbFirstRunGeminiApiKey" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <!-- Error message -->
+        <Border Margin="0,12,0,0" Padding="12,10" Background="{DynamicResource DangerSubtleBrush}"
+                BorderBrush="{DynamicResource DangerBrush}" BorderThickness="1"
+                CornerRadius="{DynamicResource CornerRadiusMedium}"
+                Visibility="{Binding AiErrorMessage, Converter={StaticResource StringToVis}}">
+          <TextBlock Text="{Binding AiErrorMessage}" Foreground="{DynamicResource DangerBrush}"
+                     FontSize="{DynamicResource FontSizeBodyStrong}" TextWrapping="Wrap" />
+        </Border>
+      </StackPanel>
+
       <!-- Footer with divider -->
       <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,16,0,0">
         <Grid>
@@ -411,11 +472,28 @@
                     AutomationProperties.AutomationId="BtnFirstRunBack" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
               <Button Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
-                      Content="{loc:Loc Key=firstrun.skip_lunar_only}" Command="{Binding SkipCommand}"
+                      Content="{loc:Loc Key=firstrun.skip_lunar_only}" Command="{Binding SkipStep2Command}"
                       AutomationProperties.AutomationId="BtnFirstRunSkip" />
               <Button Style="{StaticResource PrimaryButtonStyle}"
-                      Content="{loc:Loc Key=firstrun.btn_continue}" Command="{Binding FinishCommand}"
+                      Content="{loc:Loc Key=firstrun.btn_continue}" Command="{Binding ContinueStep2Command}"
                       AutomationProperties.AutomationId="BtnFirstRunFinish" />
+            </StackPanel>
+          </DockPanel>
+
+          <!-- Step 3 -->
+          <DockPanel Tag="3" Style="{StaticResource StepPanelStyle}">
+            <Button DockPanel.Dock="Left" Style="{StaticResource LinkButtonStyle}" Margin="14,0,0,0"
+                    FontSize="{DynamicResource FontSizeBodyStrong}" VerticalAlignment="Center"
+                    Content="{loc:Loc Key=firstrun.back}" Command="{Binding BackStep3Command}"
+                    AutomationProperties.AutomationId="BtnFirstRunBackStep3" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+              <Button Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                      Content="{loc:Loc Key=firstrun.btn_skip_ai}" Command="{Binding FinishCommand}"
+                      AutomationProperties.AutomationId="BtnFirstRunSkipAi" />
+              <Button x:Name="BtnFirstRunSaveAi" Style="{StaticResource PrimaryButtonStyle}"
+                      Content="{loc:Loc Key=settings.ai.check_and_save}" Click="OnFirstRunSaveAiClicked"
+                      IsEnabled="{Binding IsCheckingAiKey, Converter={StaticResource InverseBool}}"
+                      AutomationProperties.AutomationId="BtnFirstRunSaveAi" />
             </StackPanel>
           </DockPanel>
         </Grid>

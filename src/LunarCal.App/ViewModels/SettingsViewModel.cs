@@ -25,13 +25,28 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>Google account and sync (Figma 04).</summary>
     public GoogleAccountViewModel Account { get; }
 
+    /// <summary>AI and BYOK settings (Figma 04, FR-BYOK-1..4).</summary>
+    public AiSettingsViewModel Ai { get; }
+
     /// <summary>OAuth client, local data, logs (S20).</summary>
     public AdvancedSettingsViewModel Advanced { get; }
+
+    /// <summary>Creates the settings view model without AI settings (backward compatibility).</summary>
+    public SettingsViewModel(
+        AppearanceSettingsViewModel appearance,
+        GoogleAccountViewModel account,
+        AdvancedSettingsViewModel advanced,
+        ILocalizationService? localization = null,
+        ISettingsStore? settingsStore = null)
+        : this(appearance, account, null, advanced, localization, settingsStore)
+    {
+    }
 
     /// <summary>Creates the settings view model.</summary>
     public SettingsViewModel(
         AppearanceSettingsViewModel appearance,
         GoogleAccountViewModel account,
+        AiSettingsViewModel? ai,
         AdvancedSettingsViewModel advanced,
         ILocalizationService? localization = null,
         ISettingsStore? settingsStore = null)
@@ -39,6 +54,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         Appearance = appearance ?? throw new ArgumentNullException(nameof(appearance));
         Account = account ?? throw new ArgumentNullException(nameof(account));
         Advanced = advanced ?? throw new ArgumentNullException(nameof(advanced));
+        Ai = ai!;
         _localization = localization;
         _settingsStore = settingsStore;
     }

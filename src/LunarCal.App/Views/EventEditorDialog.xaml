@@ -31,6 +31,7 @@
 
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
     <conv:ColorToBrushConverter x:Key="ColorToBrush" />
     <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
     <conv:DateOnlyToDateTimeConverter x:Key="DateOnlyToDateTimeConverter" />
@@ -148,6 +149,27 @@
           </Grid.ColumnDefinitions>
           <TextBlock Grid.Column="0" Text="{loc:Loc event.time}" Style="{StaticResource FieldRowLabel}" />
           <StackPanel Grid.Column="2">
+            <!-- Overnight chip and custom end date link (Figma 52:370, S10 3.3) -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8"
+                        Visibility="{Binding IsOvernight, Converter={StaticResource BoolToVis}}">
+              <Border Background="{DynamicResource ControlTrackBrush}"
+                      CornerRadius="{DynamicResource CornerRadiusSmall}"
+                      Padding="8,4" Margin="0,0,8,0">
+                <TextBlock Text="{Binding OvernightChipText}"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource AccentPrimaryBrush}"
+                           FontWeight="{DynamicResource FontWeightMedium}"
+                           AutomationProperties.AutomationId="TxtOvernightChip" />
+              </Border>
+              <Button Content="{loc:Loc event.custom_end_date_link}"
+                      Style="{StaticResource LinkButtonStyle}"
+                      FontSize="{DynamicResource FontSizeBody}"
+                      VerticalAlignment="Center"
+                      Command="{Binding OpenCustomEndDateCommand}"
+                      Visibility="{Binding IsCustomEndDateOpen, Converter={StaticResource InverseBoolToVis}}"
+                      AutomationProperties.AutomationId="BtnCustomEndDate" />
+            </StackPanel>
+
             <WrapPanel>
               <!-- Start date: "Thứ 5, 22/10/2026  13/9 ÂL ▾" -->
               <Grid Width="230" Margin="0,0,8,8">
@@ -210,17 +232,23 @@
                         AutomationProperties.AutomationId="TxtEndTime" />
             </WrapPanel>
 
-            <!-- "Cả ngày" + time zone (35:795) -->
-            <StackPanel Orientation="Horizontal">
+            <!-- "Cả ngày" + time zone selector (Figma 52:971, S10 3.4) -->
+            <WrapPanel VerticalAlignment="Center">
               <CheckBox IsChecked="{Binding IsAllDay, Mode=TwoWay}"
                         Content="{loc:Loc calendar.all_day}"
                         Style="{StaticResource FormCheckBoxStyle}"
                         VerticalAlignment="Center"
                         AutomationProperties.AutomationId="ChkAllDay" />
-              <TextBlock Text="{Binding TimeZoneText}" Margin="16,0,0,0" VerticalAlignment="Center"
-                         FontSize="{DynamicResource FontSizeBody}" Foreground="{DynamicResource AccentPrimaryBrush}"
-                         AutomationProperties.AutomationId="TxtTimeZone" />
-            </StackPanel>
+              <ComboBox Width="200" Height="30" Margin="16,0,0,0"
+                        Style="{StaticResource DropdownStyle}"
+                        ItemsSource="{Binding TimeZoneOptions}"
+                        SelectedItem="{Binding SelectedTimeZoneOption, Mode=TwoWay}"
+                        DisplayMemberPath="Label"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="CmbEventTimeZone" />
+              <TextBlock Text="{loc:Loc event.timezone.note}" Margin="8,0,0,0" VerticalAlignment="Center"
+                         FontSize="{DynamicResource FontSizeCaption}" Foreground="{DynamicResource TextSecondaryBrush}" />
+            </WrapPanel>
           </StackPanel>
         </Grid>
 
@@ -258,6 +286,20 @@
                       DisplayMemberPath="Label"
                       Visibility="{Binding IsSolarRecurrence, Converter={StaticResource BoolToVis}}"
                       AutomationProperties.AutomationId="CmbSolarFrequency" />
+
+            <!-- Solar rule headline and next occurrences (Figma 52:370, S10 3.3) -->
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsSolarRecurrence, Converter={StaticResource BoolToVis}}">
+              <TextBlock Text="{Binding SolarRuleTitle}"
+                         FontSize="{DynamicResource FontSizeBodyStrong}"
+                         FontWeight="{DynamicResource FontWeightMedium}"
+                         Foreground="{DynamicResource TextPrimaryBrush}"
+                         AutomationProperties.AutomationId="TxtSolarRuleTitle" />
+              <TextBlock Text="{Binding SolarRuleNextText}" Margin="0,4,0,0"
+                         FontSize="{DynamicResource FontSizeBody}"
+                         Foreground="{DynamicResource TextSecondaryBrush}"
+                         AutomationProperties.AutomationId="TxtSolarRuleNext" />
+            </StackPanel>
 
             <!-- Lunar rule panel (35:815): headline, policy, next dates, customise -->
             <Border Margin="0,8,0,0" Padding="14,12"

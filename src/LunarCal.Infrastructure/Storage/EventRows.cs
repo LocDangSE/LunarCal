@@ -40,8 +40,7 @@ internal static class EventRows
                 @id, @calendar_id, @google_id, @recurring_event_id, @title, @description, @location,
                 @start_utc, @end_utc, @all_day, @timezone, @etag, @updated, @status, @extended_json, @reminders_json, @recurrence_json
             )
-            ON CONFLICT(id) DO UPDATE SET
-                calendar_id = excluded.calendar_id,
+            ON CONFLICT(calendar_id, id) DO UPDATE SET
                 google_id = excluded.google_id,
                 recurring_event_id = excluded.recurring_event_id,
                 title = excluded.title,

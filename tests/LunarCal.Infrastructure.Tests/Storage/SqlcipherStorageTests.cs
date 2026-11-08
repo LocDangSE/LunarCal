@@ -53,9 +53,9 @@ public sealed class SqlcipherStorageTests : IDisposable
         using var connection = await factory.CreateConnectionAsync(ct);
         await connection.OpenAsync(ct);
 
-        // Verify the latest schema version (V2, P3-R1) is recorded in __schema_version
+        // Verify the latest schema version (V3, P4-R3) is recorded in __schema_version
         int version = await SqliteMigrationRunner.GetCurrentVersionAsync(connection, ct);
-        version.Should().Be(2);
+        version.Should().Be(4);
 
         // Verify all 9 tables from spec §6 are created
         var expectedTables = new[]
@@ -222,7 +222,7 @@ public sealed class SqlcipherStorageTests : IDisposable
 
         SqliteConnection.ClearAllPools();
 
-        // 2. Upgrade with the production runner (V1 + V2, P3-R1/P3-R2)
+        // 2. Upgrade with the production runner (V1..V4, P3-R1/P3-R2/P4-R3/P4-REVIEW)
         using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
         {
             await factory.EnsureInitializedAsync(ct);
@@ -230,9 +230,9 @@ public sealed class SqlcipherStorageTests : IDisposable
             using var conn = await factory.CreateConnectionAsync(ct);
             await conn.OpenAsync(ct);
 
-            // Verify version is now 2
+            // Verify version is now 4
             int version = await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct);
-            version.Should().Be(2);
+            version.Should().Be(4);
 
             // Verify existing V1 data was preserved
             using var queryCmd = conn.CreateCommand();
@@ -246,6 +246,138 @@ public sealed class SqlcipherStorageTests : IDisposable
             Convert.ToInt32(await checkV2Cmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture).Should().Be(1);
             checkV2Cmd.CommandText = "SELECT access_role IS NULL AND time_zone IS NULL FROM CalendarInfo WHERE id = 'cal-1';";
             Convert.ToInt32(await checkV2Cmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture).Should().Be(1);
+        }
+    }
+
+
+    [Fact]
+    public async Task FR_SYNC_1_Migration_V2_to_V3_preserves_event_data_and_enables_same_id_in_different_calendars()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var secretStore = new DpapiSecretStore(_secretsDirectory);
+        var options = new SqliteStorageOptions { DatabasePath = _dbPath };
+
+        // 1. Initialize schema up to V2 only
+        using (var factory = new SqliteConnectionFactory(
+            secretStore,
+            options,
+            new SqliteMigrationRunner([new Migration001InitialSchema(), new Migration002EventDetails()])))
+        {
+            await factory.EnsureInitializedAsync(ct);
+
+            using var conn = await factory.CreateConnectionAsync(ct);
+            await conn.OpenAsync(ct);
+
+            int v2 = await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct);
+            v2.Should().Be(2);
+
+            // Insert two calendars and an event into cal-1
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = """
+                INSERT INTO Account (id, email, display_name) VALUES ('acc-1', 'test@example.com', 'Test User');
+                INSERT INTO CalendarInfo (id, account_id, summary, color, selected) VALUES ('cal-1', 'acc-1', 'Work', '#2F6BFF', 1);
+                INSERT INTO CalendarInfo (id, account_id, summary, color, selected) VALUES ('cal-2', 'acc-1', 'Personal', '#12B76A', 1);
+                INSERT INTO Event (id, calendar_id, title, start_utc, end_utc, recurrence_json, reminders_json)
+                VALUES ('evt-shared', 'cal-1', 'Existing Event in Cal1', '2026-11-02T10:00:00Z', '2026-11-02T11:00:00Z', '["RRULE:FREQ=DAILY"]', '[10]');
+                """;
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+
+        SqliteConnection.ClearAllPools();
+
+        // 2. Upgrade to latest (V4)
+        using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
+        {
+            await factory.EnsureInitializedAsync(ct);
+
+            using var conn = await factory.CreateConnectionAsync(ct);
+            await conn.OpenAsync(ct);
+
+            int v3 = await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct);
+            v3.Should().Be(4);
+
+            // Existing data is preserved
+            using (var queryCmd = conn.CreateCommand())
+            {
+                queryCmd.CommandText = "SELECT title, recurrence_json, reminders_json FROM Event WHERE id = 'evt-shared' AND calendar_id = 'cal-1';";
+                using var reader = await queryCmd.ExecuteReaderAsync(ct);
+                (await reader.ReadAsync(ct)).Should().BeTrue();
+                reader.GetString(0).Should().Be("Existing Event in Cal1");
+                reader.GetString(1).Should().Be("""["RRULE:FREQ=DAILY"]""");
+                reader.GetString(2).Should().Be("[10]");
+            }
+
+            // Now, inserting an event with the same ID into cal-2 MUST succeed (FR-SYNC-1)
+            using (var insertDupCmd = conn.CreateCommand())
+            {
+                insertDupCmd.CommandText = """
+                    INSERT INTO Event (id, calendar_id, title, start_utc, end_utc)
+                    VALUES ('evt-shared', 'cal-2', 'Same ID Different Cal', '2026-11-03T10:00:00Z', '2026-11-03T11:00:00Z');
+                    """;
+                await insertDupCmd.ExecuteNonQueryAsync(ct);
+            }
+
+            // But inserting an event with the same ID into the same calendar cal-1 MUST fail with primary key violation
+            using (var insertConflictCmd = conn.CreateCommand())
+            {
+                insertConflictCmd.CommandText = """
+                    INSERT INTO Event (id, calendar_id, title, start_utc, end_utc)
+                    VALUES ('evt-shared', 'cal-1', 'Duplicate in Same Cal', '2026-11-04T10:00:00Z', '2026-11-04T11:00:00Z');
+                    """;
+                var act = async () => await insertConflictCmd.ExecuteNonQueryAsync(ct);
+                await act.Should().ThrowAsync<SqliteException>();
+            }
+
+            // Confirm both events exist
+            using (var countCmd = conn.CreateCommand())
+            {
+                countCmd.CommandText = "SELECT COUNT(*) FROM Event WHERE id = 'evt-shared';";
+                Convert.ToInt32(await countCmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture).Should().Be(2);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task FR_QUEUE_2_Migration_V3_to_V4_adds_proposal_column_and_keeps_queued_commands()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var secretStore = new DpapiSecretStore(_secretsDirectory);
+        var options = new SqliteStorageOptions { DatabasePath = _dbPath };
+
+        using (var factory = new SqliteConnectionFactory(
+            secretStore,
+            options,
+            new SqliteMigrationRunner([new Migration001InitialSchema(), new Migration002EventDetails(), new Migration003EventCompositeKey()])))
+        {
+            await factory.EnsureInitializedAsync(ct);
+
+            using var conn = await factory.CreateConnectionAsync(ct);
+            await conn.OpenAsync(ct);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = """
+                INSERT INTO AiCommand (id, display_no, text, typed_at, timezone, input_lang, status, retry_count, created_at, updated_at)
+                VALUES ('cmd-1', 1000, 'họp 9h', '2026-11-02T01:00:00Z', 'SE Asia Standard Time', 'vi', 'needs_confirmation', 0, '2026-11-02T01:00:00Z', '2026-11-02T01:00:00Z');
+                """;
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+
+        SqliteConnection.ClearAllPools();
+
+        using (var factory = new SqliteConnectionFactory(secretStore, options, new SqliteMigrationRunner()))
+        {
+            await factory.EnsureInitializedAsync(ct);
+
+            using var conn = await factory.CreateConnectionAsync(ct);
+            await conn.OpenAsync(ct);
+            (await SqliteMigrationRunner.GetCurrentVersionAsync(conn, ct)).Should().Be(4);
+
+            using var query = conn.CreateCommand();
+            query.CommandText = "SELECT text, status, proposal_json IS NULL FROM AiCommand WHERE id = 'cmd-1';";
+            using var reader = await query.ExecuteReaderAsync(ct);
+            (await reader.ReadAsync(ct)).Should().BeTrue();
+            reader.GetString(0).Should().Be("họp 9h");
+            reader.GetString(1).Should().Be("needs_confirmation");
+            reader.GetInt32(2).Should().Be(1, "upgraded commands have no stored proposal yet");
         }
     }
 }

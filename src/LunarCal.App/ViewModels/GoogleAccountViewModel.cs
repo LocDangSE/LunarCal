@@ -17,12 +17,15 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
     private readonly IGoogleOAuthClient _oauthClient;
     private readonly IGoogleSignOutService _signOutService;
     private readonly IAccountStore _accountStore;
+    private readonly IAccountSessionService _accountSession;
+    private readonly IAccountSwitchPrompt? _switchPrompt;
     private readonly ISyncScheduler? _syncScheduler;
     private readonly ILocalizationService _localization;
     private readonly GoogleOAuthOptions? _oauthOptions;
     private readonly IConfirmationService? _confirmation;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SignInButtonText))]
     private bool _isSignedIn;
 
     [ObservableProperty]
@@ -55,6 +58,9 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
     [ObservableProperty]
     private string? _statusMessage;
 
+    /// <summary>"Đổi tài khoản…" while an account is connected, "Đăng nhập" otherwise (S20, ADR-0029).</summary>
+    public string SignInButtonText => _localization[IsSignedIn ? "settings.advanced.change_account" : "settings.account.signin_button"];
+
     /// <summary>
     /// Event raised when the account state changes (sign-in or sign-out).
     /// </summary>
@@ -64,14 +70,18 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
         IGoogleOAuthClient oauthClient,
         IGoogleSignOutService signOutService,
         IAccountStore accountStore,
+        IAccountSessionService accountSession,
         ILocalizationService localization,
         ISyncScheduler? syncScheduler = null,
         GoogleOAuthOptions? oauthOptions = null,
-        IConfirmationService? confirmation = null)
+        IConfirmationService? confirmation = null,
+        IAccountSwitchPrompt? switchPrompt = null)
     {
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _signOutService = signOutService ?? throw new ArgumentNullException(nameof(signOutService));
         _accountStore = accountStore ?? throw new ArgumentNullException(nameof(accountStore));
+        _accountSession = accountSession ?? throw new ArgumentNullException(nameof(accountSession));
+        _switchPrompt = switchPrompt;
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _syncScheduler = syncScheduler;
         _oauthOptions = oauthOptions;
@@ -217,7 +227,13 @@ public sealed partial class GoogleAccountViewModel : ObservableObject
                     DisplayName = info.DisplayName
                 };
 
-                await _accountStore.SaveAccountAsync(account, cancellationToken).ConfigureAwait(true);
+                // One account at a time (FR-AUTH-5, ADR-0029): a different Google account only replaces the stored one after the user confirms.
+                var outcome = await _accountSession.ApplySignInAsync(info, AccountSwitchPrompts.ToDelegate(_switchPrompt), cancellationToken).ConfigureAwait(true);
+                if (outcome == AccountSignInOutcome.Cancelled)
+                {
+                    StatusMessage = _localization["settings.account.switch_cancelled"];
+                    return;
+                }
 
                 AccountId = account.Id;
                 AccountEmail = account.Email;

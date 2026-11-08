@@ -1089,22 +1089,10 @@
     <value>Defaults by language: Monday and 24-hour (vi-VN), Sunday and 12-hour (en-US)</value>
   </data>
   <data name="settings.advanced.accounts_desc" xml:space="preserve">
-    <value>Sign in in the system browser; tokens stay on this computer</value>
-  </data>
-  <data name="settings.advanced.account_active" xml:space="preserve">
-    <value>In use</value>
+    <value>One account at a time. Changing the account deletes the current account's data from this computer.</value>
   </data>
   <data name="settings.advanced.signout" xml:space="preserve">
     <value>Sign out</value>
-  </data>
-  <data name="settings.advanced.add_account_title" xml:space="preserve">
-    <value>Add a Google account</value>
-  </data>
-  <data name="settings.advanced.add_account_desc" xml:space="preserve">
-    <value>Sign in in the system browser. Each account has its own cache and token.</value>
-  </data>
-  <data name="settings.advanced.add_account" xml:space="preserve">
-    <value>Add account</value>
   </data>
   <data name="settings.advanced.custom_client" xml:space="preserve">
     <value>Use my own OAuth client</value>
@@ -1257,5 +1245,449 @@
   </data>
   <data name="common.hide" xml:space="preserve">
     <value>Hide</value>
+  </data>
+  <data name="settings.advanced.change_account_title" xml:space="preserve">
+    <value>Change Google account</value>
+  </data>
+  <data name="settings.advanced.change_account_desc" xml:space="preserve">
+    <value>Sign in in the system browser. The current account's data is deleted only after you confirm.</value>
+  </data>
+  <data name="settings.advanced.change_account" xml:space="preserve">
+    <value>Change account…</value>
+  </data>
+  <data name="account_switch.title" xml:space="preserve">
+    <value>Switch to a different Google account?</value>
+  </data>
+  <data name="account_switch.subtitle" xml:space="preserve">
+    <value>Signed in: {0} · new account: {1}</value>
+  </data>
+  <data name="account_switch.body" xml:space="preserve">
+    <value>LunarCal works with one Google account. If you continue, the data of {0} on this computer is deleted and the calendar of {1} is downloaded.</value>
+  </data>
+  <data name="account_switch.warn_title" xml:space="preserve">
+    <value>Will be deleted from this computer</value>
+  </data>
+  <data name="account_switch.warn_pending" xml:space="preserve">
+    <value>{0} change(s) not yet synced to Google</value>
+  </data>
+  <data name="account_switch.warn_ai" xml:space="preserve">
+    <value>{0} AI command(s) waiting in the queue</value>
+  </data>
+  <data name="account_switch.warn_lunar" xml:space="preserve">
+    <value>{0} lunar recurrence rule(s) stored only on this computer</value>
+  </data>
+  <data name="account_switch.kept" xml:space="preserve">
+    <value>Kept: settings, language and Gemini API key</value>
+  </data>
+  <data name="account_switch.keep_button" xml:space="preserve">
+    <value>Keep current account</value>
+  </data>
+  <data name="account_switch.confirm_button" xml:space="preserve">
+    <value>Delete old data and switch account</value>
+  </data>
+  <data name="settings.account.switch_cancelled" xml:space="preserve">
+    <value>Kept the current account.</value>
+  </data>
+  <!-- Event Editor S10 (P4-R1, Figma 52:370, 52:971) -->
+  <data name="event.overnight_chip" xml:space="preserve">
+    <value>+{0} day(s) · ends {1}</value>
+  </data>
+  <data name="event.custom_end_date_link" xml:space="preserve">
+    <value>Different end date…</value>
+  </data>
+  <data name="recurrence.solar_rule.daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="recurrence.solar_rule.weekly" xml:space="preserve">
+    <value>Repeats every {0}</value>
+  </data>
+  <data name="recurrence.solar_rule.monthly" xml:space="preserve">
+    <value>Repeats on day {0} of every month</value>
+  </data>
+  <data name="recurrence.solar_rule.yearly" xml:space="preserve">
+    <value>Annually on {0}/{1}</value>
+  </data>
+  <data name="recurrence.solar_rule.next" xml:space="preserve">
+    <value>Next: {0}</value>
+  </data>
+  <data name="event.timezone.default" xml:space="preserve">
+    <value>From Settings ({0})</value>
+  </data>
+  <data name="event.timezone.note" xml:space="preserve">
+    <value>Applies only to this event</value>
+  </data>
+  <data name="settings.nav.ai" xml:space="preserve">
+    <value>AI &amp; Data</value>
+  </data>
+  <data name="settings.ai.title" xml:space="preserve">
+    <value>Your Gemini API Key (BYOK)</value>
+  </data>
+  <data name="settings.ai.desc" xml:space="preserve">
+    <value>Your key is encrypted with DPAPI and stored only on this device; LunarCal connects directly to Google Gemini without intermediary servers.</value>
+  </data>
+  <data name="settings.ai.privacy_notice" xml:space="preserve">
+    <value>Privacy note: Google's free tier may use prompts to improve its products; paid tiers do not. LunarCal only sends your command text, timezone and calendar names, never your event contents.</value>
+  </data>
+  <data name="settings.ai.get_key_link" xml:space="preserve">
+    <value>Get an API key at Google AI Studio ↗</value>
+  </data>
+  <data name="settings.ai.key_label" xml:space="preserve">
+    <value>Gemini API Key</value>
+  </data>
+  <data name="settings.ai.key_placeholder" xml:space="preserve">
+    <value>Paste your API key here...</value>
+  </data>
+  <data name="settings.ai.check_and_save" xml:space="preserve">
+    <value>Check and save</value>
+  </data>
+  <data name="settings.ai.save_offline" xml:space="preserve">
+    <value>Save without checking (Offline)</value>
+  </data>
+  <data name="settings.ai.change_key" xml:space="preserve">
+    <value>Change key</value>
+  </data>
+  <data name="settings.ai.delete_key" xml:space="preserve">
+    <value>Delete key</value>
+  </data>
+  <data name="settings.ai.suspect_leaked" xml:space="preserve">
+    <value>I suspect key is leaked</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_title" xml:space="preserve">
+    <value>Security Warning: Suspected Key Leak</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_guide" xml:space="preserve">
+    <value>The key was immediately deleted from this device and the AI queue was paused. Google's recommended recovery steps:
+1. Open AI Studio and create a new API key.
+2. Enter the new key into LunarCal.
+3. Delete the compromised key in Google AI Studio.
+4. Review recent API usage in Google Cloud Console.</value>
+  </data>
+  <data name="settings.ai.clipboard_cleared" xml:space="preserve">
+    <value>API key was cleared from clipboard for security.</value>
+  </data>
+  <data name="settings.ai.status_saved" xml:space="preserve">
+    <value>Key configured</value>
+  </data>
+  <data name="settings.ai.checking" xml:space="preserve">
+    <value>Validating key with Google...</value>
+  </data>
+  <data name="settings.ai.err_empty" xml:space="preserve">
+    <value>Please enter an API key.</value>
+  </data>
+  <data name="settings.ai.err_invalid" xml:space="preserve">
+    <value>API key is invalid or lacks Gemini API permissions (HTTP 400/401/403).</value>
+  </data>
+  <data name="settings.ai.err_leaked" xml:space="preserve">
+    <value>Google reported this API key has been leaked and disabled. Please generate a new key.</value>
+  </data>
+  <data name="settings.ai.err_freetier" xml:space="preserve">
+    <value>Google Cloud project requires billing verification or is ineligible for free tier.</value>
+  </data>
+  <data name="settings.ai.err_quota" xml:space="preserve">
+    <value>API rate limit or quota exceeded (HTTP 429). Please try again later.</value>
+  </data>
+  <data name="settings.ai.err_network" xml:space="preserve">
+    <value>Cannot connect to Google servers (offline). You can save without checking.</value>
+  </data>
+  <data name="settings.ai.err_precondition" xml:space="preserve">
+    <value>Failed Google preconditions (region or project unsupported).</value>
+  </data>
+  <data name="settings.ai.err_unexpected" xml:space="preserve">
+    <value>An unexpected error occurred while validating key: {0}</value>
+  </data>
+  <data name="firstrun.step3_title" xml:space="preserve">
+    <value>AI Calendar Assistant (Optional)</value>
+  </data>
+  <data name="firstrun.step3_desc" xml:space="preserve">
+    <value>Enter your Gemini API key to enable natural language calendar creation. You can skip and configure this later in Settings.</value>
+  </data>
+  <data name="firstrun.btn_skip_ai" xml:space="preserve">
+    <value>Skip for now, finish setup</value>
+  </data>
+  <data name="settings.ai.models_title" xml:space="preserve">
+    <value>Gemini Model</value>
+  </data>
+  <data name="settings.ai.models_desc" xml:space="preserve">
+    <value>Choose which Gemini model processes natural language commands. Only models supporting function calling can create and manage events.</value>
+  </data>
+  <data name="settings.ai.model_select_label" xml:space="preserve">
+    <value>Active model</value>
+  </data>
+  <data name="settings.ai.model_default_tag" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="settings.ai.model_recommended_tag" xml:space="preserve">
+    <value>Recommended</value>
+  </data>
+  <data name="settings.ai.model_refresh" xml:space="preserve">
+    <value>Refresh list</value>
+  </data>
+  <data name="settings.ai.model_saved" xml:space="preserve">
+    <value>Gemini model updated successfully.</value>
+  </data>
+  <data name="settings.ai.model_validating" xml:space="preserve">
+    <value>Verifying function calling support with Google...</value>
+  </data>
+  <data name="settings.ai.err_function_calling_unsupported" xml:space="preserve">
+    <value>This model does not support function calling (tools) required by LunarCal. Please choose another model.</value>
+  </data>
+  <data name="settings.ai.pricing_title" xml:space="preserve">
+    <value>Cost, Quota &amp; Privacy (FR-BYOK-5)</value>
+  </data>
+  <data name="settings.ai.quota_notice" xml:space="preserve">
+    <value>• Quota and costs are billed to your Google Cloud project, not per API key. Daily quotas (RPD) reset at midnight Pacific Time.</value>
+  </data>
+  <data name="settings.ai.free_tier_notice" xml:space="preserve">
+    <value>• Free tier: Google may use prompt text to improve its products. Paid tiers do not. LunarCal only sends your command text, timezone and calendar names, never your event contents.</value>
+  </data>
+  <data name="settings.ai.pricing_notice" xml:space="preserve">
+    <value>• Reference pricing (Gemini 3.8 Flash): $0.75 per 1M input tokens and $3.75 per 1M output tokens (through Dec 31, 2026; $1.50 and $7.50 thereafter).</value>
+  </data>
+  <data name="settings.advanced.gemini_model_title" xml:space="preserve">
+    <value>Gemini Model</value>
+  </data>
+  <data name="settings.advanced.gemini_model_desc" xml:space="preserve">
+    <value>Active model configured for natural language AI commands (FR-BYOK-5, ADR-0016).</value>
+  </data>
+  <data name="ai.offline_banner" xml:space="preserve">
+    <value>No connection. New requests will be saved locally and processed when back online.</value>
+  </data>
+  <data name="ai.disabled_tooltip" xml:space="preserve">
+    <value>AI command bar is disabled because Gemini is not enabled or API key is missing.</value>
+  </data>
+  <data name="ai_queue.title" xml:space="preserve">
+    <value>AI Queue</value>
+  </data>
+  <data name="ai_queue.pending_count" xml:space="preserve">
+    <value>{0} requests</value>
+  </data>
+  <data name="ai_queue.empty" xml:space="preserve">
+    <value>No commands in queue</value>
+  </data>
+  <data name="ai_queue.close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ai_queue.status_pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="ai_queue.status_processing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="ai_queue.status_needs_confirmation" xml:space="preserve">
+    <value>Awaiting confirmation</value>
+  </data>
+  <data name="ai_queue.status_error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ai_queue.status_completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="ai_queue.status_cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="ai_queue.action_view" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="ai_queue.action_confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="ai_queue.action_retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="ai_queue.action_edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ai_queue.action_cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ai_queue.destructive_warning" xml:space="preserve">
+    <value>Deletion requires confirmation – AI never deletes without confirmation</value>
+  </data>
+  <data name="ai_queue.retry_format" xml:space="preserve">
+    <value>Retry {0}/{1} (wait {2} min)</value>
+  </data>
+  <data name="ai_queue.time_just_now" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="ai_queue.time_minutes_ago" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <!-- FR-CONFIRM-1..6 AI Confirmation Dialog (Figma 02 2:2 / 2:494) -->
+  <data name="ai_confirm.title" xml:space="preserve">
+    <value>AI understood your request</value>
+  </data>
+  <data name="ai_confirm.subtitle" xml:space="preserve">
+    <value>Review before creating – AI does not modify your calendar on its own</value>
+  </data>
+  <data name="ai_confirm.status_pending" xml:space="preserve">
+    <value>Awaiting confirmation</value>
+  </data>
+  <data name="ai_confirm.section_user_input" xml:space="preserve">
+    <value>YOU ENTERED</value>
+  </data>
+  <data name="ai_confirm.time_anchor_hint" xml:space="preserve">
+    <value>Time anchor for understanding command</value>
+  </data>
+  <data name="ai_confirm.section_analysis" xml:space="preserve">
+    <value>ANALYSIS RESULT</value>
+  </data>
+  <data name="ai_confirm.label_action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="ai_confirm.label_title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="ai_confirm.label_date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="ai_confirm.label_time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="ai_confirm.label_recurrence" xml:space="preserve">
+    <value>Recurrence</value>
+  </data>
+  <data name="ai_confirm.label_reminder" xml:space="preserve">
+    <value>Reminder</value>
+  </data>
+  <data name="ai_confirm.label_calendar" xml:space="preserve">
+    <value>Target calendar</value>
+  </data>
+  <data name="ai_confirm.label_confidence" xml:space="preserve">
+    <value>Confidence</value>
+  </data>
+  <data name="ai_confirm.confidence_high" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ai_confirm.confidence_medium" xml:space="preserve">
+    <value>Needs review</value>
+  </data>
+  <data name="ai_confirm.confidence_low" xml:space="preserve">
+    <value>Uncertain</value>
+  </data>
+  <data name="ai_confirm.section_validation" xml:space="preserve">
+    <value>BUSINESS VALIDATION</value>
+  </data>
+  <data name="ai_confirm.val_all_good" xml:space="preserve">
+    <value>Passed business validation: valid time, no conflict with existing calendar.</value>
+  </data>
+  <data name="ai_confirm.val_conflict" xml:space="preserve">
+    <value>Time conflict with '{0}' ({1} – {2})</value>
+  </data>
+  <data name="ai_confirm.val_past_event" xml:space="preserve">
+    <value>Notice: Event is set in the past.</value>
+  </data>
+  <data name="ai_confirm.val_end_before_start" xml:space="preserve">
+    <value>Error: End time must be after start time.</value>
+  </data>
+  <data name="ai_confirm.btn_edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ai_confirm.btn_cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ai_confirm.btn_confirm" xml:space="preserve">
+    <value>Confirm &amp; add to Google</value>
+  </data>
+  <data name="ai_confirm.btn_confirm_disabled_hint" xml:space="preserve">
+    <value>Must be edited before confirming when confidence is below 60% or has errors</value>
+  </data>
+  <data name="ai_confirm.all_day" xml:space="preserve">
+    <value>All day</value>
+  </data>
+  <data name="ai_confirm.no_recurrence" xml:space="preserve">
+    <value>Does not repeat</value>
+  </data>
+  <data name="ai_confirm.default_reminder" xml:space="preserve">
+    <value>10 minutes before</value>
+  </data>
+  <data name="ai_confirm.action_create_event" xml:space="preserve">
+    <value>Create new event</value>
+  </data>
+  <data name="ai_confirm.action_update_event" xml:space="preserve">
+    <value>Update event</value>
+  </data>
+  <data name="ai_confirm.action_delete_event" xml:space="preserve">
+    <value>Delete event</value>
+  </data>
+  <data name="ai_confirm.action_bulk_create" xml:space="preserve">
+    <value>Create multiple events</value>
+  </data>
+  <data name="ai_confirm.status_clarify" xml:space="preserve">
+    <value>Needs input</value>
+  </data>
+  <data name="ai_confirm.clarify_title" xml:space="preserve">
+    <value>AI needs more information</value>
+  </data>
+  <data name="ai_confirm.clarify_subtitle" xml:space="preserve">
+    <value>Review the details below before adding to calendar.</value>
+  </data>
+  <data name="ai_confirm.ai_question_header" xml:space="preserve">
+    <value>AI QUESTION</value>
+  </data>
+  <data name="ai_confirm.missing_time_warning" xml:space="preserve">
+    <value>Time not specified</value>
+  </data>
+  <data name="ai_confirm.quick_answers_label" xml:space="preserve">
+    <value>Quick answers:</value>
+  </data>
+  <data name="ai_confirm.clarify_placeholder" xml:space="preserve">
+    <value>Enter time or reply...</value>
+  </data>
+  <data name="ai_confirm.clarify_submit" xml:space="preserve">
+    <value>Reply &amp; continue</value>
+  </data>
+  <data name="ai_confirm.clarify_privacy_note" xml:space="preserve">
+    <value>Your reply will be sent to Gemini along with the original command.</value>
+  </data>
+  <data name="ai_error.invalid_key" xml:space="preserve">
+    <value>API key is invalid or lacks permission. Please check Settings > AI.</value>
+  </data>
+  <data name="ai_error.missing_key" xml:space="preserve">
+    <value>API key is not configured. Please open Settings > AI to enter your key.</value>
+  </data>
+  <data name="ai_error.leaked_key" xml:space="preserve">
+    <value>API key was reported as leaked by Google and has been disabled. Please create a new key in Settings > AI.</value>
+  </data>
+  <data name="ai_error.free_tier" xml:space="preserve">
+    <value>Project requires billing verification or is ineligible for the free tier.</value>
+  </data>
+  <data name="ai_error.failed_precondition" xml:space="preserve">
+    <value>Gemini request failed precondition (region or service requirements).</value>
+  </data>
+  <data name="ai_error.model_not_found" xml:space="preserve">
+    <value>Selected AI model not found or deprecated. Please choose another model in Settings > AI.</value>
+  </data>
+  <data name="ai_error.rate_limit" xml:space="preserve">
+    <value>Rate limit exceeded (429). Waiting for retry delay...</value>
+  </data>
+  <data name="ai_error.rate_limit_with_time" xml:space="preserve">
+    <value>Rate limit exceeded (429). Retrying in {0} seconds...</value>
+  </data>
+  <data name="ai_error.daily_quota" xml:space="preserve">
+    <value>Daily quota exhausted (429). Quota will reset at midnight Pacific Time.</value>
+  </data>
+  <data name="ai_error.safety_blocked" xml:space="preserve">
+    <value>Request was blocked by Google Gemini safety filters.</value>
+  </data>
+  <data name="ai_error.network_offline" xml:space="preserve">
+    <value>No internet connection. Command saved to queue and will automatically process when online.</value>
+  </data>
+  <data name="ai_error.transient" xml:space="preserve">
+    <value>Transient error from AI service. Retrying automatically...</value>
+  </data>
+  <data name="ai_error.malformed" xml:space="preserve">
+    <value>Malformed response format from AI.</value>
+  </data>
+  <data name="ai_error.unknown" xml:space="preserve">
+    <value>An error occurred while processing the AI command.</value>
+  </data>
+  <data name="ai_error.action_open_settings" xml:space="preserve">
+    <value>Open AI Settings</value>
+  </data>
+  <data name="ai_error.action_retry_now" xml:space="preserve">
+    <value>Retry now</value>
+  </data>
+  <data name="ai_queue.open_ai_settings" xml:space="preserve">
+    <value>Open AI Settings</value>
   </data>
 </root>

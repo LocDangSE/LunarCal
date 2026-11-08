@@ -115,6 +115,10 @@
                        Style="{StaticResource SettingsNavItemStyle}"
                        IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=GoogleAccount}"
                        AutomationProperties.AutomationId="NavGoogleAccount" />
+          <RadioButton Content="{loc:Loc Key=settings.nav.ai}" GroupName="SettingsNav"
+                       Style="{StaticResource SettingsNavItemStyle}"
+                       IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=Ai}"
+                       AutomationProperties.AutomationId="NavAi" />
           <RadioButton Content="{loc:Loc Key=settings.nav.appearance}" GroupName="SettingsNav"
                        Style="{StaticResource SettingsNavItemStyle}"
                        IsChecked="{Binding ActiveTab, Converter={StaticResource EnumToBool}, ConverterParameter=Appearance}"
@@ -159,6 +163,18 @@
             </Style>
           </ContentControl.Style>
           <settings:GoogleAccountPage DataContext="{Binding Account}" />
+        </ContentControl>
+        <ContentControl>
+          <ContentControl.Style>
+            <Style TargetType="ContentControl" BasedOn="{StaticResource PageHostStyle}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveTab}" Value="{x:Static vm:SettingsTab.Ai}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </ContentControl.Style>
+          <settings:AiPage DataContext="{Binding Ai}" />
         </ContentControl>
         <ContentControl>
           <ContentControl.Style>
