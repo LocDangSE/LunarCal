@@ -82,36 +82,7 @@ public sealed class GeminiKeyValidator : IAiKeyValidator
         }
     }
 
-    private static List<string> ExtractModelIds(string json)
-    {
-        var modelIds = new List<string>();
-        try
-        {
-            using var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.TryGetProperty("models", out var modelsElement) &&
-                modelsElement.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var model in modelsElement.EnumerateArray())
-                {
-                    if (model.TryGetProperty("name", out var nameProp))
-                    {
-                        var name = nameProp.GetString();
-                        if (!string.IsNullOrWhiteSpace(name))
-                        {
-                            var id = name.StartsWith("models/", StringComparison.OrdinalIgnoreCase)
-                                ? name["models/".Length..]
-                                : name;
-                            modelIds.Add(id);
-                        }
-                    }
-                }
-            }
-        }
-        catch (JsonException)
-        {
-            // Ignore parse errors on model list extraction
-        }
+    private static List<string> ExtractModelIds(string json) =>
+        GeminiModelFilter.FilterModels(json).Select(m => m.Id).ToList();
 
-        return modelIds;
-    }
 }

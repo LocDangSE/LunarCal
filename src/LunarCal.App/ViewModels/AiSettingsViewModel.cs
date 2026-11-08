@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,13 +9,15 @@ using LunarCal.Core.Abstractions;
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// View model for Settings > AI (Figma 04, FR-BYOK-1..4, FR-BYOK-6, SEC-KEY-4, SEC-KEY-6..11, ADR-0016).
+/// View model for Settings > AI (Figma 04, FR-BYOK-1..6, SEC-KEY-4, SEC-KEY-6..11, ADR-0016).
+/// Manages Gemini API key lifecycle and model selection with function-calling verification.
 /// </summary>
 public sealed partial class AiSettingsViewModel : ObservableObject
 {
     private const string AiStudioUrl = "https://aistudio.google.com/apikey";
 
     private readonly IAiKeyService _aiKeyService;
+    private readonly IAiModelService? _aiModelService;
     private readonly ILocalizationService _localization;
     private readonly IClipboardService _clipboardService;
     private readonly INetworkStatusService? _networkStatusService;
@@ -46,16 +49,46 @@ public sealed partial class AiSettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSuspectLeaked;
 
+    // --- Model Selection (FR-BYOK-5, ADR-0016 §2, §3) ---
+
+    public ObservableCollection<AiModelInfo> AvailableModels { get; } = new();
+
+    [ObservableProperty]
+    private AiModelInfo? _selectedModel;
+
+    [ObservableProperty]
+    private bool _isLoadingModels;
+
+    [ObservableProperty]
+    private bool _isValidatingModel;
+
+    [ObservableProperty]
+    private string? _modelStatusMessage;
+
+    [ObservableProperty]
+    private bool _isModelStatusError;
+
     public AiSettingsViewModel(
         IAiKeyService aiKeyService,
         ILocalizationService localization,
         IClipboardService clipboardService,
         INetworkStatusService? networkStatusService = null)
+        : this(aiKeyService, localization, clipboardService, networkStatusService, null)
+    {
+    }
+
+    public AiSettingsViewModel(
+        IAiKeyService aiKeyService,
+        ILocalizationService localization,
+        IClipboardService clipboardService,
+        INetworkStatusService? networkStatusService,
+        IAiModelService? aiModelService)
     {
         _aiKeyService = aiKeyService ?? throw new ArgumentNullException(nameof(aiKeyService));
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
         _networkStatusService = networkStatusService;
+        _aiModelService = aiModelService;
 
         if (_networkStatusService is not null)
         {
@@ -67,7 +100,7 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>Loads current key state from secure storage.</summary>
+    /// <summary>Loads current key state and model selection from storage.</summary>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         HasKey = await _aiKeyService.HasKeyAsync(cancellationToken).ConfigureAwait(true);
@@ -75,6 +108,94 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         {
             MaskedKey = await _aiKeyService.GetMaskedKeyAsync(cancellationToken).ConfigureAwait(true);
         }
+
+        if (_aiModelService != null)
+        {
+            await LoadModelsAsync(cancellationToken).ConfigureAwait(true);
+        }
+    }
+
+    /// <summary>Loads available Gemini models and sets current active model (FR-BYOK-5).</summary>
+    public async Task LoadModelsAsync(CancellationToken cancellationToken = default)
+    {
+        if (_aiModelService == null)
+        {
+            return;
+        }
+
+        IsLoadingModels = true;
+        try
+        {
+            var models = await _aiModelService.GetAvailableModelsAsync(cancellationToken).ConfigureAwait(true);
+            AvailableModels.Clear();
+            foreach (var m in models)
+            {
+                AvailableModels.Add(m);
+            }
+
+            var selectedId = await _aiModelService.GetSelectedModelIdAsync(cancellationToken).ConfigureAwait(true);
+            SelectedModel = AvailableModels.FirstOrDefault(m => string.Equals(m.Id, selectedId, StringComparison.OrdinalIgnoreCase))
+                ?? AvailableModels.FirstOrDefault(m => m.IsDefault)
+                ?? AvailableModels.FirstOrDefault();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to load models: {ex.Message}");
+        }
+        finally
+        {
+            IsLoadingModels = false;
+        }
+    }
+
+    /// <summary>Selects and persists a new model after function-calling verification (FR-BYOK-5).</summary>
+    [RelayCommand]
+    public async Task SelectModelAsync(AiModelInfo? model)
+    {
+        if (model == null || _aiModelService == null || model == SelectedModel)
+        {
+            return;
+        }
+
+        IsValidatingModel = true;
+        ModelStatusMessage = _localization["settings.ai.model_validating"];
+        IsModelStatusError = false;
+
+        try
+        {
+            var success = await _aiModelService.SetSelectedModelAsync(model.Id, validateFunctionCalling: true, CancellationToken.None).ConfigureAwait(true);
+            if (success)
+            {
+                SelectedModel = model;
+                IsModelStatusError = false;
+                ModelStatusMessage = _localization["settings.ai.model_saved"];
+            }
+            else
+            {
+                IsModelStatusError = true;
+                ModelStatusMessage = _localization["settings.ai.err_function_calling_unsupported"];
+            }
+        }
+        catch (Exception ex)
+        {
+            IsModelStatusError = true;
+            ModelStatusMessage = _localization.Format("settings.ai.err_unexpected", ex.Message);
+        }
+        finally
+        {
+            IsValidatingModel = false;
+        }
+    }
+
+    /// <summary>Refreshes the available models list from API.</summary>
+    [RelayCommand]
+    public async Task RefreshModelsAsync()
+    {
+        await LoadModelsAsync(CancellationToken.None).ConfigureAwait(true);
     }
 
     /// <summary>Validates the provided key against the Gemini API and saves it upon success (SEC-KEY-6).</summary>
@@ -88,8 +209,6 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         }
 
         IsChecking = true;
-        StatusMessage = _localization["settings.ai.checking"];
-        IsStatusError = false;
         IsClipboardCleared = false;
 
         try
@@ -108,6 +227,11 @@ public sealed partial class AiSettingsViewModel : ObservableObject
                 if (_clipboardService.ClearIfMatches(rawKey))
                 {
                     IsClipboardCleared = true;
+                }
+
+                if (_aiModelService != null)
+                {
+                    await LoadModelsAsync(cancellationToken).ConfigureAwait(true);
                 }
 
                 return true;
@@ -159,6 +283,11 @@ public sealed partial class AiSettingsViewModel : ObservableObject
                     IsClipboardCleared = true;
                 }
 
+                if (_aiModelService != null)
+                {
+                    await LoadModelsAsync(cancellationToken).ConfigureAwait(true);
+                }
+
                 return true;
             }
 
@@ -172,7 +301,6 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>Enables editing mode to enter a new key.</summary>
     [RelayCommand]
     public void StartEditing()
     {
@@ -182,15 +310,14 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         IsSuspectLeaked = false;
     }
 
-    /// <summary>Cancels editing mode.</summary>
     [RelayCommand]
     public void CancelEditing()
     {
         IsEditing = false;
         StatusMessage = null;
+        IsClipboardCleared = false;
     }
 
-    /// <summary>Deletes the current key from secret storage (SEC-KEY-4, FR-BYOK-4).</summary>
     [RelayCommand]
     public async Task DeleteKeyAsync(CancellationToken cancellationToken = default)
     {
@@ -201,9 +328,13 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         StatusMessage = null;
         IsClipboardCleared = false;
         IsSuspectLeaked = false;
+
+        if (_aiModelService != null)
+        {
+            await LoadModelsAsync(cancellationToken).ConfigureAwait(true);
+        }
     }
 
-    /// <summary>Reacts to suspected key leak: deletes key immediately and pauses AI queue (SEC-KEY-7, FR-BYOK-4).</summary>
     [RelayCommand]
     public async Task SuspectLeakedAsync(CancellationToken cancellationToken = default)
     {
@@ -214,19 +345,27 @@ public sealed partial class AiSettingsViewModel : ObservableObject
         StatusMessage = null;
         IsClipboardCleared = false;
         IsSuspectLeaked = true;
+
+        if (_aiModelService != null)
+        {
+            await LoadModelsAsync(cancellationToken).ConfigureAwait(true);
+        }
     }
 
-    /// <summary>Opens Google AI Studio key creation page in system browser.</summary>
     [RelayCommand]
     public static void OpenAiStudio()
     {
         try
         {
-            Process.Start(new ProcessStartInfo(AiStudioUrl) { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = AiStudioUrl,
+                UseShellExecute = true
+            });
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore failure to open system browser
+            Debug.WriteLine($"Failed to open browser: {ex.Message}");
         }
     }
 

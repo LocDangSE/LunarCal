@@ -1404,4 +1404,49 @@
   <data name="firstrun.btn_skip_ai" xml:space="preserve">
     <value>Skip for now, finish setup</value>
   </data>
+  <data name="settings.ai.models_title" xml:space="preserve">
+    <value>Gemini Model</value>
+  </data>
+  <data name="settings.ai.models_desc" xml:space="preserve">
+    <value>Choose which Gemini model processes natural language commands. Only models supporting function calling can create and manage events.</value>
+  </data>
+  <data name="settings.ai.model_select_label" xml:space="preserve">
+    <value>Active model</value>
+  </data>
+  <data name="settings.ai.model_default_tag" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="settings.ai.model_recommended_tag" xml:space="preserve">
+    <value>Recommended</value>
+  </data>
+  <data name="settings.ai.model_refresh" xml:space="preserve">
+    <value>Refresh list</value>
+  </data>
+  <data name="settings.ai.model_saved" xml:space="preserve">
+    <value>Gemini model updated successfully.</value>
+  </data>
+  <data name="settings.ai.model_validating" xml:space="preserve">
+    <value>Verifying function calling support with Google...</value>
+  </data>
+  <data name="settings.ai.err_function_calling_unsupported" xml:space="preserve">
+    <value>This model does not support function calling (tools) required by LunarCal. Please choose another model.</value>
+  </data>
+  <data name="settings.ai.pricing_title" xml:space="preserve">
+    <value>Cost, Quota &amp; Privacy (FR-BYOK-5)</value>
+  </data>
+  <data name="settings.ai.quota_notice" xml:space="preserve">
+    <value>• Quota and costs are billed to your Google Cloud project, not per API key. Daily quotas (RPD) reset at midnight Pacific Time.</value>
+  </data>
+  <data name="settings.ai.free_tier_notice" xml:space="preserve">
+    <value>• Free tier: Google may use prompt text to improve its products. Paid tiers do not. LunarCal only sends your command text, timezone and calendar names, never your event contents.</value>
+  </data>
+  <data name="settings.ai.pricing_notice" xml:space="preserve">
+    <value>• Reference pricing (Gemini 3.8 Flash): $0.75 per 1M input tokens and $3.75 per 1M output tokens (through Dec 31, 2026; $1.50 and $7.50 thereafter).</value>
+  </data>
+  <data name="settings.advanced.gemini_model_title" xml:space="preserve">
+    <value>Gemini Model</value>
+  </data>
+  <data name="settings.advanced.gemini_model_desc" xml:space="preserve">
+    <value>Active model configured for natural language AI commands (FR-BYOK-5, ADR-0016).</value>
+  </data>
 </root>

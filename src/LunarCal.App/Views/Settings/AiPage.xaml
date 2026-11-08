@@ -28,11 +28,11 @@
   </UserControl.Resources>
 
   <StackPanel>
-    <!-- Section Title & Description (Figma 04, FR-BYOK-1..4) -->
+    <!-- Section 1: Gemini API Key (Figma 04, FR-BYOK-1..4) -->
     <TextBlock Text="{loc:Loc Key=settings.ai.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
     <TextBlock Text="{loc:Loc Key=settings.ai.desc}" Style="{StaticResource SettingsSectionDescStyle}" />
 
-    <!-- Card Container -->
+    <!-- Key Card Container -->
     <Border Style="{StaticResource SettingsCardStyle}" Margin="0,12,0,16">
       <StackPanel>
         <!-- Row 1: Privacy Notice & AI Studio link -->
@@ -43,50 +43,52 @@
                          TextWrapping="Wrap"
                          FontSize="{DynamicResource FontSizeBody}"
                          Foreground="{DynamicResource TextSecondaryBrush}"
-                         LineHeight="18" />
+                         LineHeight="20" />
             </Border>
+
             <Button Content="{loc:Loc Key=settings.ai.get_key_link}"
                     Command="{Binding OpenAiStudioCommand}"
                     Style="{StaticResource LinkButtonStyle}"
                     HorizontalAlignment="Left"
+                    FontSize="{DynamicResource FontSizeBodyStrong}"
+                    Foreground="{DynamicResource AccentPrimaryBrush}"
                     AutomationProperties.AutomationId="BtnOpenAiStudio" />
           </StackPanel>
         </Border>
 
-        <!-- Row 2: Configured State (HasKey == true && !IsEditing) -->
-        <Border>
+        <!-- Row 2: Saved Key State (HasKey && !IsEditing) -->
+        <Border Visibility="{Binding HasKey, Converter={StaticResource BoolToVis}}">
           <Border.Style>
             <Style TargetType="Border" BasedOn="{StaticResource SettingsLastRowStyle}">
-              <Setter Property="Visibility" Value="Collapsed" />
               <Style.Triggers>
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding HasKey}" Value="True" />
-                    <Condition Binding="{Binding IsEditing}" Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
               </Style.Triggers>
             </Style>
           </Border.Style>
-          <DockPanel LastChildFill="True">
+          <DockPanel LastChildFill="False">
+            <!-- Action buttons on the right -->
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
               <Button Content="{loc:Loc Key=settings.ai.change_key}"
                       Command="{Binding StartEditingCommand}"
                       Style="{StaticResource SecondaryButtonStyle}"
-                      Margin="0,0,8,0"
+                      Margin="0,0,10,0"
                       AutomationProperties.AutomationId="BtnChangeKey" />
+
               <Button Content="{loc:Loc Key=settings.ai.delete_key}"
                       Command="{Binding DeleteKeyCommand}"
-                      Style="{StaticResource DangerOutlineButtonStyle}"
-                      Margin="0,0,8,0"
+                      Style="{StaticResource DangerButtonStyle}"
+                      Margin="0,0,10,0"
                       AutomationProperties.AutomationId="BtnDeleteKey" />
+
               <Button Content="{loc:Loc Key=settings.ai.suspect_leaked}"
                       Command="{Binding SuspectLeakedCommand}"
-                      Style="{StaticResource DangerOutlineButtonStyle}"
+                      Style="{StaticResource DangerButtonStyle}"
                       AutomationProperties.AutomationId="BtnSuspectLeaked" />
             </StackPanel>
 
+            <!-- Key display on the left -->
             <StackPanel VerticalAlignment="Center">
               <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                 <Ellipse Width="8" Height="8" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
@@ -248,6 +250,113 @@
                    Foreground="{DynamicResource TextPrimaryBrush}"
                    LineHeight="20"
                    AutomationProperties.AutomationId="TxtSuspectLeakedGuide" />
+      </StackPanel>
+    </Border>
+
+    <!-- Section 2: Model Selection (FR-BYOK-5, ADR-0016 §2) -->
+    <TextBlock Text="{loc:Loc Key=settings.ai.models_title}" Style="{StaticResource SettingsSectionTitleStyle}" Margin="0,24,0,0" />
+    <TextBlock Text="{loc:Loc Key=settings.ai.models_desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+
+    <Border Style="{StaticResource SettingsCardStyle}" Margin="0,12,0,16">
+      <StackPanel>
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right"
+                    Content="{loc:Loc Key=settings.ai.model_refresh}"
+                    Command="{Binding RefreshModelsCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="16,0,0,0"
+                    IsEnabled="{Binding IsLoadingModels, Converter={StaticResource InverseBool}}"
+                    AutomationProperties.AutomationId="BtnRefreshModels" />
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Key=settings.ai.model_select_label}" Style="{StaticResource SettingsRowTitleStyle}" />
+              <TextBlock Text="{Binding SelectedModel.DisplayName, FallbackValue='gemini-3.8-flash'}" Style="{StaticResource SettingsRowDescStyle}"
+                         AutomationProperties.AutomationId="TxtActiveModelDisplay" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource SettingsLastRowStyle}">
+          <StackPanel>
+            <ComboBox ItemsSource="{Binding AvailableModels}"
+                      SelectedItem="{Binding SelectedModel, Mode=OneWay}"
+                      SelectionChanged="OnModelSelectionChanged"
+                      Height="38"
+                      FontSize="{DynamicResource FontSizeBody}"
+                      Background="{DynamicResource SurfaceBackgroundBrush}"
+                      Foreground="{DynamicResource TextPrimaryBrush}"
+                      BorderBrush="{DynamicResource BorderStrongBrush}"
+                      AutomationProperties.AutomationId="CbAiModelSelect">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal" Margin="4,2">
+                    <TextBlock Text="{Binding DisplayName}" FontWeight="{DynamicResource FontWeightSemiBold}" />
+                    <TextBlock Text=" · " Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <TextBlock Text="{Binding Id}" FontFamily="Consolas, Segoe UI Variable" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <Border Background="{DynamicResource AccentSubtleBrush}" CornerRadius="{DynamicResource CornerRadiusCheckbox}" Padding="6,2" Margin="8,0,0,0"
+                            Visibility="{Binding IsDefault, Converter={StaticResource BoolToVis}}">
+                      <TextBlock Text="{loc:Loc Key=settings.ai.model_default_tag}" FontSize="{DynamicResource FontSizeCaption}" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                    </Border>
+                    <Border Background="{DynamicResource SuccessSubtleBrush}" CornerRadius="{DynamicResource CornerRadiusCheckbox}" Padding="6,2" Margin="4,0,0,0"
+                            Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVis}}">
+                      <TextBlock Text="{loc:Loc Key=settings.ai.model_recommended_tag}" FontSize="{DynamicResource FontSizeCaption}" Foreground="{DynamicResource SuccessTextBrush}" />
+                    </Border>
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Validating / Status indicator -->
+            <TextBlock Text="{loc:Loc Key=settings.ai.model_validating}"
+                       Margin="0,8,0,0"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Visibility="{Binding IsValidatingModel, Converter={StaticResource BoolToVis}}"
+                       AutomationProperties.AutomationId="TxtModelValidating" />
+
+            <TextBlock Text="{Binding ModelStatusMessage}"
+                       Margin="0,8,0,0"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       TextWrapping="Wrap"
+                       Visibility="{Binding ModelStatusMessage, Converter={StaticResource StringToVis}}"
+                       AutomationProperties.AutomationId="TxtModelStatusMessage">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                  <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsModelStatusError}" Value="True">
+                      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Section 3: Cost, Quota & Privacy (FR-BYOK-5, ADR-0016 §3) -->
+    <TextBlock Text="{loc:Loc Key=settings.ai.pricing_title}" Style="{StaticResource SettingsSectionTitleStyle}" Margin="0,16,0,0" />
+    <Border Style="{StaticResource SettingsCardStyle}" Margin="0,12,0,24">
+      <StackPanel Margin="16,14">
+        <TextBlock Text="{loc:Loc Key=settings.ai.quota_notice}"
+                   TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   Margin="0,0,0,10"
+                   AutomationProperties.AutomationId="TxtAiQuotaNotice" />
+        <TextBlock Text="{loc:Loc Key=settings.ai.free_tier_notice}"
+                   TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   Margin="0,0,0,10"
+                   AutomationProperties.AutomationId="TxtAiFreeTierNotice" />
+        <TextBlock Text="{loc:Loc Key=settings.ai.pricing_notice}"
+                   TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   AutomationProperties.AutomationId="TxtAiPricingNotice" />
       </StackPanel>
     </Border>
   </StackPanel>

@@ -1404,4 +1404,49 @@
   <data name="firstrun.btn_skip_ai" xml:space="preserve">
     <value>Để sau, hoàn tất cài đặt</value>
   </data>
+  <data name="settings.ai.models_title" xml:space="preserve">
+    <value>Mô hình Gemini</value>
+  </data>
+  <data name="settings.ai.models_desc" xml:space="preserve">
+    <value>Chọn mô hình Gemini xử lý câu lệnh tự nhiên. Chỉ các mô hình hỗ trợ gọi hàm (function calling) mới có thể tạo và quản lý sự kiện.</value>
+  </data>
+  <data name="settings.ai.model_select_label" xml:space="preserve">
+    <value>Mô hình đang dùng</value>
+  </data>
+  <data name="settings.ai.model_default_tag" xml:space="preserve">
+    <value>Mặc định</value>
+  </data>
+  <data name="settings.ai.model_recommended_tag" xml:space="preserve">
+    <value>Khuyên dùng</value>
+  </data>
+  <data name="settings.ai.model_refresh" xml:space="preserve">
+    <value>Tải lại danh sách</value>
+  </data>
+  <data name="settings.ai.model_saved" xml:space="preserve">
+    <value>Đã cập nhật mô hình Gemini thành công.</value>
+  </data>
+  <data name="settings.ai.model_validating" xml:space="preserve">
+    <value>Đang kiểm tra khả năng hỗ trợ gọi hàm với Google...</value>
+  </data>
+  <data name="settings.ai.err_function_calling_unsupported" xml:space="preserve">
+    <value>Mô hình này không hỗ trợ gọi hàm (function calling/tools) theo yêu cầu của LunarCal. Vui lòng chọn mô hình khác.</value>
+  </data>
+  <data name="settings.ai.pricing_title" xml:space="preserve">
+    <value>Chi phí, hạn mức &amp; quyền riêng tư (FR-BYOK-5)</value>
+  </data>
+  <data name="settings.ai.quota_notice" xml:space="preserve">
+    <value>• Hạn mức (Quota) và chi phí được tính theo Google Cloud Project của bạn, không tính theo từng API key riêng lẻ. Hạn mức ngày (RPD) đặt lại vào nửa đêm giờ Thái Bình Dương (Pacific Time).</value>
+  </data>
+  <data name="settings.ai.free_tier_notice" xml:space="preserve">
+    <value>• Gói miễn phí: Google có thể sử dụng dữ liệu câu lệnh để huấn luyện và cải thiện sản phẩm. Gói trả phí không sử dụng dữ liệu này. Ứng dụng chỉ gửi câu lệnh, múi giờ và tên lịch, không bao giờ gửi nội dung sự kiện.</value>
+  </data>
+  <data name="settings.ai.pricing_notice" xml:space="preserve">
+    <value>• Giá tham khảo gói trả phí (Gemini 3.8 Flash): $0,75 / 1 triệu token đầu vào và $3,75 / 1 triệu token đầu ra (áp dụng đến hết 31/12/2026; sau đó $1,50 và $7,50).</value>
+  </data>
+  <data name="settings.advanced.gemini_model_title" xml:space="preserve">
+    <value>Mô hình Gemini (Model)</value>
+  </data>
+  <data name="settings.advanced.gemini_model_desc" xml:space="preserve">
+    <value>Mô hình hiện được cấu hình cho trợ lý AI thanh lệnh (FR-BYOK-5, ADR-0016).</value>
+  </data>
 </root>

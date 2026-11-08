@@ -25,6 +25,8 @@ public static class SettingKeys
 
     /// <summary>Use Gemini for command parsing: "true" or "false" (spec §7). Default: "true".</summary>
     public const string GeminiEnabled = "gemini_enabled";
+    /// <summary>Configured Gemini model ID: empty or null defaults to LunarCal:Gemini:DefaultModelId in appsettings (FR-BYOK-5, ADR-0016).</summary>
+    public const string GeminiModelId = "gemini_model_id";
 
     /// <summary>Contribute de-identified data for AI training: "true" or "false" (FR-DATA-1, FR-CLOUD-1). Default: "false".</summary>
     public const string TrainingOptIn = "training_opt_in";
