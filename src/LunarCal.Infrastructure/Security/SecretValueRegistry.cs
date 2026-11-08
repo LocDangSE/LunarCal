@@ -61,6 +61,14 @@ public static class SecretValueRegistry
     public static bool HasSecrets => !_secrets.IsEmpty;
 
     /// <summary>
+    /// Checks whether a specific secret value is currently registered.
+    /// </summary>
+    public static bool IsRegistered(string? secret)
+    {
+        return !string.IsNullOrWhiteSpace(secret) && _secrets.ContainsKey(secret);
+    }
+
+    /// <summary>
     /// Replaces occurrences of all registered secrets in the input string with the replacement marker.
     /// Evaluates longer secrets first to prevent partial replacements.
     /// </summary>

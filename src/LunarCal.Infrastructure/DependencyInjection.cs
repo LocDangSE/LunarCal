@@ -19,6 +19,7 @@ public static class DependencyInjection
 {
     /// <summary>Adds LunarCal infrastructure services. Registrations are added phase by phase (spec §13).</summary>
     public const string GeminiClientName = "LunarCal.Gemini";
+    public const string GeminiValidationClientName = "LunarCal.Gemini.Validation";
 
     public static IServiceCollection AddLunarCalInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
@@ -277,6 +278,30 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<IOptions<GeminiOptions>>();
             var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<GeminiChatModelClient>>();
             return new GeminiChatModelClient(httpClient, options, logger);
+        });
+
+        // Key validator: queries GET /v1beta/models with header x-goog-api-key directly (P4-03, FR-BYOK-2, ADR-0016)
+        services.AddHttpClient(GeminiValidationClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false
+            })
+            .AddHttpMessageHandler<NetworkSecurityDelegatingHandler>();
+
+        services.AddSingleton<IAiKeyValidator>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = factory.CreateClient(GeminiValidationClientName);
+            var logger = sp.GetService<Serilog.ILogger>();
+            return new GeminiKeyValidator(httpClient, logger);
+        });
+
+        services.AddSingleton<IAiKeyService>(sp =>
+        {
+            var secretStore = sp.GetRequiredService<ISecretStore>();
+            var validator = sp.GetRequiredService<IAiKeyValidator>();
+            var logger = sp.GetService<Serilog.ILogger>();
+            return new GeminiKeyService(secretStore, validator, logger);
         });
 
         return services;

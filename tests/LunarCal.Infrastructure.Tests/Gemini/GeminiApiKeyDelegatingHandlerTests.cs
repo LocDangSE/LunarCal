@@ -12,6 +12,7 @@ namespace LunarCal.Infrastructure.Tests.Gemini;
 /// <summary>
 /// Unit tests for <see cref="GeminiApiKeyDelegatingHandler"/> (ADR-0016 §2, SEC-KEY-2, SEC-KEY-3).
 /// </summary>
+[Collection("SecretValueRegistry")]
 public sealed class GeminiApiKeyDelegatingHandlerTests : IDisposable
 {
     public GeminiApiKeyDelegatingHandlerTests()

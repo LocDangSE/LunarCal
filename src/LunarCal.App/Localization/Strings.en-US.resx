@@ -1316,4 +1316,92 @@
   <data name="event.timezone.note" xml:space="preserve">
     <value>Applies only to this event</value>
   </data>
+  <data name="settings.nav.ai" xml:space="preserve">
+    <value>AI &amp; Data</value>
+  </data>
+  <data name="settings.ai.title" xml:space="preserve">
+    <value>Your Gemini API Key (BYOK)</value>
+  </data>
+  <data name="settings.ai.desc" xml:space="preserve">
+    <value>Your key is encrypted with DPAPI and stored only on this device; LunarCal connects directly to Google Gemini without intermediary servers.</value>
+  </data>
+  <data name="settings.ai.privacy_notice" xml:space="preserve">
+    <value>Privacy note: Google's free tier may use prompts to improve its products; paid tiers do not. LunarCal only sends your command text, timezone and calendar names, never your event contents.</value>
+  </data>
+  <data name="settings.ai.get_key_link" xml:space="preserve">
+    <value>Get an API key at Google AI Studio ↗</value>
+  </data>
+  <data name="settings.ai.key_label" xml:space="preserve">
+    <value>Gemini API Key</value>
+  </data>
+  <data name="settings.ai.key_placeholder" xml:space="preserve">
+    <value>Paste your API key here...</value>
+  </data>
+  <data name="settings.ai.check_and_save" xml:space="preserve">
+    <value>Check and save</value>
+  </data>
+  <data name="settings.ai.save_offline" xml:space="preserve">
+    <value>Save without checking (Offline)</value>
+  </data>
+  <data name="settings.ai.change_key" xml:space="preserve">
+    <value>Change key</value>
+  </data>
+  <data name="settings.ai.delete_key" xml:space="preserve">
+    <value>Delete key</value>
+  </data>
+  <data name="settings.ai.suspect_leaked" xml:space="preserve">
+    <value>I suspect key is leaked</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_title" xml:space="preserve">
+    <value>Security Warning: Suspected Key Leak</value>
+  </data>
+  <data name="settings.ai.suspect_leaked_guide" xml:space="preserve">
+    <value>The key was immediately deleted from this device and the AI queue was paused. Google's recommended recovery steps:
+1. Open AI Studio and create a new API key.
+2. Enter the new key into LunarCal.
+3. Delete the compromised key in Google AI Studio.
+4. Review recent API usage in Google Cloud Console.</value>
+  </data>
+  <data name="settings.ai.clipboard_cleared" xml:space="preserve">
+    <value>API key was cleared from clipboard for security.</value>
+  </data>
+  <data name="settings.ai.status_saved" xml:space="preserve">
+    <value>Key configured</value>
+  </data>
+  <data name="settings.ai.checking" xml:space="preserve">
+    <value>Validating key with Google...</value>
+  </data>
+  <data name="settings.ai.err_empty" xml:space="preserve">
+    <value>Please enter an API key.</value>
+  </data>
+  <data name="settings.ai.err_invalid" xml:space="preserve">
+    <value>API key is invalid or lacks Gemini API permissions (HTTP 400/401/403).</value>
+  </data>
+  <data name="settings.ai.err_leaked" xml:space="preserve">
+    <value>Google reported this API key has been leaked and disabled. Please generate a new key.</value>
+  </data>
+  <data name="settings.ai.err_freetier" xml:space="preserve">
+    <value>Google Cloud project requires billing verification or is ineligible for free tier.</value>
+  </data>
+  <data name="settings.ai.err_quota" xml:space="preserve">
+    <value>API rate limit or quota exceeded (HTTP 429). Please try again later.</value>
+  </data>
+  <data name="settings.ai.err_network" xml:space="preserve">
+    <value>Cannot connect to Google servers (offline). You can save without checking.</value>
+  </data>
+  <data name="settings.ai.err_precondition" xml:space="preserve">
+    <value>Failed Google preconditions (region or project unsupported).</value>
+  </data>
+  <data name="settings.ai.err_unexpected" xml:space="preserve">
+    <value>An unexpected error occurred while validating key: {0}</value>
+  </data>
+  <data name="firstrun.step3_title" xml:space="preserve">
+    <value>AI Calendar Assistant (Optional)</value>
+  </data>
+  <data name="firstrun.step3_desc" xml:space="preserve">
+    <value>Enter your Gemini API key to enable natural language calendar creation. You can skip and configure this later in Settings.</value>
+  </data>
+  <data name="firstrun.btn_skip_ai" xml:space="preserve">
+    <value>Skip for now, finish setup</value>
+  </data>
 </root>

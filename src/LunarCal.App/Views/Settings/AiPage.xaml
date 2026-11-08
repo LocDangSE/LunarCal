@@ -1,0 +1,254 @@
+<UserControl x:Class="LunarCal.App.Views.Settings.AiPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             xmlns:conv="clr-namespace:LunarCal.App.Converters"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AiSettingsViewModel}"
+             AutomationProperties.AutomationId="AiSettingsPage">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringToVis" />
+
+    <Style x:Key="PrivacyNoticeBoxStyle" TargetType="Border">
+      <Setter Property="Background" Value="{DynamicResource ControlTrackBrush}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}" />
+      <Setter Property="Padding" Value="14,12" />
+      <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <Style x:Key="StatusBannerBoxStyle" TargetType="Border">
+      <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}" />
+      <Setter Property="Padding" Value="14,12" />
+      <Setter Property="Margin" Value="0,14,0,0" />
+    </Style>
+  </UserControl.Resources>
+
+  <StackPanel>
+    <!-- Section Title & Description (Figma 04, FR-BYOK-1..4) -->
+    <TextBlock Text="{loc:Loc Key=settings.ai.title}" Style="{StaticResource SettingsSectionTitleStyle}" />
+    <TextBlock Text="{loc:Loc Key=settings.ai.desc}" Style="{StaticResource SettingsSectionDescStyle}" />
+
+    <!-- Card Container -->
+    <Border Style="{StaticResource SettingsCardStyle}" Margin="0,12,0,16">
+      <StackPanel>
+        <!-- Row 1: Privacy Notice & AI Studio link -->
+        <Border Style="{StaticResource SettingsRowStyle}">
+          <StackPanel>
+            <Border Style="{StaticResource PrivacyNoticeBoxStyle}">
+              <TextBlock Text="{loc:Loc Key=settings.ai.privacy_notice}"
+                         TextWrapping="Wrap"
+                         FontSize="{DynamicResource FontSizeBody}"
+                         Foreground="{DynamicResource TextSecondaryBrush}"
+                         LineHeight="18" />
+            </Border>
+            <Button Content="{loc:Loc Key=settings.ai.get_key_link}"
+                    Command="{Binding OpenAiStudioCommand}"
+                    Style="{StaticResource LinkButtonStyle}"
+                    HorizontalAlignment="Left"
+                    AutomationProperties.AutomationId="BtnOpenAiStudio" />
+          </StackPanel>
+        </Border>
+
+        <!-- Row 2: Configured State (HasKey == true && !IsEditing) -->
+        <Border>
+          <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource SettingsLastRowStyle}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding HasKey}" Value="True" />
+                    <Condition Binding="{Binding IsEditing}" Value="False" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <DockPanel LastChildFill="True">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button Content="{loc:Loc Key=settings.ai.change_key}"
+                      Command="{Binding StartEditingCommand}"
+                      Style="{StaticResource SecondaryButtonStyle}"
+                      Margin="0,0,8,0"
+                      AutomationProperties.AutomationId="BtnChangeKey" />
+              <Button Content="{loc:Loc Key=settings.ai.delete_key}"
+                      Command="{Binding DeleteKeyCommand}"
+                      Style="{StaticResource DangerOutlineButtonStyle}"
+                      Margin="0,0,8,0"
+                      AutomationProperties.AutomationId="BtnDeleteKey" />
+              <Button Content="{loc:Loc Key=settings.ai.suspect_leaked}"
+                      Command="{Binding SuspectLeakedCommand}"
+                      Style="{StaticResource DangerOutlineButtonStyle}"
+                      AutomationProperties.AutomationId="BtnSuspectLeaked" />
+            </StackPanel>
+
+            <StackPanel VerticalAlignment="Center">
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                <Ellipse Width="8" Height="8" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="{loc:Loc Key=settings.ai.status_saved}"
+                           Margin="8,0,0,0"
+                           FontSize="{DynamicResource FontSizeBodyStrong}"
+                           FontWeight="{DynamicResource FontWeightSemiBold}"
+                           Foreground="{DynamicResource SuccessTextBrush}" />
+              </StackPanel>
+              <TextBlock Text="{Binding MaskedKey}"
+                         FontFamily="Consolas, Segoe UI Variable, Segoe UI"
+                         FontSize="{DynamicResource FontSizeSubtitle}"
+                         FontWeight="{DynamicResource FontWeightSemiBold}"
+                         Foreground="{DynamicResource TextPrimaryBrush}"
+                         AutomationProperties.AutomationId="TxtMaskedKey" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <!-- Row 3: Input Mode (!HasKey || IsEditing) -->
+        <Border>
+          <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource SettingsLastRowStyle}">
+              <Setter Property="Visibility" Value="Visible" />
+              <Style.Triggers>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding HasKey}" Value="True" />
+                    <Condition Binding="{Binding IsEditing}" Value="False" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </MultiDataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <StackPanel>
+            <TextBlock Text="{loc:Loc Key=settings.ai.key_label}"
+                       FontSize="{DynamicResource FontSizeSubtitle}"
+                       FontWeight="{DynamicResource FontWeightSemiBold}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       Margin="0,0,0,8" />
+
+            <!-- PasswordBox: cleared immediately after reading, never bound directly (SEC-KEY-9) -->
+            <PasswordBox x:Name="KeyPasswordBox"
+                         Height="38"
+                         FontSize="{DynamicResource FontSizeBodyStrong}"
+                         Padding="10,8"
+                         VerticalContentAlignment="Center"
+                         BorderBrush="{DynamicResource BorderStrongBrush}"
+                         BorderThickness="1"
+                         Background="{DynamicResource SurfaceBackgroundBrush}"
+                         AutomationProperties.AutomationId="PbGeminiApiKey" />
+
+            <DockPanel Margin="0,14,0,0" LastChildFill="False">
+              <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                <Button x:Name="BtnSaveKey"
+                        Content="{loc:Loc Key=settings.ai.check_and_save}"
+                        Click="OnCheckAndSaveClicked"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding IsChecking, Converter={StaticResource InverseBool}}"
+                        AutomationProperties.AutomationId="BtnSaveKey" />
+
+                <Button x:Name="BtnSaveOffline"
+                        Content="{loc:Loc Key=settings.ai.save_offline}"
+                        Click="OnSaveOfflineClicked"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="10,0,0,0"
+                        IsEnabled="{Binding IsChecking, Converter={StaticResource InverseBool}}"
+                        Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}"
+                        AutomationProperties.AutomationId="BtnSaveOffline" />
+
+                <Button Content="{loc:Loc Key=common.cancel}"
+                        Command="{Binding CancelEditingCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="10,0,0,0"
+                        Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"
+                        AutomationProperties.AutomationId="BtnCancelEditing" />
+              </StackPanel>
+
+              <!-- Progress text -->
+              <TextBlock DockPanel.Dock="Right"
+                         Text="{loc:Loc Key=settings.ai.checking}"
+                         VerticalAlignment="Center"
+                         FontSize="{DynamicResource FontSizeBody}"
+                         Foreground="{DynamicResource TextSecondaryBrush}"
+                         Visibility="{Binding IsChecking, Converter={StaticResource BoolToVis}}" />
+            </DockPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Feedback Banners -->
+    <!-- Status message banner -->
+    <Border Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}}">
+      <Border.Style>
+        <Style TargetType="Border" BasedOn="{StaticResource StatusBannerBoxStyle}">
+          <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+          <Setter Property="BorderThickness" Value="1" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsStatusError}" Value="True">
+              <Setter Property="Background" Value="{DynamicResource DangerSubtleBrush}" />
+              <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+      <TextBlock Text="{Binding StatusMessage}"
+                 TextWrapping="Wrap"
+                 FontSize="{DynamicResource FontSizeBodyStrong}"
+                 AutomationProperties.AutomationId="TxtAiStatusMessage">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsStatusError}" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+    </Border>
+
+    <!-- Clipboard cleared notice (SEC-KEY-10) -->
+    <Border Style="{StaticResource StatusBannerBoxStyle}"
+            Background="{DynamicResource SurfaceMutedBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            Visibility="{Binding IsClipboardCleared, Converter={StaticResource BoolToVis}}">
+      <StackPanel Orientation="Horizontal">
+        <Path Width="14" Height="14" Data="{DynamicResource IconCheck14}"
+              Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
+        <TextBlock Text="{loc:Loc Key=settings.ai.clipboard_cleared}"
+                   Margin="8,0,0,0"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   VerticalAlignment="Center"
+                   AutomationProperties.AutomationId="TxtClipboardClearedNotice" />
+      </StackPanel>
+    </Border>
+
+    <!-- Suspect leaked guide (SEC-KEY-7) -->
+    <Border Style="{StaticResource StatusBannerBoxStyle}"
+            Background="{DynamicResource DangerSubtleBrush}"
+            BorderBrush="{DynamicResource DangerBrush}"
+            BorderThickness="1"
+            Visibility="{Binding IsSuspectLeaked, Converter={StaticResource BoolToVis}}">
+      <StackPanel>
+        <TextBlock Text="{loc:Loc Key=settings.ai.suspect_leaked_title}"
+                   FontSize="{DynamicResource FontSizeSubtitle}"
+                   FontWeight="{DynamicResource FontWeightSemiBold}"
+                   Foreground="{DynamicResource DangerBrush}"
+                   Margin="0,0,0,6" />
+        <TextBlock Text="{loc:Loc Key=settings.ai.suspect_leaked_guide}"
+                   TextWrapping="Wrap"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   LineHeight="20"
+                   AutomationProperties.AutomationId="TxtSuspectLeakedGuide" />
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>
