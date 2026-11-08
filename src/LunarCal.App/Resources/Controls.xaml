@@ -115,6 +115,17 @@
       </Trigger>
     </Style.Triggers>
   </Style>
+  <!-- Purple primary action of the AI surfaces (Figma 02 "Xác nhận & thêm vào Google") -->
+  <Style x:Key="AiPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseActionButtonStyle}">
+    <Setter Property="Background" Value="{DynamicResource AiAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AiAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Opacity" Value="0.9" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
   <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseActionButtonStyle}">
     <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />

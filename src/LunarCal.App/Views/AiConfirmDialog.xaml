@@ -27,39 +27,27 @@
           CornerRadius="{DynamicResource CornerRadiusDialog}"
           Effect="{DynamicResource ShadowDialog}">
     <StackPanel>
-      <!-- Header: Status Badge, Title, Subtitle, Close Button -->
+      <!-- Header (Figma 02 2:494): AI tile, title + subtitle, status chip, close -->
       <Grid Margin="24,20,24,12">
         <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0">
-          <!-- FR-UI-11: Pill badge MUST use CornerRadiusPill -->
-          <Border HorizontalAlignment="Left" Padding="10,4"
-                  Background="{DynamicResource WarningSubtleBrush}"
-                  BorderBrush="{DynamicResource WarningBorderBrush}"
-                  BorderThickness="1"
-                  CornerRadius="{DynamicResource CornerRadiusPill}">
-            <TextBlock FontSize="{DynamicResource FontSizeCaption}"
-                       FontWeight="{DynamicResource FontWeightSemiBold}"
-                       Foreground="{DynamicResource WarningTextBrush}"
-                       AutomationProperties.AutomationId="AiConfirmStatusBadge">
-              <TextBlock.Style>
-                <Style TargetType="TextBlock">
-                  <Setter Property="Text" Value="{loc:Loc ai_confirm.status_pending}" />
-                  <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
-                      <Setter Property="Text" Value="{loc:Loc ai_confirm.status_clarify}" />
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </TextBlock.Style>
-            </TextBlock>
-          </Border>
+        <Border Grid.Column="0" Width="40" Height="40" Margin="0,0,12,0" VerticalAlignment="Top"
+                Background="{DynamicResource AiChipBrush}"
+                CornerRadius="{DynamicResource CornerRadiusMedium}">
+          <Path Data="{DynamicResource IconSparkle18}"
+                Width="18" Height="18"
+                Stretch="Uniform"
+                Fill="{DynamicResource AiAccentBrush}"
+                HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
 
-          <TextBlock Margin="0,8,0,0"
-                     FontSize="{DynamicResource FontSizeDialogTitle}"
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+          <TextBlock FontSize="{DynamicResource FontSizeDialogTitle}"
                      FontWeight="{DynamicResource FontWeightBold}"
                      Foreground="{DynamicResource TextPrimaryBrush}"
                      AutomationProperties.AutomationId="AiConfirmTitle">
@@ -75,8 +63,8 @@
             </TextBlock.Style>
           </TextBlock>
 
-          <TextBlock Margin="0,4,0,0"
-                     FontSize="{DynamicResource FontSizeBody}"
+          <TextBlock Margin="0,2,0,0"
+                     FontSize="{DynamicResource FontSizeCaption}"
                      Foreground="{DynamicResource TextSecondaryBrush}"
                      TextWrapping="Wrap"
                      AutomationProperties.AutomationId="AiConfirmSubtitle">
@@ -93,8 +81,54 @@
           </TextBlock>
         </StackPanel>
 
-        <!-- Close button ✕ -->
-        <Button Grid.Column="1"
+        <!-- FR-UI-11: Pill badge MUST use CornerRadiusPill. Purple while waiting for confirmation, amber when more info is needed. -->
+        <Border Grid.Column="2" Margin="12,0,8,0" Padding="10,4" VerticalAlignment="Top"
+                CornerRadius="{DynamicResource CornerRadiusPill}">
+          <Border.Style>
+            <Style TargetType="Border">
+              <Setter Property="Background" Value="{DynamicResource AiChipBrush}" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                  <Setter Property="Background" Value="{DynamicResource WarningSubtleBrush}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <StackPanel Orientation="Horizontal">
+            <Border Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center"
+                    CornerRadius="{DynamicResource CornerRadiusFull}">
+              <Border.Style>
+                <Style TargetType="Border">
+                  <Setter Property="Background" Value="{DynamicResource AiAccentBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                      <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Border.Style>
+            </Border>
+            <TextBlock FontSize="{DynamicResource FontSizeCaption}"
+                       FontWeight="{DynamicResource FontWeightSemiBold}"
+                       AutomationProperties.AutomationId="AiConfirmStatusBadge">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                  <Setter Property="Text" Value="{loc:Loc ai_confirm.status_pending}" />
+                  <Setter Property="Foreground" Value="{DynamicResource AiTextBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                      <Setter Property="Text" Value="{loc:Loc ai_confirm.status_clarify}" />
+                      <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+          </StackPanel>
+        </Border>
+
+        <!-- Close button -->
+        <Button Grid.Column="3"
                 VerticalAlignment="Top"
                 Width="32" Height="32"
                 Style="{StaticResource GhostButtonStyle}"
@@ -165,7 +199,7 @@
 
           <Border Margin="0,6,0,0" Padding="14,12"
                   Background="{DynamicResource SurfaceBackgroundBrush}"
-                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderBrush="{DynamicResource AiBorderSubtleBrush}"
                   BorderThickness="1"
                   CornerRadius="{DynamicResource CornerRadiusMedium}">
             <Grid>
@@ -189,16 +223,11 @@
                          Text="{loc:Loc ai_confirm.label_action}"
                          FontSize="{DynamicResource FontSizeBody}"
                          Foreground="{DynamicResource TextSecondaryBrush}" />
-              <Border Grid.Row="0" Grid.Column="1" Margin="0,4"
-                      HorizontalAlignment="Left" Padding="8,3"
-                      Background="{DynamicResource AccentSubtleBrush}"
-                      CornerRadius="{DynamicResource CornerRadiusSmall}">
-                <TextBlock Text="{Binding ActionName}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           FontWeight="{DynamicResource FontWeightSemiBold}"
-                           Foreground="{DynamicResource AccentTextBrush}"
-                           AutomationProperties.AutomationId="AiConfirmActionName" />
-              </Border>
+              <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,4"
+                         Text="{Binding ActionName}"
+                         FontSize="{DynamicResource FontSizeBodyStrong}"
+                         Foreground="{DynamicResource TextPrimaryBrush}"
+                         AutomationProperties.AutomationId="AiConfirmActionName" />
 
               <!-- Row 1: Tiêu đề -->
               <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,6"
@@ -342,9 +371,25 @@
                          Text="{loc:Loc ai_confirm.label_confidence}"
                          FontSize="{DynamicResource FontSizeBody}"
                          Foreground="{DynamicResource TextSecondaryBrush}" />
-              <StackPanel Grid.Row="7" Grid.Column="1" Margin="0,8,0,4">
+              <Border Grid.Row="7" Grid.Column="1" Margin="0,8,0,4"
+                      HorizontalAlignment="Left" Padding="10,3"
+                      CornerRadius="{DynamicResource CornerRadiusPill}"
+                      AutomationProperties.AutomationId="AiConfirmConfidenceChip">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding ConfidenceLevel}" Value="{x:Static chat:AiConfidenceLevel.Medium}">
+                        <Setter Property="Background" Value="{DynamicResource WarningSubtleBrush}" />
+                      </DataTrigger>
+                      <DataTrigger Binding="{Binding ConfidenceLevel}" Value="{x:Static chat:AiConfidenceLevel.Low}">
+                        <Setter Property="Background" Value="{DynamicResource DangerSubtleBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
                 <TextBlock Text="{Binding ConfidenceDisplay}"
-                           FontSize="{DynamicResource FontSizeBodyStrong}"
+                           FontSize="{DynamicResource FontSizeCaption}"
                            FontWeight="{DynamicResource FontWeightSemiBold}"
                            AutomationProperties.AutomationId="AiConfirmConfidence">
                   <TextBlock.Style>
@@ -361,27 +406,7 @@
                     </Style>
                   </TextBlock.Style>
                 </TextBlock>
-
-                <!-- Confidence bar -->
-                <ProgressBar Margin="0,4,0,0" Height="6" Value="{Binding ConfidenceScore}" Maximum="100"
-                             Background="{DynamicResource ControlTrackBrush}"
-                             BorderThickness="0"
-                             AutomationProperties.AutomationId="AiConfirmConfidenceBar">
-                  <ProgressBar.Style>
-                    <Style TargetType="ProgressBar">
-                      <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
-                      <Style.Triggers>
-                        <DataTrigger Binding="{Binding ConfidenceLevel}" Value="{x:Static chat:AiConfidenceLevel.Medium}">
-                          <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding ConfidenceLevel}" Value="{x:Static chat:AiConfidenceLevel.Low}">
-                          <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
-                        </DataTrigger>
-                      </Style.Triggers>
-                    </Style>
-                  </ProgressBar.Style>
-                </ProgressBar>
-              </StackPanel>
+              </Border>
             </Grid>
           </Border>
 
@@ -530,66 +555,76 @@
               </Style>
             </Border.Style>
 
-            <TextBlock Text="{Binding ValidationSummary}"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       FontWeight="{DynamicResource FontWeightMedium}"
-                       TextWrapping="Wrap"
-                       AutomationProperties.AutomationId="AiConfirmValidationMessage">
-              <TextBlock.Style>
-                <Style TargetType="TextBlock">
-                  <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}" />
-                  <Style.Triggers>
-                    <DataTrigger Binding="{Binding ValidationSeverity}" Value="{x:Static chat:AiBusinessValidationSeverity.Warning}">
-                      <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding ValidationSeverity}" Value="{x:Static chat:AiBusinessValidationSeverity.Error}">
-                      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </TextBlock.Style>
-            </TextBlock>
+            <DockPanel LastChildFill="True">
+              <Border DockPanel.Dock="Left" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"
+                      CornerRadius="{DynamicResource CornerRadiusFull}">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding ValidationSeverity}" Value="{x:Static chat:AiBusinessValidationSeverity.Warning}">
+                        <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
+                      </DataTrigger>
+                      <DataTrigger Binding="{Binding ValidationSeverity}" Value="{x:Static chat:AiBusinessValidationSeverity.Error}">
+                        <Setter Property="Background" Value="{DynamicResource DangerBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+                <Path Data="{DynamicResource IconCheck11}"
+                      Width="10" Height="10"
+                      Stretch="Uniform"
+                      Stroke="{DynamicResource OnAccentBrush}"
+                      StrokeThickness="1.6"
+                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="{Binding ValidationSummary}"
+                         FontSize="{DynamicResource FontSizeBody}"
+                         FontWeight="{DynamicResource FontWeightMedium}"
+                         TextWrapping="Wrap"
+                         AutomationProperties.AutomationId="AiConfirmValidationMessage">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding ValidationSeverity}" Value="{x:Static chat:AiBusinessValidationSeverity.Warning}">
+                        <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+                      </DataTrigger>
+                      <DataTrigger Binding="{Binding ValidationSeverity}" Value="{x:Static chat:AiBusinessValidationSeverity.Error}">
+                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </DockPanel>
           </Border>
-
-          <!-- 5. GHI CHÚ QUYỀN RIÊNG TƯ (FR-CONFIRM-6, chuỗi spec §4.11) -->
-          <TextBlock Text="{Binding PrivacyNotice}"
-                     Margin="0,12,0,0"
-                     FontSize="{DynamicResource FontSizeCaption}"
-                     Foreground="{DynamicResource TextTertiaryBrush}"
-                     TextWrapping="Wrap"
-                     AutomationProperties.AutomationId="AiConfirmPrivacyNotice" />
 
         </StackPanel>
       </ScrollViewer>
 
-      <!-- Footer Action Buttons: Sửa, Hủy, Xác nhận / Trả lời & tiếp tục (S16 removes Edit) -->
-      <Border Padding="24,14"
-              Background="{DynamicResource SurfaceMutedBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="0,1,0,0"
-              CornerRadius="{DynamicResource CornerRadiusDialogBottom}">
-        <DockPanel LastChildFill="False">
-          <!-- Left: Sửa (FR-CONFIRM-8: Bỏ nút Sửa khi ở trạng thái hỏi lại S16) -->
-          <Button DockPanel.Dock="Left"
-                  Content="{loc:Loc ai_confirm.btn_edit}"
-                  Command="{Binding EditCommand}"
-                  AutomationProperties.AutomationId="BtnAiConfirmEdit">
-            <Button.Style>
-              <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                <Setter Property="Visibility" Value="Visible" />
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                  </DataTrigger>
-                </Style.Triggers>
-              </Style>
-            </Button.Style>
-          </Button>
+      <!-- Footer (Figma 02): privacy note on the left; Sửa, Hủy, Xác nhận on the right (S16 removes Edit) -->
+      <Border Padding="24,12,24,20">
+        <DockPanel LastChildFill="True">
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Content="{loc:Loc ai_confirm.btn_edit}"
+                    Command="{Binding EditCommand}"
+                    Margin="0,0,10,0"
+                    AutomationProperties.AutomationId="BtnAiConfirmEdit">
+              <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                  <Setter Property="Visibility" Value="Visible" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
 
-          <!-- Right: Hủy & Xác nhận / Trả lời & tiếp tục -->
-          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
             <Button Content="{loc:Loc ai_confirm.btn_cancel}"
-                    Style="{StaticResource GhostButtonStyle}"
+                    Style="{StaticResource SecondaryButtonStyle}"
                     Margin="0,0,10,0"
                     IsCancel="True"
                     Command="{Binding CancelCommand}"
@@ -602,7 +637,7 @@
                     Command="{Binding ConfirmCommand}"
                     AutomationProperties.AutomationId="BtnAiConfirmSubmit">
               <Button.Style>
-                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                <Style TargetType="Button" BasedOn="{StaticResource AiPrimaryButtonStyle}">
                   <Setter Property="Visibility" Value="Visible" />
                   <Setter Property="IsDefault" Value="True" />
                   <Style.Triggers>
@@ -621,7 +656,7 @@
                     Command="{Binding SubmitClarificationCommand}"
                     AutomationProperties.AutomationId="BtnAiClarifySubmit">
               <Button.Style>
-                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                <Style TargetType="Button" BasedOn="{StaticResource AiPrimaryButtonStyle}">
                   <Setter Property="Visibility" Value="Collapsed" />
                   <Setter Property="IsDefault" Value="False" />
                   <Style.Triggers>
@@ -634,6 +669,15 @@
               </Button.Style>
             </Button>
           </StackPanel>
+
+          <!-- Privacy note (FR-CONFIRM-6, spec 4.11 wording) -->
+          <TextBlock Text="{Binding PrivacyNotice}"
+                     Margin="0,0,16,0"
+                     VerticalAlignment="Center"
+                     FontSize="{DynamicResource FontSizeCaption}"
+                     Foreground="{DynamicResource TextTertiaryBrush}"
+                     TextWrapping="Wrap"
+                     AutomationProperties.AutomationId="AiConfirmPrivacyNotice" />
         </DockPanel>
       </Border>
 
