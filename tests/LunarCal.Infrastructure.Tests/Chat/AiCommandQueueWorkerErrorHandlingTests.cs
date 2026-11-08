@@ -118,6 +118,95 @@ public sealed class AiCommandQueueWorkerErrorHandlingTests
         await _store.ReceivedWithAnyArgs().GetPendingQueueAsync(default, default, TestContext.Current.CancellationToken);
     }
 
+    private AiCommand Cmd(string id, int no) => new()
+    {
+        Id = id,
+        DisplayNo = no,
+        Text = "Họp nhóm lúc 9h",
+        TypedAt = _now,
+        TimeZone = "SE Asia Standard Time",
+        InputLang = "vi",
+        Status = AiCommandStatus.Pending,
+        CreatedAt = _now,
+        UpdatedAt = _now,
+    };
+
+    [Fact]
+    public async Task FR_CHAT_7_A_rate_limit_stops_the_rest_of_the_batch_so_other_commands_do_not_burn_their_retries()
+    {
+        _orchestrator
+            .ProcessUserMessageAsync(Arg.Any<string>(), Arg.Any<PromptContext>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ChatOrchestratorState>>(_ => throw new GeminiApiException(
+                GeminiErrorKind.RateLimitExceeded, "Too many requests per minute", statusCode: HttpStatusCode.TooManyRequests));
+        _store.GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([Cmd("a", 1001), Cmd("b", 1002), Cmd("c", 1003)]);
+        var worker = new AiCommandQueueWorker(_store, _orchestrator, _networkStatus, _clock);
+
+        await worker.ProcessPendingBatchAsync(CancellationToken.None);
+
+        await _orchestrator.ReceivedWithAnyArgs(1).ProcessUserMessageAsync(default!, default!, TestContext.Current.CancellationToken);
+
+        // ...and the queue stays paused for the cool-down.
+        _store.ClearReceivedCalls();
+        (await worker.ProcessPendingBatchAsync(CancellationToken.None)).Should().Be(0);
+        await _store.DidNotReceiveWithAnyArgs().GetPendingQueueAsync(default, default, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task FR_CHAT_7_The_hourly_call_budget_is_a_hard_stop_whatever_the_queue_contains()
+    {
+        _orchestrator
+            .ProcessUserMessageAsync(Arg.Any<string>(), Arg.Any<PromptContext>(), Arg.Any<CancellationToken>())
+            .Returns(ChatOrchestratorState.Completed);
+        _store.GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([Cmd("a", 1001), Cmd("b", 1002), Cmd("c", 1003), Cmd("d", 1004)]);
+        var worker = new AiCommandQueueWorker(_store, _orchestrator, _networkStatus, _clock, new AiQueueWorkerOptions { MaxCallsPerHour = 2 });
+
+        (await worker.ProcessPendingBatchAsync(CancellationToken.None)).Should().Be(2);
+        await _orchestrator.ReceivedWithAnyArgs(2).ProcessUserMessageAsync(default!, default!, TestContext.Current.CancellationToken);
+
+        // Still inside the hour: nothing more is sent.
+        _clock.UtcNow.Returns(_now.AddMinutes(59));
+        (await worker.ProcessPendingBatchAsync(CancellationToken.None)).Should().Be(0);
+
+        // An hour after the first call the budget frees up again.
+        _clock.UtcNow.Returns(_now.AddMinutes(61));
+        (await worker.ProcessPendingBatchAsync(CancellationToken.None)).Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task FR_QUEUE_3_A_network_failure_while_online_waits_before_the_next_try_instead_of_hammering()
+    {
+        var command = Cmd("net", 1001);
+        _orchestrator
+            .ProcessUserMessageAsync(Arg.Any<string>(), Arg.Any<PromptContext>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ChatOrchestratorState>>(_ => throw new HttpRequestException("The SSL connection could not be established"));
+        _store.GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([command]);
+        var worker = new AiCommandQueueWorker(_store, _orchestrator, _networkStatus, _clock);
+
+        await worker.ProcessPendingBatchAsync(CancellationToken.None);
+
+        await _store.Received(1).UpdateStatusAsync(
+            command.Id,
+            AiCommandStatus.Pending,
+            Arg.Any<string?>(),
+            Arg.Any<int?>(),
+            Arg.Is<DateTimeOffset?>(t => t == _now + TimeSpan.FromSeconds(30)),
+            Arg.Any<string?>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FR_QUEUE_5_The_worker_loop_asks_the_queue_for_one_command_at_a_time()
+    {
+        _store.GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
+        var worker = new AiCommandQueueWorker(_store, _orchestrator, _networkStatus, _clock);
+
+        await worker.ProcessPendingBatchAsync(1, CancellationToken.None);
+
+        await _store.Received(1).GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), 1, Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task FR_CHAT_7_Worker_sets_cooldown_delay_on_rate_limit_429()
     {
@@ -237,12 +326,12 @@ public sealed class AiCommandQueueWorkerErrorHandlingTests
 
         await worker.ProcessPendingBatchAsync(CancellationToken.None);
 
-        // Command is restored to Pending with nextRetryAt = null so it waits for network restoration
+        // Command is restored to Pending with a 30 s backoff (never an immediate retry) so it waits for the network to recover
         await _store.Received(1).UpdateStatusAsync(
             command.Id,
             AiCommandStatus.Pending,
             lastError: Arg.Any<string>(),
-            nextRetryAt: null,
+            nextRetryAt: _now + TimeSpan.FromSeconds(30),
             retryCount: Arg.Any<int?>(),
             batchId: Arg.Any<string?>(),
             cancellationToken: Arg.Any<CancellationToken>());

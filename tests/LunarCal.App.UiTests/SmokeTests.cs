@@ -21,6 +21,27 @@ namespace LunarCal.App.UiTests;
 [Collection("UiSmokeTests")]
 public sealed class SmokeTests
 {
+    private static readonly System.Collections.Concurrent.ConcurrentBag<string> _tempDataDirectories = [];
+
+    static SmokeTests()
+    {
+        // Remove the throw-away databases when the test run ends (the apps are closed by then).
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        {
+            foreach (var directory in _tempDataDirectories)
+            {
+                try
+                {
+                    Directory.Delete(directory, recursive: true);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // A file still locked by a late-closing app: the OS temp folder cleanup removes it later.
+                }
+            }
+        };
+    }
+
     private static string FindAppPath()
     {
         var baseDir = AppContext.BaseDirectory;
@@ -51,6 +72,7 @@ public sealed class SmokeTests
     {
         var dataDirectory = Path.Combine(Path.GetTempPath(), "LunarCal_UiTest_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dataDirectory);
+        _tempDataDirectories.Add(dataDirectory);
 
         var psi = new ProcessStartInfo
         {

@@ -59,6 +59,23 @@ public sealed class SqliteAiCommandStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task FR_QUEUE_3_A_pending_command_with_a_retry_time_waits_for_it()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await EnsureDbAsync(ct);
+        var cmd = await _store.EnqueueAsync("họp 9h", DateTimeOffset.Now, "SE Asia Standard Time", "vi", ct);
+        var later = DateTimeOffset.UtcNow.AddMinutes(10);
+
+        await _store.UpdateStatusAsync(cmd.Id, AiCommandStatus.Pending, "network", nextRetryAt: later, cancellationToken: ct);
+
+        (await _store.GetPendingQueueAsync(DateTimeOffset.UtcNow, 10, ct)).Should().BeEmpty("it is waiting for its backoff");
+        (await _store.GetPendingQueueAsync(later.AddSeconds(1), 10, ct)).Should().ContainSingle(c => c.Id == cmd.Id);
+
+        await _store.RetryNowAsync(cmd.Id, ct);
+        (await _store.GetPendingQueueAsync(DateTimeOffset.UtcNow, 10, ct)).Should().ContainSingle(c => c.Id == cmd.Id);
+    }
+
+    [Fact]
     public async Task FR_QUEUE_5_A_command_that_fails_permanently_is_never_picked_up_again()
     {
         var ct = TestContext.Current.CancellationToken;

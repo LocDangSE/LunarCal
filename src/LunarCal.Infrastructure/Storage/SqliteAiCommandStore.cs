@@ -137,7 +137,7 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
                    status, retry_count, next_retry_at, last_error, batch_id,
                    created_at, updated_at, proposal_json
             FROM AiCommand
-            WHERE status = @pendingStatus
+            WHERE (status = @pendingStatus AND (next_retry_at IS NULL OR next_retry_at <= @now))
                OR (status = @errorStatus AND retry_count < 5 AND next_retry_at IS NOT NULL AND next_retry_at <= @now)
             ORDER BY created_at ASC
             LIMIT @limit;";

@@ -23,7 +23,8 @@ public sealed class AiCommandQueueWorker : BackgroundService
     private readonly AiQueueRetryPolicy _retryPolicy;
     private readonly ILogger _logger;
     private readonly SemaphoreSlim _signal = new(0, 1);
-    private DateTimeOffset _quotaPausedUntil = DateTimeOffset.MinValue;
+    private DateTimeOffset _pausedUntil = DateTimeOffset.MinValue;
+    private readonly Queue<DateTimeOffset> _recentModelCalls = new();
 
     /// <summary>How long model calls stop after the daily quota is exhausted.</summary>
     private static readonly TimeSpan _quotaPause = TimeSpan.FromMinutes(15);
@@ -180,12 +181,11 @@ public sealed class AiCommandQueueWorker : BackgroundService
                     continue;
                 }
 
-                var processedCount = await ProcessPendingBatchAsync(stoppingToken).ConfigureAwait(false);
-
-                // Never spin: even when commands were processed, pause before looking at the queue again so a failing
-                // command can never produce a tight loop of model calls.
+                // One command per pass, then a pause of at least MinCallInterval: the model is never called faster than
+                // the free tier allows and a failing command can never produce a tight loop of calls (P4-R10).
+                var processedCount = await ProcessPendingBatchAsync(1, stoppingToken).ConfigureAwait(false);
                 await WaitForSignalOrDelayAsync(
-                    processedCount == 0 ? _options.PollInterval : TimeSpan.FromSeconds(1),
+                    processedCount == 0 ? _options.PollInterval : _options.MinCallInterval,
                     stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -206,16 +206,20 @@ public sealed class AiCommandQueueWorker : BackgroundService
     /// Processes a single batch of pending commands ready for execution.
     /// Can be called directly by tests to verify processing logic deterministically.
     /// </summary>
-    public async Task<int> ProcessPendingBatchAsync(CancellationToken cancellationToken = default)
+    public Task<int> ProcessPendingBatchAsync(CancellationToken cancellationToken = default) =>
+        ProcessPendingBatchAsync(10, cancellationToken);
+
+    /// <summary>Processes at most <paramref name="maxCommands"/> commands that are ready for execution.</summary>
+    public async Task<int> ProcessPendingBatchAsync(int maxCommands, CancellationToken cancellationToken = default)
     {
-        // After the daily quota ran out every further call fails too: stop calling the model for a while instead of
-        // burning requests (the quota resets at midnight Pacific Time, P4-R9).
-        if (_clock.UtcNow < _quotaPausedUntil)
+        // While paused (daily quota or rate limit hit, call budget used up) the model is not called at all and the
+        // queue is not even read (P4-R9, P4-R10).
+        if (_clock.UtcNow < _pausedUntil)
         {
             return 0;
         }
 
-        var pendingCommands = await _commandStore.GetPendingQueueAsync(_clock.UtcNow, limit: 10, cancellationToken).ConfigureAwait(false);
+        var pendingCommands = await _commandStore.GetPendingQueueAsync(_clock.UtcNow, limit: maxCommands, cancellationToken).ConfigureAwait(false);
         if (pendingCommands.Count == 0)
         {
             return 0;
@@ -226,7 +230,7 @@ public sealed class AiCommandQueueWorker : BackgroundService
         var progressed = 0;
         foreach (var command in pendingCommands)
         {
-            if (cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested || _clock.UtcNow < _pausedUntil || IsOverCallBudget())
             {
                 break;
             }
@@ -266,6 +270,7 @@ public sealed class AiCommandQueueWorker : BackgroundService
             Locale: string.Equals(command.InputLang, "en", StringComparison.OrdinalIgnoreCase) ? "en-US" : "vi-VN");
 
         orchestrator.Reset();
+        _recentModelCalls.Enqueue(_clock.UtcNow);
 
         // FR-CONFIRM-8: after the user answered the model's question, send the original text together with the exchange.
         var message = command.Proposal is { ClarificationAnswer: { Length: > 0 } answer }
@@ -356,6 +361,34 @@ public sealed class AiCommandQueueWorker : BackgroundService
         return true;
     }
 
+    private void PauseUntil(DateTimeOffset until, string reason)
+    {
+        if (until > _pausedUntil)
+        {
+            _pausedUntil = until;
+        }
+
+        _logger.Warning("{Reason}; the AI queue pauses model calls until {PausedUntil}", reason, _pausedUntil);
+    }
+
+    /// <summary>Rolling one-hour budget of model calls; when it is used up the queue pauses until the oldest call leaves the window.</summary>
+    private bool IsOverCallBudget()
+    {
+        var now = _clock.UtcNow;
+        while (_recentModelCalls.Count > 0 && now - _recentModelCalls.Peek() >= TimeSpan.FromHours(1))
+        {
+            _recentModelCalls.Dequeue();
+        }
+
+        if (_recentModelCalls.Count < _options.MaxCallsPerHour)
+        {
+            return false;
+        }
+
+        PauseUntil(_recentModelCalls.Peek() + TimeSpan.FromHours(1), "Model call budget used up (" + _options.MaxCallsPerHour + " per hour)");
+        return true;
+    }
+
     /// <summary>True when the user cancelled <paramref name="command"/> while it was being processed; nothing is written then.</summary>
     private async Task<bool> WasCancelledMeanwhileAsync(AiCommand command, CancellationToken cancellationToken)
     {
@@ -381,8 +414,12 @@ public sealed class AiCommandQueueWorker : BackgroundService
 
         if (errorResult.Kind == AiChatErrorKind.DailyQuotaExceeded)
         {
-            _quotaPausedUntil = _clock.UtcNow + _quotaPause;
-            _logger.Warning("Daily Gemini quota exhausted; the AI queue pauses model calls until {PausedUntil}", _quotaPausedUntil);
+            PauseUntil(_clock.UtcNow + _quotaPause, "Daily Gemini quota exhausted");
+        }
+        else if (errorResult.Kind == AiChatErrorKind.RateLimitExceeded)
+        {
+            // Every other command would be rejected too and burn one of its five attempts: wait for the cool-down.
+            PauseUntil(_clock.UtcNow + (errorResult.RetryAfter ?? TimeSpan.FromMinutes(1)), "Gemini rate limit hit");
         }
 
         // 1. Offline / Network unavailable: preserve in queue as pending, wait for network restoration (FR-CHAT-7)
@@ -392,7 +429,10 @@ public sealed class AiCommandQueueWorker : BackgroundService
                 command.Id,
                 AiCommandStatus.Pending,
                 lastError: errorResult.TechnicalDetails ?? errorResult.MessageKey,
-                nextRetryAt: null,
+
+                // The app believed it was online yet the call failed: wait before the next try instead of hammering
+                // the network every poll interval (P4-R10).
+                nextRetryAt: _clock.UtcNow + _options.NetworkFailureBackoff,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             _logger.Information("AI command {CommandId} preserved locally in queue waiting for network reconnection", command.Id);
