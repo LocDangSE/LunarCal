@@ -46,13 +46,14 @@
   <!-- P4-R7: non-blocking progress card above the AI command bar. Colours follow the AI tokens of Figma 01. -->
   <Border Margin="24,8,24,0"
           Padding="14,10"
-          Background="{DynamicResource AiChipBrush}"
-          BorderBrush="{DynamicResource AiBorderSubtleBrush}"
           BorderThickness="1"
           CornerRadius="{DynamicResource CornerRadiusMedium}"
           AutomationProperties.AutomationId="AiProgressCard">
     <Border.Style>
+      <!-- Colours live in the style (not as local attributes) so the Failed and Done triggers can override them. -->
       <Style TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource AiChipBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AiBorderSubtleBrush}" />
         <Setter Property="Visibility" Value="Collapsed" />
         <Style.Triggers>
           <DataTrigger Binding="{Binding IsVisible}" Value="True">
@@ -116,6 +117,7 @@
           <Path Data="{DynamicResource IconClose32}"
                 Stroke="{DynamicResource TextSecondaryBrush}"
                 StrokeThickness="1.5"
+                Stretch="Uniform"
                 Width="12" Height="12" />
           <Button.Style>
             <Style TargetType="Button" BasedOn="{StaticResource ProgressActionButtonStyle}">
