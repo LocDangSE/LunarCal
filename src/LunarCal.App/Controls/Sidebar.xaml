@@ -166,7 +166,7 @@
       <!-- Sync status (1:191): muted card, border, radius 12, padding 12, gap 8; click to sync now -->
       <Button Grid.Row="3"
               Margin="0,20,0,0"
-              Command="{Binding SyncNowCommand}"
+              Command="{Binding ToggleAiQueueDrawerCommand}"
               Cursor="Hand"
               ToolTip="{loc:Loc Key=sidebar.sync_now}"
               AutomationProperties.AutomationId="SyncStatusBlock"

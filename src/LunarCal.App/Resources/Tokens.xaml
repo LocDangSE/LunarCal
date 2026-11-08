@@ -63,6 +63,7 @@
   <DropShadowEffect x:Key="ShadowSidebar" Color="#101828" Opacity="0.04" BlurRadius="16" ShadowDepth="4" Direction="0" />
   <DropShadowEffect x:Key="ShadowTopBar" Color="#101828" Opacity="0.03" BlurRadius="12" ShadowDepth="4" Direction="270" />
   <DropShadowEffect x:Key="ShadowDialog" Color="#0F1729" Opacity="0.25" BlurRadius="50" ShadowDepth="20" Direction="270" />
+  <DropShadowEffect x:Key="ShadowDrawer" Color="#0F1729" Opacity="0.18" BlurRadius="32" ShadowDepth="8" Direction="180" />
 
   <!-- Typography: Weights -->
   <FontWeight x:Key="FontWeightRegular">Normal</FontWeight>
@@ -137,5 +138,7 @@
   <sys:Double x:Key="AccountSwitchDialogWidth">568</sys:Double>
   <sys:Double x:Key="SettingsContentWidth">720</sys:Double>
   <sys:Double x:Key="SettingsNavItemHeight">42</sys:Double>
+  <!-- Drawer (Figma 03 3:493 & .agents/rules/ui.md) -->
+  <sys:Double x:Key="DrawerWidth">400</sys:Double>
 
 </ResourceDictionary>

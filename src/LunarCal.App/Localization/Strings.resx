@@ -1449,4 +1449,67 @@
   <data name="settings.advanced.gemini_model_desc" xml:space="preserve">
     <value>Mô hình hiện được cấu hình cho trợ lý AI thanh lệnh (FR-BYOK-5, ADR-0016).</value>
   </data>
+  <data name="ai.offline_banner" xml:space="preserve">
+    <value>Không có kết nối. Yêu cầu mới sẽ được lưu cục bộ và chờ xử lý lại khi có mạng.</value>
+  </data>
+  <data name="ai.disabled_tooltip" xml:space="preserve">
+    <value>Thanh lệnh AI đang tắt vì Gemini chưa được bật hoặc chưa có API key.</value>
+  </data>
+  <data name="ai_queue.title" xml:space="preserve">
+    <value>Hàng chờ AI</value>
+  </data>
+  <data name="ai_queue.pending_count" xml:space="preserve">
+    <value>{0} yêu cầu</value>
+  </data>
+  <data name="ai_queue.empty" xml:space="preserve">
+    <value>Không có lệnh nào trong hàng chờ</value>
+  </data>
+  <data name="ai_queue.close" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="ai_queue.status_pending" xml:space="preserve">
+    <value>Chờ xử lý</value>
+  </data>
+  <data name="ai_queue.status_processing" xml:space="preserve">
+    <value>Đang xử lý</value>
+  </data>
+  <data name="ai_queue.status_needs_confirmation" xml:space="preserve">
+    <value>Chờ xác nhận</value>
+  </data>
+  <data name="ai_queue.status_error" xml:space="preserve">
+    <value>Lỗi</value>
+  </data>
+  <data name="ai_queue.status_completed" xml:space="preserve">
+    <value>Hoàn tất</value>
+  </data>
+  <data name="ai_queue.status_cancelled" xml:space="preserve">
+    <value>Đã huỷ</value>
+  </data>
+  <data name="ai_queue.action_view" xml:space="preserve">
+    <value>Xem</value>
+  </data>
+  <data name="ai_queue.action_confirm" xml:space="preserve">
+    <value>Xem và xác nhận</value>
+  </data>
+  <data name="ai_queue.action_retry" xml:space="preserve">
+    <value>Thử lại</value>
+  </data>
+  <data name="ai_queue.action_edit" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="ai_queue.action_cancel" xml:space="preserve">
+    <value>Huỷ</value>
+  </data>
+  <data name="ai_queue.destructive_warning" xml:space="preserve">
+    <value>Lệnh xóa cần xác nhận – AI không tự xóa khi chưa xác nhận</value>
+  </data>
+  <data name="ai_queue.retry_format" xml:space="preserve">
+    <value>Thử lại {0}/{1} (chờ {2} phút)</value>
+  </data>
+  <data name="ai_queue.time_just_now" xml:space="preserve">
+    <value>Vừa xong</value>
+  </data>
+  <data name="ai_queue.time_minutes_ago" xml:space="preserve">
+    <value>{0} phút trước</value>
+  </data>
 </root>

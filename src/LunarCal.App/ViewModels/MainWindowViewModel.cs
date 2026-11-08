@@ -6,6 +6,7 @@ using LunarCal.App.Localization;
 using LunarCal.App.Services;
 using LunarCal.Core.Abstractions;
 using LunarCal.Core.Calendar;
+using LunarCal.Core.Chat;
 using LunarCal.Core.Settings;
 
 namespace LunarCal.App.ViewModels;
@@ -27,6 +28,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly IAccountSessionService? _accountSession;
     private readonly IAccountSwitchPrompt? _switchPrompt;
     private readonly IGoogleOAuthClient? _oauthClient;
+    private readonly IAiCommandStore _aiCommandStore;
 
     // Sync events arrive on a thread-pool thread; view state (collections bound to the UI) must change on the
     // thread that created this view model (the WPF dispatcher at runtime).
@@ -122,6 +124,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Child view model for the agenda schedule view (Figma S08, FR-UI-1).</summary>
     public AgendaViewModel AgendaView { get; }
 
+    /// <summary>Child view model for the bottom AI natural language command bar (Figma 01, FR-UI-5).</summary>
+    public AiCommandBarViewModel AiCommandBar { get; }
+
+    /// <summary>Child view model for the AI command queue drawer (Figma 03, FR-QUEUE-2).</summary>
+    public AiQueueDrawerViewModel AiQueueDrawer { get; }
+
     /// <summary>Raised when any view or command requests the event editor dialog (Figma S10, FR-UI-4).</summary>
     public event EventHandler<EventEditorRequest>? EventEditorRequested;
 
@@ -143,7 +151,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IAccountStore? accountStore = null,
         IGoogleOAuthClient? oauthClient = null,
         IAccountSessionService? accountSession = null,
-        IAccountSwitchPrompt? switchPrompt = null)
+        IAccountSwitchPrompt? switchPrompt = null,
+        IAiCommandStore? aiCommandStore = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
@@ -157,6 +166,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _syncScheduler = syncScheduler;
         _accountStore = accountStore;
         _oauthClient = oauthClient;
+        _aiCommandStore = aiCommandStore ?? new NullAiCommandStore();
+
+        AiCommandBar = new AiCommandBarViewModel(_aiCommandStore, _localizationService, _networkStatusService, _settingsStore, _preferences);
+        AiQueueDrawer = new AiQueueDrawerViewModel(_aiCommandStore, _localizationService, _networkStatusService);
+
+        AiCommandBar.CommandEnqueued += OnAiCommandEnqueued;
+        AiQueueDrawer.CommandEditRequested += OnAiCommandEditRequested;
 
         _isLunarVisible = _preferences.LunarEnabled;
 
@@ -208,6 +224,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         UpdateTitles();
 
         // Load calendars and account from store
+        _ = RefreshPendingAiCommandsCountAsync();
         _ = LoadCalendarsAsync();
         _ = LoadAccountAsync();
     }
@@ -496,6 +513,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// Triggers an immediate calendar synchronization cycle (FR-UI-10, FR-SYNC-3). Without an account it opens
     /// Settings > Google account instead, since there is nothing to sync.
     /// </summary>
+    [RelayCommand]
+    public async Task OpenAiQueueDrawerAsync()
+    {
+        await AiQueueDrawer.OpenDrawerAsync().ConfigureAwait(true);
+    }
+
+    [RelayCommand]
+    public void CloseAiQueueDrawer()
+    {
+        AiQueueDrawer.CloseDrawer();
+    }
+
+    [RelayCommand]
+    public async Task ToggleAiQueueDrawerAsync()
+    {
+        await AiQueueDrawer.ToggleDrawerAsync().ConfigureAwait(true);
+    }
+
     [RelayCommand]
     public async Task SyncNowAsync(CancellationToken cancellationToken = default)
     {
@@ -806,5 +841,60 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         WeekView.Dispose();
         DayView.Dispose();
         AgendaView.Dispose();
+
+        AiCommandBar.CommandEnqueued -= OnAiCommandEnqueued;
+        AiQueueDrawer.CommandEditRequested -= OnAiCommandEditRequested;
+        AiCommandBar.Dispose();
+        AiQueueDrawer.Dispose();
+    }
+
+    private void OnAiCommandEnqueued(object? sender, AiCommand command)
+    {
+        _ = RefreshPendingAiCommandsCountAsync();
+        _ = AiQueueDrawer.RefreshCommandsAsync();
+    }
+
+    private void OnAiCommandEditRequested(object? sender, string text)
+    {
+        AiCommandBar.CommandText = text;
+    }
+
+    public async Task RefreshPendingAiCommandsCountAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var count = await _aiCommandStore.GetActiveCountAsync(cancellationToken).ConfigureAwait(true);
+            RunOnUi(() => PendingAiCommandsCount = count);
+        }
+        catch
+        {
+            // Ignore queue query errors on background refresh
+        }
+    }
+
+    private sealed class NullAiCommandStore : IAiCommandStore
+    {
+        public Task<AiCommand> EnqueueAsync(string text, DateTimeOffset typedAt, string timeZone, string inputLang, CancellationToken cancellationToken = default)
+            => Task.FromResult(new AiCommand
+            {
+                Id = "0",
+                DisplayNo = 1000,
+                Text = text,
+                TypedAt = typedAt,
+                TimeZone = timeZone,
+                InputLang = inputLang,
+                Status = AiCommandStatus.Pending,
+                CreatedAt = typedAt,
+                UpdatedAt = typedAt,
+            });
+        public Task<AiCommand?> GetByIdAsync(string id, CancellationToken cancellationToken = default) => Task.FromResult<AiCommand?>(null);
+        public Task<IReadOnlyList<AiCommand>> GetPendingQueueAsync(DateTimeOffset now, int limit = 50, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<AiCommand>>([]);
+        public Task<IReadOnlyList<AiCommand>> GetAllAsync(int limit = 100, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<AiCommand>>([]);
+        public Task UpdateStatusAsync(string id, string status, string? lastError = null, int? retryCount = null, DateTimeOffset? nextRetryAt = null, string? batchId = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<int> RecoverProcessingCommandsAsync(DateTimeOffset now, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<int> CleanupOldCommandsAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<int> GetActiveCountAsync(CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task CancelAsync(string id, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task RetryNowAsync(string id, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }
