@@ -35,3 +35,4 @@ Trạng thái: Proposed / Accepted / Superseded.
 | [0027](adr/0027-phase-level-review-gate.md) | Claude Code review theo phase, cổng review bắt buộc trước phase kế tiếp | Accepted |
 | [0028](adr/0028-google-calendar-sync-gateway.md) | Google Calendar API v3 Sync Gateway và SyncEngine | Accepted |
 | [0029](adr/0029-single-google-account.md) | Một tài khoản Google; đổi tài khoản thì xoá dữ liệu cũ | Accepted |
+| [0030](adr/0030-system-prompt-versioning-and-location.md) | Vị trí lưu trữ và cơ chế nạp System Prompt có phiên bản | Accepted |
