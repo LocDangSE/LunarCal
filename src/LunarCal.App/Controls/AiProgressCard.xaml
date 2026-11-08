@@ -1,0 +1,229 @@
+<UserControl x:Class="LunarCal.App.Controls.AiProgressCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:LunarCal.App.Localization"
+             xmlns:vm="clr-namespace:LunarCal.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AiProgressViewModel}"
+             Focusable="False">
+
+  <UserControl.Resources>
+    <!-- Small text button used for the card actions -->
+    <Style x:Key="ProgressActionButtonStyle" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="10,4" />
+      <Setter Property="Margin" Value="8,0,0,0" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AiBorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource AiTextBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}" />
+      <Setter Property="FontWeight" Value="{DynamicResource FontWeightMedium}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CornerRadiusSmall}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.85" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <!-- P4-R7: non-blocking progress card above the AI command bar. Colours follow the AI tokens of Figma 01. -->
+  <Border Margin="24,8,24,0"
+          Padding="14,10"
+          Background="{DynamicResource AiChipBrush}"
+          BorderBrush="{DynamicResource AiBorderSubtleBrush}"
+          BorderThickness="1"
+          CornerRadius="{DynamicResource CornerRadiusMedium}"
+          AutomationProperties.AutomationId="AiProgressCard">
+    <Border.Style>
+      <Style TargetType="Border">
+        <Setter Property="Visibility" Value="Collapsed" />
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding IsVisible}" Value="True">
+            <Setter Property="Visibility" Value="Visible" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding IsFailed}" Value="True">
+            <Setter Property="Background" Value="{DynamicResource DangerSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding IsDone}" Value="True">
+            <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </Border.Style>
+
+    <DockPanel LastChildFill="True">
+      <!-- Actions (right) -->
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button Content="{loc:Loc Key=ai_progress.cancel}"
+                Command="{Binding CancelCommand}"
+                Style="{StaticResource ProgressActionButtonStyle}"
+                AutomationProperties.AutomationId="BtnAiProgressCancel">
+          <Button.Visibility>
+            <Binding Path="IsBusy">
+              <Binding.Converter>
+                <BooleanToVisibilityConverter />
+              </Binding.Converter>
+            </Binding>
+          </Button.Visibility>
+        </Button>
+        <Button Content="{loc:Loc Key=ai_progress.view}"
+                Command="{Binding ViewCommand}"
+                Style="{StaticResource ProgressActionButtonStyle}"
+                AutomationProperties.AutomationId="BtnAiProgressView">
+          <Button.Visibility>
+            <Binding Path="IsReady">
+              <Binding.Converter>
+                <BooleanToVisibilityConverter />
+              </Binding.Converter>
+            </Binding>
+          </Button.Visibility>
+        </Button>
+        <Button Content="{loc:Loc Key=ai_progress.open_queue}"
+                Command="{Binding OpenQueueCommand}"
+                Style="{StaticResource ProgressActionButtonStyle}"
+                AutomationProperties.AutomationId="BtnAiProgressOpenQueue">
+          <Button.Visibility>
+            <Binding Path="IsFailed">
+              <Binding.Converter>
+                <BooleanToVisibilityConverter />
+              </Binding.Converter>
+            </Binding>
+          </Button.Visibility>
+        </Button>
+        <Button Command="{Binding DismissCommand}"
+                ToolTip="{loc:Loc Key=ai_progress.dismiss}"
+                AutomationProperties.AutomationId="BtnAiProgressDismiss"
+                AutomationProperties.Name="{loc:Loc Key=ai_progress.dismiss}">
+          <Path Data="{DynamicResource IconClose32}"
+                Stroke="{DynamicResource TextSecondaryBrush}"
+                StrokeThickness="1.5"
+                Width="12" Height="12" />
+          <Button.Style>
+            <Style TargetType="Button" BasedOn="{StaticResource ProgressActionButtonStyle}">
+              <Setter Property="Padding" Value="6,4" />
+              <Setter Property="BorderThickness" Value="0" />
+              <Setter Property="Background" Value="Transparent" />
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="False">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+        </Button>
+      </StackPanel>
+
+      <!-- Spinner / status dot (left) -->
+      <Grid DockPanel.Dock="Left" Width="20" Height="20" Margin="0,0,12,0" VerticalAlignment="Center">
+        <Ellipse x:Name="Spinner"
+                 Width="18" Height="18"
+                 Stroke="{DynamicResource AiAccentBrush}"
+                 StrokeThickness="2.5"
+                 StrokeDashArray="2.2 2.2"
+                 RenderTransformOrigin="0.5,0.5">
+          <Ellipse.RenderTransform>
+            <RotateTransform x:Name="SpinnerRotation" Angle="0" />
+          </Ellipse.RenderTransform>
+          <Ellipse.Triggers>
+            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+              <BeginStoryboard>
+                <Storyboard RepeatBehavior="Forever">
+                  <DoubleAnimation Storyboard.TargetName="SpinnerRotation"
+                                   Storyboard.TargetProperty="Angle"
+                                   From="0" To="360" Duration="0:0:1.6" />
+                </Storyboard>
+              </BeginStoryboard>
+            </EventTrigger>
+          </Ellipse.Triggers>
+          <Ellipse.Style>
+            <Style TargetType="Ellipse">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Ellipse.Style>
+        </Ellipse>
+        <Path Data="{DynamicResource IconSparkle20}"
+              Fill="{DynamicResource AiAccentBrush}"
+              Stretch="Uniform" Width="16" Height="16">
+          <Path.Style>
+            <Style TargetType="Path">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsReady}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Path.Style>
+        </Path>
+        <Ellipse Width="10" Height="10" Fill="{DynamicResource DangerBrush}">
+          <Ellipse.Style>
+            <Style TargetType="Ellipse">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFailed}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Ellipse.Style>
+        </Ellipse>
+        <Path Data="{DynamicResource IconCheck11}"
+              Stroke="{DynamicResource SuccessBrush}"
+              StrokeThickness="2"
+              Stretch="Uniform" Width="14" Height="14">
+          <Path.Style>
+            <Style TargetType="Path">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDone}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Path.Style>
+        </Path>
+      </Grid>
+
+      <!-- Title and detail; announced politely by screen readers -->
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="{Binding Title}"
+                   FontSize="{DynamicResource FontSizeSubtitle}"
+                   FontWeight="{DynamicResource FontWeightSemiBold}"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   TextTrimming="CharacterEllipsis"
+                   AutomationProperties.AutomationId="AiProgressTitle"
+                   AutomationProperties.LiveSetting="Polite" />
+        <TextBlock Text="{Binding Detail}"
+                   FontSize="{DynamicResource FontSizeCaption}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   TextTrimming="CharacterEllipsis"
+                   AutomationProperties.AutomationId="AiProgressDetail" />
+      </StackPanel>
+    </DockPanel>
+  </Border>
+</UserControl>

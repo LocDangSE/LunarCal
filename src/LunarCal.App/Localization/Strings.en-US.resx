@@ -1504,7 +1504,7 @@
     <value>Deletion requires confirmation – AI never deletes without confirmation</value>
   </data>
   <data name="ai_queue.retry_format" xml:space="preserve">
-    <value>Retry {0}/{1} (wait {2} min)</value>
+    <value>Retry {0}/{1} (wait {2})</value>
   </data>
   <data name="ai_queue.time_just_now" xml:space="preserve">
     <value>Just now</value>
@@ -1689,5 +1689,63 @@
   </data>
   <data name="ai_queue.open_ai_settings" xml:space="preserve">
     <value>Open AI Settings</value>
+  </data>
+  <!-- P4-R7: AI progress card, retry wait, read-only confirmation -->
+  <data name="ai_progress.processing" xml:space="preserve">
+    <value>AI is analysing command #{0}…</value>
+  </data>
+  <data name="ai_progress.processing_detail" xml:space="preserve">
+    <value>Running for {0} · you can keep using your calendar</value>
+  </data>
+  <data name="ai_progress.more" xml:space="preserve">
+    <value>+{0} more waiting</value>
+  </data>
+  <data name="ai_progress.retrying" xml:space="preserve">
+    <value>Retrying command #{0} (attempt {1}/{2})</value>
+  </data>
+  <data name="ai_progress.retrying_detail" xml:space="preserve">
+    <value>Next attempt in {0}</value>
+  </data>
+  <data name="ai_progress.retrying_now" xml:space="preserve">
+    <value>Retrying now…</value>
+  </data>
+  <data name="ai_progress.ready" xml:space="preserve">
+    <value>Command #{0} is ready to confirm</value>
+  </data>
+  <data name="ai_progress.ready_detail" xml:space="preserve">
+    <value>The AI finished. Review it before it is added to your calendar.</value>
+  </data>
+  <data name="ai_progress.failed" xml:space="preserve">
+    <value>Could not process command #{0}</value>
+  </data>
+  <data name="ai_progress.done" xml:space="preserve">
+    <value>Added to Google Calendar</value>
+  </data>
+  <data name="ai_progress.view" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="ai_progress.open_queue" xml:space="preserve">
+    <value>Open queue</value>
+  </data>
+  <data name="ai_progress.cancel" xml:space="preserve">
+    <value>Cancel command</value>
+  </data>
+  <data name="ai_progress.dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="ai_progress.seconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="ai_progress.minutes_seconds" xml:space="preserve">
+    <value>{0} min {1} s</value>
+  </data>
+  <data name="ai_queue.wait_seconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="ai_queue.wait_minutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="ai_confirm.readonly_hint" xml:space="preserve">
+    <value>This command is no longer waiting for confirmation</value>
   </data>
 </root>

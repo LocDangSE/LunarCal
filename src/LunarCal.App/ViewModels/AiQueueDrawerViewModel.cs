@@ -124,6 +124,7 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
         {
             var list = await _commandStore.GetAllAsync(limit: 50, cancellationToken)
                 .ConfigureAwait(true);
+            _lastSignature = Signature(list);
 
             RunOnUi(() =>
             {
@@ -141,6 +142,38 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
             IsLoading = false;
         }
     }
+
+    /// <summary>
+    /// Re-reads the queue and rebuilds the list only when a command was added or changed state, so the open drawer
+    /// follows the worker without flicker or losing the scroll position (P4-R7).
+    /// </summary>
+    public async Task RefreshIfChangedAsync(CancellationToken cancellationToken = default)
+    {
+        var list = await _commandStore.GetAllAsync(limit: 50, cancellationToken).ConfigureAwait(true);
+        var signature = Signature(list);
+        if (string.Equals(signature, _lastSignature, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _lastSignature = signature;
+        RunOnUi(() =>
+        {
+            Commands.Clear();
+            foreach (var cmd in list)
+            {
+                Commands.Add(new AiCommandItemViewModel(cmd, _localizationService));
+            }
+
+            PendingCount = Commands.Count(c => c.Status != AiCommandStatus.Completed && c.Status != AiCommandStatus.Cancelled);
+        });
+    }
+
+    private string _lastSignature = string.Empty;
+
+    private static string Signature(IReadOnlyList<AiCommand> list) => string.Join(
+        '|',
+        list.Select(c => string.Concat(c.Id, ':', c.Status, ':', c.RetryCount.ToString(System.Globalization.CultureInfo.InvariantCulture))));
 
     [RelayCommand]
     public async Task CancelCommandAsync(AiCommandItemViewModel? item, CancellationToken cancellationToken = default)
@@ -182,6 +215,8 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
             return;
         }
 
+        // The dialog takes over: leave the drawer closed behind it (P4-R7).
+        CloseDrawer();
         CommandActionRequested?.Invoke(this, item);
     }
 
@@ -243,6 +278,7 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
             return;
         }
 
+        CloseDrawer();
         CommandActionRequested?.Invoke(this, item);
     }
 

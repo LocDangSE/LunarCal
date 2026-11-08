@@ -21,6 +21,7 @@ namespace LunarCal.App.ViewModels;
 public partial class AiConfirmDialogViewModel : ObservableObject
 {
     private readonly ILocalizationService? _localization;
+    private string? _zoneId;
 
     public event EventHandler<bool?>? CloseRequested;
 
@@ -104,6 +105,15 @@ public partial class AiConfirmDialogViewModel : ObservableObject
     [ObservableProperty]
     private bool _requestEdit;
 
+    /// <summary>
+    /// True when the command is not waiting for the user (queued, failed, done): the dialog only shows it and Confirm
+    /// stays locked, so "Xem" can never look like it will write to the calendar (FR-QUEUE-6, P4-R7).
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanConfirm))]
+    [NotifyPropertyChangedFor(nameof(CanConfirmDisabledReason))]
+    private bool _isReadOnly;
+
     // S16 Clarification state properties (FR-CONFIRM-8)
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanConfirm))]
@@ -127,7 +137,7 @@ public partial class AiConfirmDialogViewModel : ObservableObject
 
     public bool CanSubmitClarification => !string.IsNullOrWhiteSpace(ClarificationAnswer);
 
-    public bool CanConfirm => !IsClarificationMode && ConfidenceScore >= 60 && ValidationSeverity != AiBusinessValidationSeverity.Error;
+    public bool CanConfirm => !IsReadOnly && !IsClarificationMode && ConfidenceScore >= 60 && ValidationSeverity != AiBusinessValidationSeverity.Error;
 
     public double ConfidenceProgressRatio => Math.Clamp(ConfidenceScore / 100.0, 0.0, 1.0);
 
@@ -135,6 +145,11 @@ public partial class AiConfirmDialogViewModel : ObservableObject
     {
         get
         {
+            if (IsReadOnly)
+            {
+                return GetString("ai_confirm.readonly_hint", "Lệnh này không còn chờ xác nhận");
+            }
+
             if (IsClarificationMode)
             {
                 return GetString("ai_confirm.clarify_submit", "Trả lời câu hỏi của AI để tiếp tục");
@@ -244,8 +259,10 @@ public partial class AiConfirmDialogViewModel : ObservableObject
             _ => "Tiếng Việt"
         };
 
-        TypedAt = command.TypedAt;
-        TypedAtDisplay = command.TypedAt.ToString("dd/MM/yyyy HH:mm 'GMT'zzz", CultureInfo.InvariantCulture);
+        // Everything is shown in the zone saved with the command, never in UTC (FR-CONFIRM-1, FR-QUEUE-4).
+        _zoneId = command.TimeZone;
+        TypedAt = AiCommandTime.InZone(command.TypedAt, _zoneId);
+        TypedAtDisplay = TypedAt.ToString("dd/MM/yyyy HH:mm 'GMT'zzz", CultureInfo.InvariantCulture);
 
         ConfidenceScore = confidence.Score;
         ConfidenceLevel = confidence.Level;
@@ -387,8 +404,8 @@ public partial class AiConfirmDialogViewModel : ObservableObject
             if (root.TryGetProperty("start", out var startProp) &&
                 DateTimeOffset.TryParse(startProp.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))
             {
-                var localStart = start.ToOffset(TypedAt.Offset);
-                EventDateDisplay = localStart.ToString("dddd, dd/MM/yyyy", CultureInfo.CurrentCulture);
+                var localStart = AiCommandTime.InZone(start, _zoneId);
+                EventDateDisplay = localStart.ToString("dddd, dd/MM/yyyy", _localization?.CurrentCulture ?? CultureInfo.CurrentCulture);
 
                 if (IsLunarVisible)
                 {
@@ -415,7 +432,7 @@ public partial class AiConfirmDialogViewModel : ObservableObject
                 else if (root.TryGetProperty("end", out var endProp) &&
                          DateTimeOffset.TryParse(endProp.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
                 {
-                    var localEnd = end.ToOffset(TypedAt.Offset);
+                    var localEnd = AiCommandTime.InZone(end, _zoneId);
                     EventTimeDisplay = $"{localStart:HH:mm} – {localEnd:HH:mm}";
                 }
                 else

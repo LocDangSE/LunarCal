@@ -23,7 +23,15 @@ public sealed class GeminiOptions
     public int RequestTimeoutSeconds { get; set; } = 60;
 
     /// <summary>
-    /// Maximum output tokens allowed per turn (default: 2048, ADR-0016).
+    /// Maximum output tokens allowed per turn (default: 4096). Thinking tokens count against this limit, so it is
+    /// larger than the short tool call itself needs (ADR-0016, P4-R6).
     /// </summary>
-    public int MaxOutputTokens { get; set; } = 2048;
+    public int MaxOutputTokens { get; set; } = 4096;
+
+    /// <summary>
+    /// Thinking level sent as <c>generationConfig.thinkingConfig.thinkingLevel</c> (default "low": calendar commands are
+    /// short and structured, and the model default "medium" took about a minute per call, P4-R6). Empty keeps the
+    /// model default. The client drops it for good if the API rejects it.
+    /// </summary>
+    public string? ThinkingLevel { get; set; } = "low";
 }

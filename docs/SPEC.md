@@ -192,11 +192,12 @@ Nguồn: Figma màn hình 03 (Offline và hàng chờ AI). Hàng chờ này dàn
 - **FR-QUEUE-2** Sáu trạng thái: Chờ xử lý, Đang xử lý, Chờ xác nhận, Lỗi, Hoàn tất, Đã huỷ. Ngăn kéo “Hàng chờ AI” mở từ khối trạng thái đồng bộ ở sidebar và hiển thị số lệnh chưa hoàn tất. Mã lưu ở cột `AiCommand.status`: `pending`, `processing`, `needs_confirmation`, `error`, `completed`, `cancelled`; hai mã cuối là trạng thái kết thúc và `AccountDataPurger.TerminalAiCommandStatuses` (đếm lệnh đang chờ khi đổi tài khoản, FR-AUTH-5) dựa vào đúng hai mã đó.
 - **FR-QUEUE-3** Khi mất mạng, thanh lệnh vẫn nhận lệnh và hiện banner “Không có kết nối. Yêu cầu mới sẽ được lưu cục bộ và chờ xử lý lại khi có mạng.” Có mạng lại thì tự xử lý, người dùng không phải nhập lại.
 - **FR-QUEUE-4** Mốc thời gian để hiểu “ngày mai”, “tomorrow”, “tuần sau” là `typed_at`, không phải lúc xử lý. Dòng hàng chờ hiển thị mốc đã quy đổi (ví dụ tomorrow = 17/10).
-- **FR-QUEUE-5** Thử lại tối đa 5 lần với backoff luỹ thừa có jitter; hiển thị “Thử lại 3/5 (chờ 8 phút)”. Quá 5 lần chuyển sang Lỗi, chờ người dùng thử lại, sửa hoặc huỷ. Lỗi do nội dung (ví dụ AI chưa xác định được giờ) hiện thông báo kèm nút Sửa ngay.
+- **FR-QUEUE-5** Thử lại tối đa 5 lần với backoff luỹ thừa có jitter (5 giây, 30 giây, 3 phút, 18 phút, vì người dùng thường đang chờ kết quả); hiển thị “Thử lại 3/5 (chờ 3 phút)”. Quá 5 lần chuyển sang Lỗi, chờ người dùng thử lại, sửa hoặc huỷ. Lỗi do nội dung (ví dụ AI chưa xác định được giờ) hiện thông báo kèm nút Sửa ngay.
 - **FR-QUEUE-6** Hành động theo trạng thái: Chờ xử lý → Xem, Huỷ; Chờ xác nhận → Xem và xác nhận, Huỷ; Lỗi → Thử lại, Sửa, Huỷ; Hoàn tất → Xem.
 - **FR-QUEUE-7** Lệnh có tác động phá huỷ (xoá, sửa hàng loạt) luôn dừng ở Chờ xác nhận với nhãn “Lệnh xóa cần xác nhận – AI không tự xóa khi chưa xác nhận”. Xử lý nền không bao giờ tự thực thi.
 - **FR-QUEUE-8** Phục hồi sau crash: lệnh đang ở Đang xử lý khi app tắt đột ngột tự về Chờ xử lý khi mở lại. Việc tạo event phải idempotent (requestId lưu trong `extendedProperties.private`) để không sinh bản trùng.
 - **FR-QUEUE-9** Mỗi lệnh Hoàn tất ghi `batchId` để hoàn tác (FR-CHAT-5). Lệnh Hoàn tất và Đã huỷ được dọn sau 30 ngày (cấu hình được).
+- **FR-QUEUE-10** Sau khi gửi lệnh, app hiện thẻ tiến trình không chặn màn hình trên thanh lệnh: đang phân tích (kèm thời gian đã chạy và nút Huỷ), đang thử lại (lần k/5, chờ bao lâu), lỗi (kèm nút mở hàng chờ), và “Đã thêm vào Google Calendar” sau khi xác nhận. Khi đề xuất sẵn sàng, hộp thoại xác nhận tự mở (FR-CONFIRM-1) nếu cửa sổ app đang ở phía trước, không có hộp thoại khác và người dùng không đang gõ lệnh; nếu không, thẻ có nút “Xem”. Ngăn kéo hàng chờ tự cập nhật khi đang mở và đóng lại khi người dùng bấm “Xem” hoặc “Xác nhận”.
 
 ### 4.9 Hộp thoại xác nhận lệnh AI (FR-CONFIRM)
 
@@ -442,7 +443,7 @@ Bổ sung từ thiết kế Figma và cloud (v1.1):
 ## 7. Tích hợp Gemini
 
 - Gọi qua `IChatModelClient.SendAsync(ChatRequest) → ChatResponse` (khai báo trong Core), hiện thực trong `Infrastructure/Gemini` bằng REST `POST /v1beta/models/{model}:generateContent` với function calling bật chế độ AUTO. ADR-0016 (Accepted) ghi nguồn tài liệu và ngày đọc; Interactions API là phương án thay thế, chưa dùng (Google vẫn hỗ trợ đầy đủ `generateContent`).
-- Model id mặc định `gemini-3.8-flash`, `BaseUrl`, `MaxOutputTokens` (mặc định 2048) và `RequestTimeoutSeconds` (60) lấy từ cấu hình, không hard-code.
+- Model id mặc định `gemini-3.8-flash`, `BaseUrl`, `MaxOutputTokens` (mặc định 4096, vì thinking tính vào trần này), `ThinkingLevel` (mặc định `low`, gửi `generationConfig.thinkingConfig.thinkingLevel`; client gỡ trường này nếu API từ chối, ADR-0032) và `RequestTimeoutSeconds` (60) lấy từ cấu hình, không hard-code.
 - Không gửi `temperature`, `topP`, `topK` (Gemini 3.6 trở lên bỏ qua và sẽ trả 400 ở bản sau) và không gửi mức thinking `minimal` (model không hỗ trợ).
 - Function calling với Gemini 3.x: khi phát lại lượt có function call (trường hợp hỏi lại, FR-CONFIRM-8), client phải trả nguyên vẹn `thoughtSignature` trong đúng `part`, nếu không API trả 400. Core không chứa type của Gemini, nên `ChatResponse` mang trường mờ `ProviderState` (chuỗi) để client phát lại các `part` gốc. Luồng chính (model trả tool call, người dùng xác nhận, app tự thi hành) không gửi kết quả ngược lại cho model.
 - Phân loại lỗi và chính sách retry theo bảng ở ADR-0016 mục 4: không retry 400, 402, 403 và `quota_exceeded`; backoff luỹ thừa có jitter cho 429 theo phút, 500, 503, 408 và hết thời gian (chỉ khi request idempotent, SEC-NET-2).

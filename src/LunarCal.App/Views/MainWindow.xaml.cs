@@ -17,6 +17,9 @@ namespace LunarCal.App.Views;
 public partial class MainWindow : Window
 {
     private readonly IServiceProvider _services;
+    private readonly System.Windows.Threading.DispatcherTimer _aiTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+    private bool _isAiDialogOpen;
+    private bool _aiTickRunning;
 
     /// <summary>Creates the main window bound to its view model.</summary>
     public MainWindow(MainWindowViewModel viewModel, IServiceProvider services)
@@ -31,9 +34,46 @@ public partial class MainWindow : Window
         viewModel.EventEditorRequested += OnEventEditorRequested;
         viewModel.AiConfirmRequested += OnAiConfirmRequested;
 
+        // P4-R7: follow the AI commands the user sent, and open the confirmation dialog when a proposal is ready.
+        viewModel.AiProgress.CanAutoOpen = CanOpenAiDialogByItself;
+        viewModel.AiProgress.AutoOpenRequested += OnAiConfirmRequested;
+        viewModel.AiProgress.ViewRequested += OnAiConfirmRequested;
+        _aiTimer.Tick += OnAiTimerTick;
+        _aiTimer.Start();
+        Closed += (_, _) => _aiTimer.Stop();
+
         // FR-SYNC-3: sync on focus; poll less often while minimized.
         Activated += (_, _) => viewModel.OnWindowActivated();
         StateChanged += (_, _) => viewModel.OnWindowMinimizedChanged(WindowState == WindowState.Minimized);
+    }
+
+    // The dialog may appear by itself only when the user is looking at the shell and not busy with something else.
+    private bool CanOpenAiDialogByItself() =>
+        IsActive
+        && WindowState != WindowState.Minimized
+        && !_isAiDialogOpen
+        && DataContext is MainWindowViewModel { AiCommandBar.CommandText: { Length: 0 } };
+
+    private async void OnAiTimerTick(object? sender, EventArgs e)
+    {
+        if (_aiTickRunning || DataContext is not MainWindowViewModel vm)
+        {
+            return;
+        }
+
+        _aiTickRunning = true;
+        try
+        {
+            await vm.OnAiTickAsync().ConfigureAwait(true);
+        }
+        catch (Exception)
+        {
+            // A failed background refresh must never break the shell; the next tick tries again.
+        }
+        finally
+        {
+            _aiTickRunning = false;
+        }
     }
 
     // Opens Settings Window (Figma 04, S13, S20) as a modal window owned by the shell (FR-CHAT-7).
@@ -126,7 +166,7 @@ public partial class MainWindow : Window
 
         var optIn = await settingsStore.GetBoolAsync(SettingKeys.TrainingOptIn).ConfigureAwait(true);
 
-        var confirmVm = new AiConfirmDialogViewModel(localization);
+        var confirmVm = new AiConfirmDialogViewModel(localization) { IsReadOnly = !isActionable };
         if (toolCall is null)
         {
             // FR-CONFIRM-8: the model asked a question instead of proposing an action.
@@ -147,7 +187,17 @@ public partial class MainWindow : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var dialogResult = dialog.ShowDialog();
+        bool? dialogResult;
+        _isAiDialogOpen = true;
+        try
+        {
+            dialogResult = dialog.ShowDialog();
+        }
+        finally
+        {
+            _isAiDialogOpen = false;
+        }
+
         if (dialogResult == true && isActionable && DataContext is MainWindowViewModel mwVm)
         {
             if (confirmVm.ClarificationSubmitted)
@@ -157,7 +207,11 @@ public partial class MainWindow : Window
             else
             {
                 // Only here, after the user pressed Confirm, is the calendar written (FR-CHAT-2).
-                await mwVm.AiQueueDrawer.CompleteConfirmationAsync(item).ConfigureAwait(true);
+                var executed = await mwVm.AiQueueDrawer.CompleteConfirmationAsync(item).ConfigureAwait(true);
+                if (executed?.IsSuccess == true)
+                {
+                    mwVm.AiProgress.ShowCompleted();
+                }
             }
             await mwVm.ReloadActiveViewAsync().ConfigureAwait(true);
         }

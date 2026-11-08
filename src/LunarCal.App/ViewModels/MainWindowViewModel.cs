@@ -130,6 +130,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Child view model for the AI command queue drawer (Figma 03, FR-QUEUE-2).</summary>
     public AiQueueDrawerViewModel AiQueueDrawer { get; }
 
+    /// <summary>Child view model for the non-blocking progress card of the AI commands just sent (P4-R7).</summary>
+    public AiProgressViewModel AiProgress { get; }
+
     /// <summary>Raised when any view or command requests the event editor dialog (Figma S10, FR-UI-4).</summary>
     public event EventHandler<EventEditorRequest>? EventEditorRequested;
     public event EventHandler<AiCommandItemViewModel>? AiConfirmRequested;
@@ -172,6 +175,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         AiCommandBar = new AiCommandBarViewModel(_aiCommandStore, _localizationService, _networkStatusService, _settingsStore, _preferences);
         AiQueueDrawer = new AiQueueDrawerViewModel(_aiCommandStore, _localizationService, _networkStatusService, aiConfirmation);
+
+        AiProgress = new AiProgressViewModel(_aiCommandStore, _localizationService);
+        AiProgress.OpenQueueRequested += (_, _) => _ = OpenAiQueueDrawerAsync();
 
         AiCommandBar.CommandEnqueued += OnAiCommandEnqueued;
         AiQueueDrawer.CommandEditRequested += OnAiCommandEditRequested;
@@ -869,8 +875,33 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void OnAiCommandEnqueued(object? sender, AiCommand command)
     {
+        AiProgress.Track(command);
         _ = RefreshPendingAiCommandsCountAsync();
         _ = AiQueueDrawer.RefreshCommandsAsync();
+    }
+
+    private int _aiTicks;
+
+    /// <summary>
+    /// About once a second (P4-R7): updates the progress card, keeps an open queue drawer in step with the worker and
+    /// refreshes the pending counter every few seconds. Idle ticks cost nothing when nothing is followed.
+    /// </summary>
+    public async Task OnAiTickAsync(CancellationToken cancellationToken = default)
+    {
+        if (AiProgress.HasTrackedCommands)
+        {
+            await AiProgress.TickAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        if (AiQueueDrawer.IsOpen)
+        {
+            await AiQueueDrawer.RefreshIfChangedAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        if (++_aiTicks % 5 == 0 || AiProgress.HasTrackedCommands)
+        {
+            await RefreshPendingAiCommandsCountAsync(cancellationToken).ConfigureAwait(true);
+        }
     }
 
     private void OnAiCommandEditRequested(object? sender, string text)

@@ -46,7 +46,9 @@ public sealed class AiCommandConfirmationService : IAiCommandConfirmationService
         }
 
         // The command's request id makes a repeated confirmation overwrite the same event instead of duplicating it (FR-QUEUE-8).
-        var idempotentCall = call with { Id = command.RequestId };
+        // The zone saved with the command is the fallback for all-day boundaries when the model sent none, instead of
+        // the machine zone (P4-REVIEW "nên sửa sau", FR-QUEUE-4).
+        var idempotentCall = AiCommandTime.WithDefaultTimeZone(call, command.TimeZone) with { Id = command.RequestId };
 
         ToolExecutionResult result;
         try

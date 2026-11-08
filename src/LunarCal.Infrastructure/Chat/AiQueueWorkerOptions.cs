@@ -11,6 +11,9 @@ public sealed class AiQueueWorkerOptions
     /// <summary>Retention period for terminal completed/cancelled commands before automated cleanup (default 30 days, FR-QUEUE-9).</summary>
     public TimeSpan RetentionPeriod { get; set; } = TimeSpan.FromDays(30);
 
-    /// <summary>Base retry delay for exponential backoff (default 1 minute, FR-QUEUE-5).</summary>
-    public TimeSpan BaseRetryDelay { get; set; } = TimeSpan.FromMinutes(1);
+    /// <summary>
+    /// Delay before the first retry (default 5 seconds, FR-QUEUE-5). The user is usually waiting for the answer, so the
+    /// first retries are quick: 5 s, 30 s, 3 min, 18 min (see <see cref="AiQueueRetryPolicy"/>).
+    /// </summary>
+    public TimeSpan BaseRetryDelay { get; set; } = TimeSpan.FromSeconds(5);
 }

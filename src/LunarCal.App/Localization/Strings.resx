@@ -1504,7 +1504,7 @@
     <value>Lệnh xóa cần xác nhận – AI không tự xóa khi chưa xác nhận</value>
   </data>
   <data name="ai_queue.retry_format" xml:space="preserve">
-    <value>Thử lại {0}/{1} (chờ {2} phút)</value>
+    <value>Thử lại {0}/{1} (chờ {2})</value>
   </data>
   <data name="ai_queue.time_just_now" xml:space="preserve">
     <value>Vừa xong</value>
@@ -1689,5 +1689,63 @@
   </data>
   <data name="ai_queue.open_ai_settings" xml:space="preserve">
     <value>Mở Cài đặt AI</value>
+  </data>
+  <!-- P4-R7: AI progress card, retry wait, read-only confirmation -->
+  <data name="ai_progress.processing" xml:space="preserve">
+    <value>AI đang phân tích lệnh #{0}…</value>
+  </data>
+  <data name="ai_progress.processing_detail" xml:space="preserve">
+    <value>Đã chạy {0} · bạn vẫn dùng lịch bình thường được</value>
+  </data>
+  <data name="ai_progress.more" xml:space="preserve">
+    <value>+{0} lệnh khác đang chờ</value>
+  </data>
+  <data name="ai_progress.retrying" xml:space="preserve">
+    <value>Đang thử lại lệnh #{0} (lần {1}/{2})</value>
+  </data>
+  <data name="ai_progress.retrying_detail" xml:space="preserve">
+    <value>Lần thử tiếp theo sau {0}</value>
+  </data>
+  <data name="ai_progress.retrying_now" xml:space="preserve">
+    <value>Đang thử lại ngay…</value>
+  </data>
+  <data name="ai_progress.ready" xml:space="preserve">
+    <value>Lệnh #{0} đã sẵn sàng để xác nhận</value>
+  </data>
+  <data name="ai_progress.ready_detail" xml:space="preserve">
+    <value>AI đã phân tích xong. Xem lại trước khi thêm vào lịch.</value>
+  </data>
+  <data name="ai_progress.failed" xml:space="preserve">
+    <value>Không xử lý được lệnh #{0}</value>
+  </data>
+  <data name="ai_progress.done" xml:space="preserve">
+    <value>Đã thêm vào Google Calendar</value>
+  </data>
+  <data name="ai_progress.view" xml:space="preserve">
+    <value>Xem</value>
+  </data>
+  <data name="ai_progress.open_queue" xml:space="preserve">
+    <value>Mở hàng chờ</value>
+  </data>
+  <data name="ai_progress.cancel" xml:space="preserve">
+    <value>Huỷ lệnh</value>
+  </data>
+  <data name="ai_progress.dismiss" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="ai_progress.seconds" xml:space="preserve">
+    <value>{0} giây</value>
+  </data>
+  <data name="ai_progress.minutes_seconds" xml:space="preserve">
+    <value>{0} phút {1} giây</value>
+  </data>
+  <data name="ai_queue.wait_seconds" xml:space="preserve">
+    <value>{0} giây</value>
+  </data>
+  <data name="ai_queue.wait_minutes" xml:space="preserve">
+    <value>{0} phút</value>
+  </data>
+  <data name="ai_confirm.readonly_hint" xml:space="preserve">
+    <value>Lệnh này không còn chờ xác nhận</value>
   </data>
 </root>

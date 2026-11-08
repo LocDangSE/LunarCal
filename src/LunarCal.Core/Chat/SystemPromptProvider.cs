@@ -59,8 +59,12 @@ public sealed class SystemPromptProvider : ISystemPromptProvider
 
         var template = GetRawTemplate(version);
 
-        var typedAtStr = context.TypedAt.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);
-        var timeZoneStr = !string.IsNullOrWhiteSpace(context.TimeZoneId) ? context.TimeZoneId : "SE Asia Standard Time";
+        // The command may come back from storage as a UTC instant: anchor it in the user's zone so "today/tomorrow"
+        // are computed on the user's calendar day and the offset sent to the model is the local one (FR-QUEUE-4).
+        var zoneId = !string.IsNullOrWhiteSpace(context.TimeZoneId) ? context.TimeZoneId : "SE Asia Standard Time";
+        var typedAtLocal = AiCommandTime.InZone(context.TypedAt, zoneId);
+        var typedAtStr = typedAtLocal.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);
+        var timeZoneStr = AiCommandTime.DescribeZone(zoneId, typedAtLocal);
         var localeStr = !string.IsNullOrWhiteSpace(context.Locale) ? context.Locale : "vi-VN";
         var calendarsStr = context.FormatAvailableCalendars();
 

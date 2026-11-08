@@ -37,3 +37,4 @@ Trạng thái: Proposed / Accepted / Superseded.
 | [0029](adr/0029-single-google-account.md) | Một tài khoản Google; đổi tài khoản thì xoá dữ liệu cũ | Accepted |
 | [0030](adr/0030-system-prompt-versioning-and-location.md) | Vị trí lưu trữ và cơ chế nạp System Prompt có phiên bản | Accepted |
 | [0031](adr/0031-ai-command-proposal-persistence.md) | Lưu đề xuất của model trên AiCommand; chỉ ghi lịch qua dịch vụ xác nhận | Accepted |
+| [0032](adr/0032-ai-latency-timezone-progress.md) | Giờ lệnh AI theo múi giờ người dùng, thinking thấp, thử lại nhanh, thẻ tiến trình | Accepted |

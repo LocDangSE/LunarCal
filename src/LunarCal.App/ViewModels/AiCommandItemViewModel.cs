@@ -40,6 +40,8 @@ public sealed partial class AiCommandItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDestructive;
 
+    private readonly DateTimeOffset? _nextRetryAt;
+
     public string DisplayNumberText => $"#{DisplayNo}";
 
     public string TypedAtFormatted => TypedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
@@ -157,11 +159,21 @@ public sealed partial class AiCommandItemViewModel : ObservableObject
 
             if (RetryCount > 0 && RetryCount <= 5)
             {
-                return _localizationService.Format("ai_queue.retry_format", RetryCount, 5, 8);
+                return _localizationService.Format("ai_queue.retry_format", RetryCount, 5, FormatRetryWait());
             }
 
             return GetLocalizedErrorText();
         }
+    }
+
+    /// <summary>"5 giây" / "3 phút": how long until the next automatic attempt (FR-QUEUE-5).</summary>
+    private string FormatRetryWait()
+    {
+        var wait = _nextRetryAt.HasValue ? _nextRetryAt.Value - DateTimeOffset.UtcNow : TimeSpan.Zero;
+        var seconds = (int)Math.Max(1, Math.Ceiling(wait.TotalSeconds));
+        return seconds < 60
+            ? _localizationService.Format("ai_queue.wait_seconds", seconds)
+            : _localizationService.Format("ai_queue.wait_minutes", (int)Math.Ceiling(seconds / 60.0));
     }
 
     private string GetLocalizedErrorText()
@@ -171,14 +183,34 @@ public sealed partial class AiCommandItemViewModel : ObservableObject
             return _localizationService["ai_error.unknown"];
         }
 
-        // Try direct resx lookup if LastError is a localization key
-        var localized = _localizationService[LastError];
-        if (!string.IsNullOrEmpty(localized) && !string.Equals(localized, LastError, StringComparison.Ordinal))
+        // LastError is a localization key when the mapper had no technical detail.
+        if (TryLocalize(LastError, out var localized))
         {
             return localized;
         }
 
-        return LastError;
+        // Otherwise it is the raw (English) technical detail of the failure: show a translated message by category and
+        // never the raw text wrapped in the "!missing!" marker (P4-R7).
+        var lower = LastError.ToLowerInvariant();
+        var key = lower.Contains("not configured", StringComparison.Ordinal) || lower.Contains("missing_key", StringComparison.Ordinal)
+            ? "ai_error.missing_key"
+            : IsApiKeyError ? "ai_error.invalid_key"
+            : IsSafetyBlocked ? "ai_error.safety_blocked"
+            : IsDailyQuotaExceeded ? "ai_error.daily_quota"
+            : lower.Contains("timed out", StringComparison.Ordinal) || lower.Contains("transient", StringComparison.Ordinal)
+                || lower.Contains("503", StringComparison.Ordinal) || lower.Contains("500", StringComparison.Ordinal)
+                ? "ai_error.transient"
+            : lower.Contains("malformed", StringComparison.Ordinal) ? "ai_error.malformed"
+            : null;
+        return key is not null && TryLocalize(key, out var byCategory) ? byCategory : LastError;
+    }
+
+    private bool TryLocalize(string key, out string text)
+    {
+        text = _localizationService[key];
+        return !string.IsNullOrEmpty(text)
+            && !string.Equals(text, key, StringComparison.Ordinal)
+            && !(text.Length > 2 && text[0] == '!' && text[^1] == '!');
     }
 
     // Action visibility based on FR-QUEUE-6 & FR-CHAT-7
@@ -216,6 +248,7 @@ public sealed partial class AiCommandItemViewModel : ObservableObject
         _status = command.Status;
         _retryCount = command.RetryCount;
         _lastError = command.LastError;
+        _nextRetryAt = command.NextRetryAt;
         _inputLang = command.InputLang;
 
         _isDestructive = DetectDestructiveIntent(command.Text);

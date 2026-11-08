@@ -59,6 +59,26 @@ public sealed class SqliteAiCommandStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task FR_QUEUE_4_Typed_at_keeps_the_local_offset_after_a_round_trip_through_storage()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await EnsureDbAsync(ct);
+
+        // 00:30 in Vietnam on 9 Nov = 17:30 UTC on 8 Nov. Stored as UTC, it used to come back as +00:00 (P4-R5).
+        var typedAt = new DateTimeOffset(2026, 11, 9, 0, 30, 0, TimeSpan.FromHours(7));
+        var created = await _store.EnqueueAsync("Nhắc tôi họp lúc 6h tối mai", typedAt, "SE Asia Standard Time", "vi", ct);
+
+        var read = await _store.GetByIdAsync(created.Id, ct);
+
+        read!.TypedAt.Should().Be(typedAt);
+        read.TypedAt.Offset.Should().Be(TimeSpan.FromHours(7));
+        (read.TypedAt.Day, read.TypedAt.Hour).Should().Be((9, 0));
+
+        var listed = (await _store.GetAllAsync(10, ct)).Single(c => c.Id == created.Id);
+        listed.TypedAt.Offset.Should().Be(TimeSpan.FromHours(7));
+    }
+
+    [Fact]
     public async Task FR_QUEUE_1_Enqueue_creates_command_with_sequential_display_no_starting_at_1000()
     {
         var ct = TestContext.Current.CancellationToken;

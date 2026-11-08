@@ -2,11 +2,14 @@ namespace LunarCal.Infrastructure.Chat;
 
 /// <summary>
 /// FR-QUEUE-5: Exponential backoff with jitter retry policy for AI command queue processing.
-/// Up to 5 retries. Beyond 5 retries, transitions to unretryable error waiting for manual action.
+/// The base delay is short (5 s) and the growth factor is 6, so a transient failure is retried quickly while
+/// the user is still watching, and later attempts back off: 5 s, 30 s, 3 min, 18 min. Up to 5 retries. Beyond 5 retries, transitions to unretryable error waiting for manual action.
 /// </summary>
 public sealed class AiQueueRetryPolicy
 {
     public const int MaxRetries = 5;
+
+    private const double GrowthFactor = 6;
 
     private readonly TimeSpan _baseDelay;
     private readonly Random _random;
@@ -14,11 +17,11 @@ public sealed class AiQueueRetryPolicy
     /// <summary>
     /// Initializes a new instance of <see cref="AiQueueRetryPolicy"/>.
     /// </summary>
-    /// <param name="baseDelay">Base delay before backoff exponentiation (defaults to 1 minute).</param>
+    /// <param name="baseDelay">Base delay before backoff exponentiation (defaults to 5 seconds).</param>
     /// <param name="seed">Optional random seed for deterministic testing.</param>
     public AiQueueRetryPolicy(TimeSpan? baseDelay = null, int? seed = null)
     {
-        _baseDelay = baseDelay ?? TimeSpan.FromMinutes(1);
+        _baseDelay = baseDelay ?? TimeSpan.FromSeconds(5);
         _random = seed.HasValue ? new Random(seed.Value) : new Random();
     }
 
@@ -36,12 +39,12 @@ public sealed class AiQueueRetryPolicy
             return null;
         }
 
-        // Exponential backoff: base * 2^(retryCount - 1)
-        var factor = Math.Pow(2, Math.Max(0, retryCount - 1));
+        // Exponential backoff: base * 6^(retryCount - 1)
+        var factor = Math.Pow(GrowthFactor, Math.Max(0, retryCount - 1));
         var delayMs = _baseDelay.TotalMilliseconds * factor;
 
-        // Jitter: add uniform random variation between 0 and 20% of delay (or at least 0-5 seconds)
-        var maxJitterMs = Math.Max(5000, delayMs * 0.2);
+        // Jitter: add uniform random variation between 0 and 20% of delay (or at least 0-1 second)
+        var maxJitterMs = Math.Max(1000, delayMs * 0.2);
         var jitterMs = _random.NextDouble() * maxJitterMs;
 
         var totalDelay = TimeSpan.FromMilliseconds(delayMs + jitterMs);

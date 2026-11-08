@@ -3,7 +3,7 @@
 > File này được **ghi đè** mỗi phiên, không ghi nối tiếp. Cập nhật sau mỗi task hoặc khi phiên sắp kết thúc (`AGENTS.md` §6).
 > Mẫu câu hỏi mở: `.agents/workflows/spec-gap.md`.
 
-**Cập nhật lần cuối:** 2026-11-08 13:50 +07:00, Claude Code (Sonnet 5.5). Review xong Phase 4: cổng `P4-REVIEW` `[x]`, `phase/4` đã merge vào `main`. 753 test xanh ban đầu nhưng chuỗi AI (gõ lệnh → model → thẻ xem trước → xác nhận → ghi lịch) chưa chạy được trong app thật; đã sửa trong task P4-R4 (đăng ký orchestrator và executor, lưu đề xuất của model bằng migration V4, dịch vụ xác nhận là đường ghi duy nhất, SEC-LOG-2, đọc đối số theo schema, dựng lại hộp thoại theo Figma 02). Chi tiết: `docs/reviews/PHASE4.md`, ADR-0031. Release: build 0 warning, format pass, 767 test pass, coverage Lunar 99.54%, Core 92.5%.
+**Cập nhật lần cuối:** 2026-11-08 17:16 +07:00, Claude Code (Sonnet 5.5). Sửa bốn lỗi chủ dự án báo khi review Phase 4 (P4-R5..P4-R7, ADR-0032): giờ AI sai, chờ quá lâu, thiếu phản hồi khi xử lý, ngăn kéo không đóng. 796 test pass (Debug); chưa đo latency với Gemini thật, chưa có frame Figma cho thẻ tiến trình, chưa push. Trước đó (13:50): review xong Phase 4. Review xong Phase 4: cổng `P4-REVIEW` `[x]`, `phase/4` đã merge vào `main`. 753 test xanh ban đầu nhưng chuỗi AI (gõ lệnh → model → thẻ xem trước → xác nhận → ghi lịch) chưa chạy được trong app thật; đã sửa trong task P4-R4 (đăng ký orchestrator và executor, lưu đề xuất của model bằng migration V4, dịch vụ xác nhận là đường ghi duy nhất, SEC-LOG-2, đọc đối số theo schema, dựng lại hộp thoại theo Figma 02). Chi tiết: `docs/reviews/PHASE4.md`, ADR-0031. Release: build 0 warning, format pass, 767 test pass, coverage Lunar 99.54%, Core 92.5%.
 
 **Phiên trước (Antigravity):** 2026-11-08 13:15 +07:00. Hoàn thành toàn bộ Phase 4 (P4-00..P4-13, P4-R1..P4-R3) và chuyển cổng `P4-REVIEW` sang `[r]`.
 
@@ -11,9 +11,10 @@
 
 - **Phase hiện tại:** Phase 4 đã đóng (cổng `P4-REVIEW` `[x]`, đã merge vào `main`). Phase 5 chưa bắt đầu; task đầu tiên của Phase 5 là `P5-00` (👤 thiết kế S11, S15) hoặc `P5-01`.
 - **Đang làm theo agent** (`.agents/rules/progress-sync.md`; mỗi agent chỉ viết lại mục của mình):
-  - **Claude Code:** không giữ branch. Đã review Phase 4, sửa P4-R4 và merge `phase/4` vào `main`. Không có việc dở.
+  - **Claude Code:** không giữ branch. Đã review Phase 4, sửa P4-R4 và merge `phase/4` vào `main`; sau đó sửa P4-R5..P4-R7 trực tiếp trên `main` (chủ dự án cho phép). Không có việc dở.
   - **Antigravity:** Hoàn thành toàn bộ task Phase 4 (đã được review). Chưa nhận task Phase 5. Trước khi bắt đầu, đọc `docs/reviews/PHASE4.md` mục "Nên sửa sau" và ADR-0031 (đề xuất của model lưu ở `AiCommand.proposal_json`; ghi lịch chỉ qua `IAiCommandConfirmationService`).
 - **Task tiếp theo đề xuất:**
+  0. Chủ dự án: chạy lại một lệnh AI thật, đọc dòng log `Gemini call finished in ... ms` trong `%LOCALAPPDATA%\LunarCal\logs` để biết thinking `low` có đủ nhanh và đúng không; nếu vẫn chậm, quyết định đổi `DefaultModelId` (ADR-0032). Quyết định có vẽ frame Figma cho thẻ tiến trình AI không.
   1. Chủ dự án: push `main` và `phase/4` lên remote, xem CI trên GitHub; thử một lệnh AI thật với key Gemini của mình (gõ lệnh → mở ngăn kéo → Xác nhận) vì chưa có test nào gọi Gemini thật.
   2. Antigravity: bắt đầu Phase 5 (`P5-00` cần thiết kế Figma S11, S15 trước; `P5-01`, `P5-02` làm được ngay). `CalendarToolExecutor` mới hiện thực `create_event`; Phase 5 mở rộng cho các tool còn lại.
 
@@ -54,5 +55,6 @@ Lần chạy mới nhất 2026-11-08 13:50 (Release, `phase/4` trước khi merg
 - ADR-0029 (2026-11-07): Một tài khoản Google tại một thời điểm. Đổi tài khoản hiển thị xác nhận và xoá dữ liệu cũ.
 - ADR-0030 (2026-11-08): System prompt AI đặt tại Core EmbeddedResource `Prompts/system.v1.md`.
 - ADR-0031 (2026-11-08): Đề xuất của model lưu ở `AiCommand.proposal_json`; ghi lịch chỉ qua `IAiCommandConfirmationService`.
+- ADR-0032 (2026-11-08): Giờ lệnh AI theo múi giờ người dùng, thinking thấp, thử lại nhanh, thẻ tiến trình không chặn.
 
 Chi tiết nằm trong ADR (`docs/DECISIONS.md`).

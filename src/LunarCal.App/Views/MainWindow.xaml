@@ -91,7 +91,11 @@
       </Grid>
 
       <!-- AI command bar (Figma 1:198, FR-UI-5) -->
-      <controls:AiCommandBar Grid.Row="2" DataContext="{Binding AiCommandBar}" />
+      <StackPanel Grid.Row="2">
+        <!-- Non-blocking progress for the commands just sent (P4-R7) -->
+        <controls:AiProgressCard DataContext="{Binding AiProgress}" />
+        <controls:AiCommandBar DataContext="{Binding AiCommandBar}" />
+      </StackPanel>
       
       <!-- Top bar and status banners (Figma 1:197, S18, FR-UI-9) -->
       <StackPanel Grid.Row="0">

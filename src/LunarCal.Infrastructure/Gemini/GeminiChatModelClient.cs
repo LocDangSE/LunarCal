@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -21,6 +22,19 @@ public sealed class GeminiChatModelClient : IChatModelClient
     private readonly ISettingsStore? _settingsStore;
     private readonly GeminiOptions _options;
     private readonly ILogger<GeminiChatModelClient>? _logger;
+    private volatile bool _thinkingRejected;
+
+    // SEC-LOG-2: these messages carry timing and token counts only, never request or response content.
+    private static readonly Action<ILogger, long, string, Exception?> _logTimedOut = LoggerMessage.Define<long, string>(
+        LogLevel.Warning, new EventId(1, "GeminiTimedOut"), "Gemini request timed out after {ElapsedMs} ms (model {Model}).");
+
+    private static readonly Action<ILogger, string, Exception?> _logThinkingRejected = LoggerMessage.Define<string>(
+        LogLevel.Warning, new EventId(2, "GeminiThinkingRejected"), "Gemini rejected the thinking level setting; repeating the call without it (model {Model}).");
+
+    private static readonly Action<ILogger, long, string, string?, int, int, int, Exception?> _logCompleted = LoggerMessage.Define<long, string, string?, int, int, int>(
+        LogLevel.Information,
+        new EventId(3, "GeminiCompleted"),
+        "Gemini call finished in {ElapsedMs} ms (model {Model}, thinking level {Thinking}, prompt {PromptTokens}, response {ResponseTokens}, thinking {ThinkingTokens} tokens).");
 
     public GeminiChatModelClient(
         HttpClient httpClient,
@@ -56,52 +70,94 @@ public sealed class GeminiChatModelClient : IChatModelClient
         }
 
         var endpoint = BuildEndpointUri(modelId);
-        var payloadBytes = BuildRequestPayload(request);
+        var includeThinking = ThinkingEnabled;
+        var stopwatch = Stopwatch.StartNew();
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        if (_options.RequestTimeoutSeconds > 0)
+        while (true)
         {
-            cts.CancelAfter(TimeSpan.FromSeconds(_options.RequestTimeoutSeconds));
-        }
+            var payloadBytes = BuildRequestPayload(request, includeThinking);
 
-        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint)
-        {
-            Content = new ByteArrayContent(payloadBytes)
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            if (_options.RequestTimeoutSeconds > 0)
             {
-                Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                cts.CancelAfter(TimeSpan.FromSeconds(_options.RequestTimeoutSeconds));
             }
-        };
 
-        HttpResponseMessage httpResponse;
-        try
-        {
-            httpResponse = await _httpClient.SendAsync(httpRequest, cts.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-        {
-            throw new GeminiApiException(
-                GeminiErrorKind.TransientError,
-                $"Gemini API request timed out after {_options.RequestTimeoutSeconds} seconds.",
-                HttpStatusCode.RequestTimeout);
-        }
-
-        using (httpResponse)
-        {
-            var responseBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            if (!httpResponse.IsSuccessStatusCode)
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint)
             {
-                var (kind, desc, status, msg) = GeminiErrorClassifier.Classify(httpResponse.StatusCode, responseBody);
+                Content = new ByteArrayContent(payloadBytes)
+                {
+                    Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                }
+            };
+
+            HttpResponseMessage httpResponse;
+            try
+            {
+                httpResponse = await _httpClient.SendAsync(httpRequest, cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            {
+                if (_logger is not null)
+                {
+                    _logTimedOut(_logger, stopwatch.ElapsedMilliseconds, modelId, null);
+                }
+
                 throw new GeminiApiException(
-                    kind,
-                    desc,
-                    httpResponse.StatusCode,
-                    status,
-                    msg);
+                    GeminiErrorKind.TransientError,
+                    $"Gemini API request timed out after {_options.RequestTimeoutSeconds} seconds.",
+                    HttpStatusCode.RequestTimeout);
             }
 
-            return ParseResponse(responseBody, modelId);
+            using (httpResponse)
+            {
+                var responseBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+                if (!httpResponse.IsSuccessStatusCode)
+                {
+                    // The thinking field name is documented for the Interactions API, not verified for generateContent:
+                    // if the API rejects it, remember that and repeat the call once without it instead of breaking AI.
+                    if (includeThinking &&
+                        httpResponse.StatusCode == HttpStatusCode.BadRequest &&
+                        responseBody.Contains("thinking", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _thinkingRejected = true;
+                        includeThinking = false;
+                        if (_logger is not null)
+                        {
+                            _logThinkingRejected(_logger, modelId, null);
+                        }
+
+                        continue;
+                    }
+
+                    var (kind, desc, status, msg) = GeminiErrorClassifier.Classify(httpResponse.StatusCode, responseBody);
+                    throw new GeminiApiException(
+                        kind,
+                        desc,
+                        httpResponse.StatusCode,
+                        status,
+                        msg);
+                }
+
+                var response = ParseResponse(responseBody, modelId);
+                LogCompleted(modelId, stopwatch.ElapsedMilliseconds, response.Usage, includeThinking);
+                return response;
+            }
         }
+    }
+
+    private bool ThinkingEnabled => !_thinkingRejected && !string.IsNullOrWhiteSpace(_options.ThinkingLevel);
+
+    private void LogCompleted(string modelId, long elapsedMs, ChatTokenUsage? usage, bool thinkingSent)
+    {
+        if (_logger is null)
+        {
+            return;
+        }
+
+        var thinkingTokens = usage is null ? 0 : Math.Max(0, usage.TotalTokens - usage.PromptTokens - usage.ResponseTokens);
+        _logCompleted(_logger, elapsedMs, modelId, thinkingSent ? _options.ThinkingLevel : "default", usage?.PromptTokens ?? 0, usage?.ResponseTokens ?? 0, thinkingTokens, null);
     }
 
     private Uri BuildEndpointUri(string modelId)
@@ -110,7 +166,7 @@ public sealed class GeminiChatModelClient : IChatModelClient
         return new Uri($"{baseUrl}v1beta/models/{Uri.EscapeDataString(modelId)}:generateContent");
     }
 
-    private byte[] BuildRequestPayload(ChatRequest request)
+    private byte[] BuildRequestPayload(ChatRequest request, bool includeThinking)
     {
         var root = new JsonObject();
 
@@ -242,14 +298,23 @@ public sealed class GeminiChatModelClient : IChatModelClient
             };
         }
 
-        // 4. generationConfig (maxOutputTokens only; do NOT send temperature, topP, topK per ADR-0016)
+        // 4. generationConfig (maxOutputTokens and the thinking level only; do NOT send temperature, topP, topK per ADR-0016)
         var maxTokens = request.MaxOutputTokens ?? _options.MaxOutputTokens;
+        var generationConfig = new JsonObject();
         if (maxTokens > 0)
         {
-            root["generationConfig"] = new JsonObject
-            {
-                ["maxOutputTokens"] = maxTokens
-            };
+            generationConfig["maxOutputTokens"] = maxTokens;
+        }
+
+        if (includeThinking)
+        {
+            // Calendar commands are short and structured: a low thinking level answers much faster (P4-R6).
+            generationConfig["thinkingConfig"] = new JsonObject { ["thinkingLevel"] = _options.ThinkingLevel!.Trim().ToLowerInvariant() };
+        }
+
+        if (generationConfig.Count > 0)
+        {
+            root["generationConfig"] = generationConfig;
         }
 
         return Encoding.UTF8.GetBytes(root.ToJsonString());

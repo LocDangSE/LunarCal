@@ -378,7 +378,7 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
         var proposal = AiCommandProposal.FromJson(reader.IsDBNull(13) ? null : reader.GetString(13));
 
         var typedAt = DateTimeOffset.TryParse(typedAtStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var ta)
-            ? ta
+            ? AiCommandTime.InZone(ta, timezone) // stored as UTC: restore the user's local offset (FR-QUEUE-4)
             : DateTimeOffset.UtcNow;
 
         DateTimeOffset? nextRetryAt = null;

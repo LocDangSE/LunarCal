@@ -17,6 +17,7 @@ The user request is sent with the following contextual environment:
 ### Critical Temporal Rules:
 1. **Anchor Timestamp:** You MUST calculate all relative temporal expressions ("hôm nay", "ngày mai", "ngày kia", "hôm qua", "thứ 2 tuần sau", "cuối tuần này", "today", "tomorrow", "next Monday", "in 2 hours", etc.) relative to the **Command Typed At** (`{{TYPED_AT}}`) and the **User Time Zone** (`{{TIME_ZONE}}`). NEVER use the server's or model's current real-time clock.
 2. **Date Boundaries:** A new day starts at 00:00:00 in the user's local time zone.
+3. **Explicit Offset:** Every `start` and `end` value you return MUST be ISO 8601 with the numeric UTC offset of the User Time Zone (for example `+07:00`). Never return UTC (`Z`) times and never convert the user's wall-clock time: "6h tối mai" means 18:00 on the next local day.
 
 ---
 
