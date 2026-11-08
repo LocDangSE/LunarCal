@@ -12,7 +12,7 @@ using LunarCal.Core.Chat;
 namespace LunarCal.App.ViewModels;
 
 /// <summary>
-/// View model for the AI command queue drawer (Figma 03, FR-QUEUE-2, FR-QUEUE-6).
+/// View model for the AI command queue drawer (Figma 03, FR-QUEUE-2, FR-QUEUE-6, FR-CONFIRM-8).
 /// </summary>
 public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposable
 {
@@ -173,6 +173,23 @@ public sealed partial class AiQueueDrawerViewModel : ObservableObject, IDisposab
         CommandActionRequested?.Invoke(this, item);
 
         // Transition to Completed upon user confirmation
+        await _commandStore.UpdateStatusAsync(item.Id, AiCommandStatus.Completed, cancellationToken: cancellationToken)
+            .ConfigureAwait(true);
+
+        item.Status = AiCommandStatus.Completed;
+        PendingCount = Commands.Count(c => c.Status != AiCommandStatus.Completed && c.Status != AiCommandStatus.Cancelled);
+    }
+
+    public async Task SubmitClarificationAsync(AiCommandItemViewModel? item, string answer, CancellationToken cancellationToken = default)
+    {
+        if (item is null || string.IsNullOrWhiteSpace(answer))
+        {
+            return;
+        }
+
+        CommandActionRequested?.Invoke(this, item);
+
+        // Transition to Completed upon submitting clarification answer and executing the resolved action
         await _commandStore.UpdateStatusAsync(item.Id, AiCommandStatus.Completed, cancellationToken: cancellationToken)
             .ConfigureAwait(true);
 

@@ -18,7 +18,8 @@
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
   </Window.Resources>
 
-  <!-- Figma 02 · AI xác nhận yêu cầu (2:2; dialog 2:494, scrim 2:493) -->
+  <!-- Figma 02 · AI xác nhận yêu cầu (2:2; dialog 2:494, scrim 2:493)
+       Figma S16 · AI hỏi lại (46:370; dialog 46:862, FR-CONFIRM-8) -->
   <Border Margin="24"
           Background="{DynamicResource SurfaceBackgroundBrush}"
           BorderBrush="{DynamicResource BorderBrush}"
@@ -34,31 +35,62 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0">
+          <!-- FR-UI-11: Pill badge MUST use CornerRadiusPill -->
           <Border HorizontalAlignment="Left" Padding="10,4"
                   Background="{DynamicResource WarningSubtleBrush}"
                   BorderBrush="{DynamicResource WarningBorderBrush}"
                   BorderThickness="1"
                   CornerRadius="{DynamicResource CornerRadiusPill}">
-            <TextBlock Text="{loc:Loc ai_confirm.status_pending}"
-                       FontSize="{DynamicResource FontSizeCaption}"
+            <TextBlock FontSize="{DynamicResource FontSizeCaption}"
                        FontWeight="{DynamicResource FontWeightSemiBold}"
                        Foreground="{DynamicResource WarningTextBrush}"
-                       AutomationProperties.AutomationId="AiConfirmStatusBadge" />
+                       AutomationProperties.AutomationId="AiConfirmStatusBadge">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                  <Setter Property="Text" Value="{loc:Loc ai_confirm.status_pending}" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                      <Setter Property="Text" Value="{loc:Loc ai_confirm.status_clarify}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
           </Border>
 
-          <TextBlock Text="{loc:Loc ai_confirm.title}"
-                     Margin="0,8,0,0"
+          <TextBlock Margin="0,8,0,0"
                      FontSize="{DynamicResource FontSizeDialogTitle}"
                      FontWeight="{DynamicResource FontWeightBold}"
                      Foreground="{DynamicResource TextPrimaryBrush}"
-                     AutomationProperties.AutomationId="AiConfirmTitle" />
+                     AutomationProperties.AutomationId="AiConfirmTitle">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Text" Value="{loc:Loc ai_confirm.title}" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                    <Setter Property="Text" Value="{loc:Loc ai_confirm.clarify_title}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
 
-          <TextBlock Text="{loc:Loc ai_confirm.subtitle}"
-                     Margin="0,4,0,0"
+          <TextBlock Margin="0,4,0,0"
                      FontSize="{DynamicResource FontSizeBody}"
                      Foreground="{DynamicResource TextSecondaryBrush}"
                      TextWrapping="Wrap"
-                     AutomationProperties.AutomationId="AiConfirmSubtitle" />
+                     AutomationProperties.AutomationId="AiConfirmSubtitle">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Text" Value="{loc:Loc ai_confirm.subtitle}" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                    <Setter Property="Text" Value="{loc:Loc ai_confirm.clarify_subtitle}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
         </StackPanel>
 
         <!-- Close button ✕ -->
@@ -78,7 +110,7 @@
       </Grid>
 
       <!-- Scrollable content area -->
-      <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="520" Focusable="False">
+      <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="540" Focusable="False">
         <StackPanel Margin="24,0,24,16">
 
           <!-- 1. BẠN ĐÃ NHẬP (User input block) -->
@@ -204,16 +236,68 @@
                 </Border>
               </StackPanel>
 
-              <!-- Row 3: Giờ -->
-              <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,4"
-                         Text="{loc:Loc ai_confirm.label_time}"
-                         FontSize="{DynamicResource FontSizeBody}"
-                         Foreground="{DynamicResource TextSecondaryBrush}" />
-              <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,4"
-                         Text="{Binding EventTimeDisplay}"
-                         FontSize="{DynamicResource FontSizeBodyStrong}"
-                         Foreground="{DynamicResource TextPrimaryBrush}"
-                         AutomationProperties.AutomationId="AiConfirmEventTime" />
+              <!-- Row 3: Giờ (S16: Missing time highlighted with subtle yellow warning background) -->
+              <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="-6,2,-6,2" Padding="6,4"
+                      CornerRadius="{DynamicResource CornerRadiusSmall}">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsMissingTime}" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource WarningSubtleBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource WarningBorderBrush}" />
+                        <Setter Property="BorderThickness" Value="1" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+
+                  <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                             Text="{loc:Loc ai_confirm.label_time}"
+                             FontSize="{DynamicResource FontSizeBody}">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsMissingTime}" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+                            <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+
+                  <!-- Standard time or Warning text -->
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center"
+                            Background="{DynamicResource WarningBrush}"
+                            CornerRadius="{DynamicResource CornerRadiusFull}"
+                            Visibility="{Binding IsMissingTime, Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="{Binding EventTimeDisplay}"
+                               FontSize="{DynamicResource FontSizeBodyStrong}"
+                               AutomationProperties.AutomationId="AiConfirmEventTime">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMissingTime}" Value="True">
+                              <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+                              <Setter Property="FontWeight" Value="{DynamicResource FontWeightSemiBold}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </StackPanel>
+                </Grid>
+              </Border>
 
               <!-- Row 4: Lặp lại -->
               <TextBlock Grid.Row="4" Grid.Column="0" Margin="0,4"
@@ -301,7 +385,124 @@
             </Grid>
           </Border>
 
-          <!-- 3. KIỂM TRA NGHIỆP VỤ (FR-CONFIRM-5) -->
+          <!-- 3. CÂU HỎI CỦA AI (FR-CONFIRM-8, S16 46:370, dialog 46:862) -->
+          <StackPanel Visibility="{Binding IsClarificationMode, Converter={StaticResource BoolToVis}}"
+                      Margin="0,16,0,0">
+            <TextBlock Text="{loc:Loc ai_confirm.ai_question_header}"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       FontWeight="{DynamicResource FontWeightSemiBold}"
+                       Foreground="{DynamicResource AiTextBrush}" />
+
+            <Border Margin="0,6,0,0" Padding="14,14"
+                    Background="{DynamicResource SurfaceMutedBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource CornerRadiusMedium}">
+              <StackPanel>
+                <!-- Question with AI sparkle icon -->
+                <DockPanel LastChildFill="True">
+                  <Border DockPanel.Dock="Left" Width="20" Height="20" Margin="0,1,8,0"
+                          VerticalAlignment="Top"
+                          Background="{DynamicResource AiSubtleBrush}"
+                          CornerRadius="{DynamicResource CornerRadiusSmall}">
+                    <Path Data="{DynamicResource IconSparkle10}"
+                          Width="10" Height="10"
+                          Stretch="Uniform"
+                          Fill="{DynamicResource AiTextBrush}"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <TextBlock Text="{Binding ClarificationQuestion}"
+                             FontSize="{DynamicResource FontSizeBodyStrong}"
+                             FontWeight="{DynamicResource FontWeightSemiBold}"
+                             Foreground="{DynamicResource TextPrimaryBrush}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="AiClarifyQuestion" />
+                </DockPanel>
+
+                <!-- Quick suggestion chips (Pills) -->
+                <StackPanel Margin="0,12,0,0">
+                  <TextBlock Text="{loc:Loc ai_confirm.quick_answers_label}"
+                             FontSize="{DynamicResource FontSizeCaption}"
+                             FontWeight="{DynamicResource FontWeightMedium}"
+                             Foreground="{DynamicResource TextTertiaryBrush}"
+                             Margin="0,0,0,6" />
+                  <ItemsControl ItemsSource="{Binding QuickAnswers}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <!-- FR-UI-11: Pill buttons MUST use CornerRadiusPill -->
+                        <Button Margin="0,0,8,6"
+                                Padding="12,4"
+                                Background="{DynamicResource SurfaceBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Cursor="Hand"
+                                Command="{Binding DataContext.SelectQuickAnswerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}"
+                                AutomationProperties.AutomationId="AiClarifyQuickAnswerButton">
+                          <Button.Resources>
+                            <Style TargetType="Border">
+                              <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusPill}" />
+                            </Style>
+                          </Button.Resources>
+                          <TextBlock Text="{Binding}"
+                                     FontSize="{DynamicResource FontSizeCaption}"
+                                     FontWeight="{DynamicResource FontWeightMedium}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+
+                <!-- Short answer input box with placeholder and auto-focus -->
+                <Grid Margin="0,8,0,0">
+                  <TextBox x:Name="ClarifyInputBox"
+                           Padding="10,8"
+                           Height="36"
+                           VerticalContentAlignment="Center"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Background="{DynamicResource SurfaceBackgroundBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           BorderBrush="{DynamicResource BorderBrush}"
+                           BorderThickness="1"
+                           Text="{Binding ClarificationAnswer, UpdateSourceTrigger=PropertyChanged}"
+                           AutomationProperties.AutomationId="AiClarifyInput" />
+                  <TextBlock Text="{loc:Loc ai_confirm.clarify_placeholder}"
+                             Margin="12,0,0,0"
+                             VerticalAlignment="Center"
+                             IsHitTestVisible="False"
+                             FontSize="{DynamicResource FontSizeBody}"
+                             Foreground="{DynamicResource TextTertiaryBrush}">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding Text, ElementName=ClarifyInputBox}" Value="">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                </Grid>
+
+                <!-- Privacy note for clarification reply -->
+                <TextBlock Text="{loc:Loc ai_confirm.clarify_privacy_note}"
+                           Margin="0,8,0,0"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="AiClarifyPrivacyNote" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- 4. KIỂM TRA NGHIỆP VỤ (FR-CONFIRM-5) -->
           <TextBlock Text="{loc:Loc ai_confirm.section_validation}"
                      Margin="0,16,0,0"
                      FontSize="{DynamicResource FontSizeCaption}"
@@ -350,7 +551,7 @@
             </TextBlock>
           </Border>
 
-          <!-- 4. GHI CHÚ QUYỀN RIÊNG TƯ (FR-CONFIRM-6, chuỗi spec §4.11) -->
+          <!-- 5. GHI CHÚ QUYỀN RIÊNG TƯ (FR-CONFIRM-6, chuỗi spec §4.11) -->
           <TextBlock Text="{Binding PrivacyNotice}"
                      Margin="0,12,0,0"
                      FontSize="{DynamicResource FontSizeCaption}"
@@ -361,21 +562,31 @@
         </StackPanel>
       </ScrollViewer>
 
-      <!-- Footer Action Buttons: Sửa, Hủy, Xác nhận & thêm vào Google -->
+      <!-- Footer Action Buttons: Sửa, Hủy, Xác nhận / Trả lời & tiếp tục (S16 removes Edit) -->
       <Border Padding="24,14"
               Background="{DynamicResource SurfaceMutedBrush}"
               BorderBrush="{DynamicResource BorderBrush}"
               BorderThickness="0,1,0,0"
               CornerRadius="{DynamicResource CornerRadiusDialogBottom}">
         <DockPanel LastChildFill="False">
-          <!-- Left: Sửa -->
+          <!-- Left: Sửa (FR-CONFIRM-8: Bỏ nút Sửa khi ở trạng thái hỏi lại S16) -->
           <Button DockPanel.Dock="Left"
                   Content="{loc:Loc ai_confirm.btn_edit}"
-                  Style="{StaticResource SecondaryButtonStyle}"
                   Command="{Binding EditCommand}"
-                  AutomationProperties.AutomationId="BtnAiConfirmEdit" />
+                  AutomationProperties.AutomationId="BtnAiConfirmEdit">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+          </Button>
 
-          <!-- Right: Hủy & Xác nhận -->
+          <!-- Right: Hủy & Xác nhận / Trả lời & tiếp tục -->
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
             <Button Content="{loc:Loc ai_confirm.btn_cancel}"
                     Style="{StaticResource GhostButtonStyle}"
@@ -384,13 +595,44 @@
                     Command="{Binding CancelCommand}"
                     AutomationProperties.AutomationId="BtnAiConfirmCancel" />
 
+            <!-- Confirm Button (shown in normal mode) -->
             <Button Content="{loc:Loc ai_confirm.btn_confirm}"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    IsDefault="True"
                     IsEnabled="{Binding CanConfirm}"
                     ToolTip="{Binding CanConfirmDisabledReason}"
                     Command="{Binding ConfirmCommand}"
-                    AutomationProperties.AutomationId="BtnAiConfirmSubmit" />
+                    AutomationProperties.AutomationId="BtnAiConfirmSubmit">
+              <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                  <Setter Property="Visibility" Value="Visible" />
+                  <Setter Property="IsDefault" Value="True" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                      <Setter Property="IsDefault" Value="False" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
+
+            <!-- Reply & Continue Button (FR-CONFIRM-8: shown in Clarification mode) -->
+            <Button Content="{loc:Loc ai_confirm.clarify_submit}"
+                    IsEnabled="{Binding CanSubmitClarification}"
+                    Command="{Binding SubmitClarificationCommand}"
+                    AutomationProperties.AutomationId="BtnAiClarifySubmit">
+              <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                  <Setter Property="IsDefault" Value="False" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClarificationMode}" Value="True">
+                      <Setter Property="Visibility" Value="Visible" />
+                      <Setter Property="IsDefault" Value="True" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
           </StackPanel>
         </DockPanel>
       </Border>

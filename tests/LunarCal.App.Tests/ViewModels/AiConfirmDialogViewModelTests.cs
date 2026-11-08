@@ -182,4 +182,81 @@ public sealed class AiConfirmDialogViewModelTests
         vm.DialogResult.Should().Be(false);
         closeRequestedTriggered.Should().BeTrue();
     }
+
+    [Fact]
+    public void FR_CONFIRM_8_InitializeForClarification_sets_clarification_mode_and_question_and_quick_answers()
+    {
+        var vm = new AiConfirmDialogViewModel(_localization);
+        var command = CreateTestCommand("họp team vào ngày mai");
+
+        vm.InitializeForClarification(
+            command,
+            "Bạn muốn họp lúc mấy giờ?",
+            quickAnswers: ["08:30", "10:00", "14:30", "Cả ngày"],
+            isMissingTime: true);
+
+        vm.IsClarificationMode.Should().BeTrue();
+        vm.ClarificationQuestion.Should().Be("Bạn muốn họp lúc mấy giờ?");
+        vm.QuickAnswers.Should().Equal("08:30", "10:00", "14:30", "Cả ngày");
+        vm.IsMissingTime.Should().BeTrue();
+        vm.EventTimeDisplay.Should().Be("Chưa rõ giờ cụ thể");
+        vm.CanConfirm.Should().BeFalse();
+        vm.CanSubmitClarification.Should().BeFalse();
+    }
+
+    [Fact]
+    public void FR_CONFIRM_8_SelectQuickAnswerCommand_populates_clarification_answer_and_enables_submit()
+    {
+        var vm = new AiConfirmDialogViewModel(_localization);
+        var command = CreateTestCommand("họp team");
+
+        vm.InitializeForClarification(command, "Mấy giờ họp?", isMissingTime: true);
+
+        vm.CanSubmitClarification.Should().BeFalse();
+
+        vm.SelectQuickAnswerCommand.Execute("14:00");
+
+        vm.ClarificationAnswer.Should().Be("14:00");
+        vm.CanSubmitClarification.Should().BeTrue();
+    }
+
+    [Fact]
+    public void FR_CONFIRM_8_SubmitClarificationCommand_marks_submitted_and_closes_dialog()
+    {
+        var vm = new AiConfirmDialogViewModel(_localization);
+        var command = CreateTestCommand("họp team");
+
+        vm.InitializeForClarification(command, "Mấy giờ họp?", isMissingTime: true);
+        vm.ClarificationAnswer = "10:30 sáng";
+
+        var closeRequestedTriggered = false;
+        vm.CloseRequested += (_, result) =>
+        {
+            closeRequestedTriggered = true;
+            result.Should().Be(true);
+        };
+
+        vm.SubmitClarificationCommand.Execute(null);
+
+        vm.ClarificationSubmitted.Should().BeTrue();
+        vm.DialogResult.Should().Be(true);
+        closeRequestedTriggered.Should().BeTrue();
+    }
+
+    [Fact]
+    public void FR_CONFIRM_8_EditCommand_is_ignored_when_in_clarification_mode()
+    {
+        var vm = new AiConfirmDialogViewModel(_localization);
+        var command = CreateTestCommand("họp team");
+
+        vm.InitializeForClarification(command, "Mấy giờ họp?", isMissingTime: true);
+
+        var closeRequestedTriggered = false;
+        vm.CloseRequested += (_, _) => closeRequestedTriggered = true;
+
+        vm.EditCommand.Execute(null);
+
+        vm.RequestEdit.Should().BeFalse();
+        closeRequestedTriggered.Should().BeFalse();
+    }
 }

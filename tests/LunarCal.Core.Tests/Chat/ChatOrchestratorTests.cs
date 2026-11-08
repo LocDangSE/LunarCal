@@ -265,6 +265,43 @@ public sealed class ChatOrchestratorTests
     }
 
     [Fact]
+    public async Task FR_CONFIRM_8_Clarification_preserves_provider_state_for_gemini_thought_signature()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var orchestrator = new ChatOrchestrator(_chatModelClient, _promptProvider, _toolExecutor);
+
+        // Turn 1: Model asks clarification and returns ProviderState with opaque thoughtSignature
+        const string mockThoughtSignature = "{\"thoughtSignature\":\"opaque_gemini_token_abc123\"}";
+        _chatModelClient.SendAsync(Arg.Any<ChatRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new ChatResponse
+            {
+                Text = "Mấy giờ bạn họp?",
+                FinishReason = ChatFinishReason.Stop,
+                ProviderState = mockThoughtSignature
+            });
+
+        var state1 = await orchestrator.ProcessUserMessageAsync("Nhắc họp ngày mai", _testContext, ct);
+        state1.Should().Be(ChatOrchestratorState.AwaitingClarification);
+
+        // Turn 2: User answers. Assert that ChatRequest passed to client preserves ProviderState
+        ChatRequest? secondRequest = null;
+        var toolCall = new ToolCall(ToolDefinitions.CreateEvent, "{\"title\":\"Họp\",\"start\":\"2026-10-17T14:00:00+07:00\"}");
+
+        _chatModelClient.SendAsync(Arg.Do<ChatRequest>(r => secondRequest = r), Arg.Any<CancellationToken>())
+            .Returns(new ChatResponse
+            {
+                ToolCalls = new[] { toolCall },
+                FinishReason = ChatFinishReason.ToolCalls
+            });
+
+        var state2 = await orchestrator.AnswerClarificationAsync("Lúc 14h", _testContext, ct);
+
+        state2.Should().Be(ChatOrchestratorState.AwaitingConfirmation);
+        secondRequest.Should().NotBeNull();
+        secondRequest!.ProviderState.Should().Be(mockThoughtSignature);
+    }
+
+    [Fact]
     public async Task SEC_PI_2_Invalid_tool_call_fails_validation_and_never_executes()
     {
         var ct = TestContext.Current.CancellationToken;
