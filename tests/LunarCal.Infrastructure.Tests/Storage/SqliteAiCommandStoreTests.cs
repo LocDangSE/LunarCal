@@ -59,6 +59,26 @@ public sealed class SqliteAiCommandStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task FR_QUEUE_5_A_command_that_fails_permanently_is_never_picked_up_again()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await EnsureDbAsync(ct);
+        var cmd = await _store.EnqueueAsync("họp chiến lược Q4", DateTimeOffset.Now, "SE Asia Standard Time", "vi", ct);
+
+        // First a transient failure schedules a retry in the past...
+        var past = DateTimeOffset.UtcNow.AddMinutes(-5);
+        await _store.UpdateStatusAsync(cmd.Id, AiCommandStatus.Error, "timed out", retryCount: 1, nextRetryAt: past, cancellationToken: ct);
+        (await _store.GetPendingQueueAsync(DateTimeOffset.UtcNow, 10, ct)).Should().ContainSingle(c => c.Id == cmd.Id);
+
+        // ...then a permanent failure (daily quota) must clear it. It used to keep the old retry time, so the worker
+        // called Gemini for this command again and again, thousands of times (P4-R9).
+        await _store.UpdateStatusAsync(cmd.Id, AiCommandStatus.Error, "daily quota", retryCount: 1, nextRetryAt: null, cancellationToken: ct);
+
+        (await _store.GetPendingQueueAsync(DateTimeOffset.UtcNow.AddDays(1), 10, ct)).Should().BeEmpty();
+        (await _store.GetByIdAsync(cmd.Id, ct))!.NextRetryAt.Should().BeNull();
+    }
+
+    [Fact]
     public async Task FR_QUEUE_4_Typed_at_keeps_the_local_offset_after_a_round_trip_through_storage()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -23,6 +23,10 @@ public sealed class AiCommandQueueWorker : BackgroundService
     private readonly AiQueueRetryPolicy _retryPolicy;
     private readonly ILogger _logger;
     private readonly SemaphoreSlim _signal = new(0, 1);
+    private DateTimeOffset _quotaPausedUntil = DateTimeOffset.MinValue;
+
+    /// <summary>How long model calls stop after the daily quota is exhausted.</summary>
+    private static readonly TimeSpan _quotaPause = TimeSpan.FromMinutes(15);
 
     /// <summary>
     /// Event raised when an AI execution error occurs and is mapped (FR-CHAT-7).
@@ -177,10 +181,12 @@ public sealed class AiCommandQueueWorker : BackgroundService
                 }
 
                 var processedCount = await ProcessPendingBatchAsync(stoppingToken).ConfigureAwait(false);
-                if (processedCount == 0)
-                {
-                    await WaitForSignalOrDelayAsync(_options.PollInterval, stoppingToken).ConfigureAwait(false);
-                }
+
+                // Never spin: even when commands were processed, pause before looking at the queue again so a failing
+                // command can never produce a tight loop of model calls.
+                await WaitForSignalOrDelayAsync(
+                    processedCount == 0 ? _options.PollInterval : TimeSpan.FromSeconds(1),
+                    stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -202,6 +208,13 @@ public sealed class AiCommandQueueWorker : BackgroundService
     /// </summary>
     public async Task<int> ProcessPendingBatchAsync(CancellationToken cancellationToken = default)
     {
+        // After the daily quota ran out every further call fails too: stop calling the model for a while instead of
+        // burning requests (the quota resets at midnight Pacific Time, P4-R9).
+        if (_clock.UtcNow < _quotaPausedUntil)
+        {
+            return 0;
+        }
+
         var pendingCommands = await _commandStore.GetPendingQueueAsync(_clock.UtcNow, limit: 10, cancellationToken).ConfigureAwait(false);
         if (pendingCommands.Count == 0)
         {
@@ -365,6 +378,12 @@ public sealed class AiCommandQueueWorker : BackgroundService
         ArgumentNullException.ThrowIfNull(errorResult);
 
         AiErrorOccurred?.Invoke(this, errorResult);
+
+        if (errorResult.Kind == AiChatErrorKind.DailyQuotaExceeded)
+        {
+            _quotaPausedUntil = _clock.UtcNow + _quotaPause;
+            _logger.Warning("Daily Gemini quota exhausted; the AI queue pauses model calls until {PausedUntil}", _quotaPausedUntil);
+        }
 
         // 1. Offline / Network unavailable: preserve in queue as pending, wait for network restoration (FR-CHAT-7)
         if (errorResult.Kind == AiChatErrorKind.NetworkUnavailable)

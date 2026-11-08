@@ -79,6 +79,46 @@ public sealed class AiCommandQueueWorkerErrorHandlingTests
     }
 
     [Fact]
+    public async Task FR_CHAT_7_After_the_daily_quota_is_exhausted_the_worker_stops_calling_the_model_for_a_while()
+    {
+        var command = new AiCommand
+        {
+            Id = "cmd-quota",
+            DisplayNo = 1003,
+            Text = "Họp nhóm lúc 9h",
+            TypedAt = _now,
+            TimeZone = "SE Asia Standard Time",
+            InputLang = "vi",
+            Status = AiCommandStatus.Pending,
+            CreatedAt = _now,
+            UpdatedAt = _now,
+        };
+        _orchestrator
+            .ProcessUserMessageAsync(Arg.Any<string>(), Arg.Any<PromptContext>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ChatOrchestratorState>>(_ => throw new GeminiApiException(
+                GeminiErrorKind.DailyQuotaExceeded,
+                "Daily quota exhausted",
+                statusCode: HttpStatusCode.TooManyRequests));
+        _store.GetPendingQueueAsync(Arg.Any<DateTimeOffset>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([command]);
+        var worker = new AiCommandQueueWorker(_store, _orchestrator, _networkStatus, _clock);
+
+        await worker.ProcessPendingBatchAsync(CancellationToken.None);
+        _store.ClearReceivedCalls();
+        _orchestrator.ClearReceivedCalls();
+
+        // 14 minutes later the queue is still paused: no queue read, no model call.
+        _clock.UtcNow.Returns(_now.AddMinutes(14));
+        (await worker.ProcessPendingBatchAsync(CancellationToken.None)).Should().Be(0);
+        await _store.DidNotReceiveWithAnyArgs().GetPendingQueueAsync(default, default, TestContext.Current.CancellationToken);
+        await _orchestrator.DidNotReceiveWithAnyArgs().ProcessUserMessageAsync(default!, default!, TestContext.Current.CancellationToken);
+
+        // After the pause the worker looks at the queue again.
+        _clock.UtcNow.Returns(_now.AddMinutes(16));
+        await worker.ProcessPendingBatchAsync(CancellationToken.None);
+        await _store.ReceivedWithAnyArgs().GetPendingQueueAsync(default, default, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task FR_CHAT_7_Worker_sets_cooldown_delay_on_rate_limit_429()
     {
         var command = new AiCommand

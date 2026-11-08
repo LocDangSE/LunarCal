@@ -227,8 +227,11 @@ public sealed class SqliteAiCommandStore : IAiCommandStore
             query += ", next_retry_at = @next_retry_at";
             command.Parameters.AddWithValue("@next_retry_at", nextRetryAt.Value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
         }
-        else if (status == AiCommandStatus.Pending || status == AiCommandStatus.Completed || status == AiCommandStatus.Cancelled)
+        else
         {
+            // Always clear a retry time that is not being set. A command that failed permanently (invalid key, daily
+            // quota) used to keep the retry time of its earlier transient failure, so GetPendingQueueAsync picked it up
+            // again immediately and the worker called Gemini for it in an endless loop (P4-R9).
             query += ", next_retry_at = NULL";
         }
 

@@ -41,12 +41,16 @@ public sealed class SmokeTests
         throw new FileNotFoundException($"LunarCal.exe and LunarCal.dll ({config}) not found in {appDir}");
     }
 
-    private static Application LaunchApp(string exePath, bool disableAiQueueWorker = false)
+    /// <summary>
+    /// Launches the app for a test with its own throw-away database and the AI queue worker switched off. A test must
+    /// never touch the developer's real profile: an earlier version wrote its "họp chiến lược Q4" command into the real
+    /// queue, where the real app later sent it (and a retry loop sent it again and again) to the user's Gemini key until
+    /// the daily quota was gone. It also must not kill other LunarCal processes, which may be the developer's own app.
+    /// </summary>
+    private static Application LaunchApp(string exePath)
     {
-        foreach (var p in Process.GetProcessesByName("LunarCal"))
-        {
-            try { p.Kill(); p.WaitForExit(1000); } catch { }
-        }
+        var dataDirectory = Path.Combine(Path.GetTempPath(), "LunarCal_UiTest_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataDirectory);
 
         var psi = new ProcessStartInfo
         {
@@ -55,11 +59,8 @@ public sealed class SmokeTests
             Arguments = "--skip-first-run",
         };
 
-        if (disableAiQueueWorker)
-        {
-            // The queued command must stay where the test left it instead of being sent to the user's Gemini key.
-            psi.Environment["LunarCal__Ai__QueueWorkerEnabled"] = "false";
-        }
+        psi.Environment["LunarCal__Storage__DatabasePath"] = Path.Combine(dataDirectory, "lunarcal-uitest.db");
+        psi.Environment["LunarCal__Ai__QueueWorkerEnabled"] = "false";
 
         return Application.Launch(psi);
     }
@@ -257,7 +258,7 @@ public sealed class SmokeTests
     {
         var exePath = FindAppPath();
         using var automation = new UIA3Automation();
-        using var app = LaunchApp(exePath, disableAiQueueWorker: true);
+        using var app = LaunchApp(exePath);
 
         try
         {
@@ -296,7 +297,7 @@ public sealed class SmokeTests
     {
         var exePath = FindAppPath();
         using var automation = new UIA3Automation();
-        using var app = LaunchApp(exePath, disableAiQueueWorker: true);
+        using var app = LaunchApp(exePath);
 
         try
         {
