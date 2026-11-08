@@ -132,6 +132,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     /// <summary>Raised when any view or command requests the event editor dialog (Figma S10, FR-UI-4).</summary>
     public event EventHandler<EventEditorRequest>? EventEditorRequested;
+    public event EventHandler<AiCommandItemViewModel>? AiConfirmRequested;
 
     /// <summary>List of calendars displayed in the sidebar (FR-UI-10).</summary>
     public ObservableCollection<CalendarItemViewModel> Calendars { get; } = new();
@@ -173,6 +174,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         AiCommandBar.CommandEnqueued += OnAiCommandEnqueued;
         AiQueueDrawer.CommandEditRequested += OnAiCommandEditRequested;
+        AiQueueDrawer.CommandActionRequested += (_, item) => AiConfirmRequested?.Invoke(this, item);
 
         _isLunarVisible = _preferences.LunarEnabled;
 
