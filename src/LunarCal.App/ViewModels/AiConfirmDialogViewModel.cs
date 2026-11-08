@@ -380,12 +380,9 @@ public partial class AiConfirmDialogViewModel : ObservableObject
             using var doc = JsonDocument.Parse(toolCall.ArgumentsJson);
             var root = doc.RootElement;
 
-            if (root.TryGetProperty("summary", out var summaryProp))
-            {
-                EventTitle = summaryProp.GetString() ?? string.Empty;
-            }
+            EventTitle = ToolArgumentReader.GetTitle(root) ?? string.Empty;
 
-            var isAllDay = root.TryGetProperty("all_day", out var allDayProp) && allDayProp.GetBoolean();
+            var isAllDay = ToolArgumentReader.IsAllDay(root);
 
             if (root.TryGetProperty("start", out var startProp) &&
                 DateTimeOffset.TryParse(startProp.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))

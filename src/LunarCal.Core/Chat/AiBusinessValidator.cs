@@ -62,14 +62,14 @@ public sealed class AiBusinessValidator : IAiBusinessValidator
 
             if (string.Equals(name, ToolDefinitions.UpdateEvent, StringComparison.OrdinalIgnoreCase))
             {
-                var eventId = root.TryGetProperty("event_id", out var idProp) ? idProp.GetString() : null;
+                var eventId = ToolArgumentReader.GetEventId(root);
                 return await ValidateSingleEventCreationAsync(root, eventStore, typedAt, targetCalendarId, eventId, cancellationToken)
                     .ConfigureAwait(false);
             }
 
             if (string.Equals(name, ToolDefinitions.DeleteEvent, StringComparison.OrdinalIgnoreCase))
             {
-                var eventId = root.TryGetProperty("event_id", out var idProp) ? idProp.GetString() : null;
+                var eventId = ToolArgumentReader.GetEventId(root);
                 if (string.IsNullOrWhiteSpace(eventId))
                 {
                     return AiBusinessValidationResult.WithErrors(
@@ -103,7 +103,7 @@ public sealed class AiBusinessValidator : IAiBusinessValidator
         var messages = new List<AiBusinessValidationMessage>();
 
         // 1. Validate summary
-        if (!root.TryGetProperty("summary", out var summaryProp) || string.IsNullOrWhiteSpace(summaryProp.GetString()))
+        if (ToolArgumentReader.GetTitle(root) is null)
         {
             messages.Add(new AiBusinessValidationMessage(AiBusinessValidationSeverity.Error, "Tiêu đề sự kiện không được để trống."));
         }

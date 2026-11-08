@@ -259,4 +259,24 @@ public sealed class AiConfirmDialogViewModelTests
         vm.RequestEdit.Should().BeFalse();
         closeRequestedTriggered.Should().BeFalse();
     }
+
+    [Fact]
+    public void FR_CONFIRM_1_Shows_title_and_all_day_from_schema_fields_title_and_allDay()
+    {
+        var vm = new AiConfirmDialogViewModel(_localization);
+        var toolCall = new ToolCall(
+            ToolDefinitions.CreateEvent,
+            """{"title": "Giỗ ông nội", "start": "2026-10-22T00:00:00+07:00", "allDay": true}""");
+
+        vm.Initialize(
+            CreateTestCommand(),
+            toolCall,
+            new AiConfidenceResult(95, AiConfidenceLevel.High, []),
+            AiBusinessValidationResult.Success(),
+            isLunarEnabled: true,
+            isTrainingOptIn: false);
+
+        vm.EventTitle.Should().Be("Giỗ ông nội");
+        vm.EventTimeDisplay.Should().Be("Cả ngày");
+    }
 }

@@ -60,8 +60,7 @@ public static class AiConfidenceEvaluator
                 string.Equals(toolCall.Name, ToolDefinitions.CreateRecurringEvent, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(toolCall.Name, ToolDefinitions.CreateLunarRecurringEvent, StringComparison.OrdinalIgnoreCase))
             {
-                var hasSummary = root.TryGetProperty("summary", out var summaryProp) &&
-                                 !string.IsNullOrWhiteSpace(summaryProp.GetString());
+                var hasSummary = ToolArgumentReader.GetTitle(root) is not null;
                 if (!hasSummary)
                 {
                     score -= 40;
@@ -97,8 +96,7 @@ public static class AiConfidenceEvaluator
             }
             else if (string.Equals(toolCall.Name, ToolDefinitions.UpdateEvent, StringComparison.OrdinalIgnoreCase))
             {
-                var hasEventId = root.TryGetProperty("event_id", out var eventIdProp) &&
-                                 !string.IsNullOrWhiteSpace(eventIdProp.GetString());
+                var hasEventId = ToolArgumentReader.GetEventId(root) is not null;
                 if (!hasEventId)
                 {
                     score -= 40;
@@ -107,8 +105,7 @@ public static class AiConfidenceEvaluator
             }
             else if (string.Equals(toolCall.Name, ToolDefinitions.DeleteEvent, StringComparison.OrdinalIgnoreCase))
             {
-                var hasEventId = root.TryGetProperty("event_id", out var eventIdProp) &&
-                                 !string.IsNullOrWhiteSpace(eventIdProp.GetString());
+                var hasEventId = ToolArgumentReader.GetEventId(root) is not null;
                 if (!hasEventId)
                 {
                     score -= 40;
