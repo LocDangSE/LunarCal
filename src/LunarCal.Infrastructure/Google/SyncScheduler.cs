@@ -21,6 +21,7 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     private IMutationService? _mutationService;
 
     private readonly SemaphoreSlim _syncLock = new(1, 1);
+    private DateTimeOffset? _lastFocusSyncAt;
     private readonly object _stateLock = new();
 
     private SyncScheduleState _currentState = SyncScheduleState.Active;
@@ -121,6 +122,14 @@ public sealed class SyncScheduler : BackgroundService, ISyncScheduler
     /// <inheritdoc />
     public async Task TriggerFocusSyncAsync(CancellationToken cancellationToken = default)
     {
+        var now = _clock.UtcNow;
+        if (_lastFocusSyncAt is { } last && now - last < TimeSpan.FromSeconds(_syncOptions.FocusSyncMinIntervalSeconds))
+        {
+            _logger.Debug("Focus sync skipped: the previous one ran less than {Seconds} s ago", _syncOptions.FocusSyncMinIntervalSeconds);
+            return;
+        }
+
+        _lastFocusSyncAt = now;
         _logger.Information("Immediate focus sync triggered (FR-SYNC-3)");
         await ExecuteSyncPassCoreAsync("Focus", cancellationToken).ConfigureAwait(false);
     }

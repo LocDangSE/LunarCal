@@ -218,6 +218,34 @@ public class SyncSchedulerTests
     }
 
     [Fact]
+    public async Task FR_SYNC_3_Switching_windows_quickly_does_not_start_a_sync_each_time()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var syncEngine = Substitute.For<ISyncEngine>();
+        syncEngine.SyncIncrementalAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(SyncResult.Succeeded(0, 0));
+        var fakeClock = new FakeClock();
+        var scheduler = new SyncScheduler(
+            syncEngine,
+            connectionFactory: null,
+            clock: fakeClock,
+            accountIdProvider: _ => Task.FromResult(new List<string> { "acc-1" }));
+
+        // Ten focus changes within 20 seconds: only the first one syncs (P4-R11).
+        for (var i = 0; i < 10; i++)
+        {
+            await scheduler.TriggerFocusSyncAsync(ct);
+            fakeClock.UtcNow += TimeSpan.FromSeconds(2);
+        }
+
+        await syncEngine.Received(1).SyncIncrementalAsync("acc-1", Arg.Any<CancellationToken>());
+
+        // After the minimum interval the next focus syncs again.
+        fakeClock.UtcNow += TimeSpan.FromSeconds(30);
+        await scheduler.TriggerFocusSyncAsync(ct);
+        await syncEngine.Received(2).SyncIncrementalAsync("acc-1", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task FR_SYNC_3_TriggerPostMutationSyncAsync_executes_immediate_sync_and_raises_event()
     {
         var ct = TestContext.Current.CancellationToken;

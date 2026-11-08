@@ -226,6 +226,44 @@ public sealed class MutationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task FR_SYNC_4_A_mutation_Google_keeps_rejecting_is_not_resent_at_every_sync_pass()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await SeedCalendarAndAccountAsync("acc-1", "cal-1");
+        var bad = new CalendarEvent
+        {
+            Id = "evtpoison1",
+            CalendarId = "cal-1",
+            Title = "Rejected",
+            StartUtc = new DateTimeOffset(2026, 11, 4, 16, 0, 0, TimeSpan.Zero),
+            EndUtc = new DateTimeOffset(2026, 11, 4, 17, 0, 0, TimeSpan.Zero),
+        };
+        await _service.CreateEventOptimisticAsync("acc-1", "cal-1", bad, ct);
+        _gateway.CreateEventAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CalendarEvent>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("400 Bad Request: Invalid value"));
+
+        // 30 sync passes in the same minute (focus changes, edits, polling): Google is asked once.
+        for (var i = 0; i < 30; i++)
+        {
+            await _service.ProcessPendingMutationsAsync("acc-1", ct);
+        }
+
+        await _gateway.ReceivedWithAnyArgs(1).CreateEventAsync(default!, default!, default!, default!, TestContext.Current.CancellationToken);
+
+        // 3 minutes later it gets another try, then waits 4 minutes, and so on.
+        _timeProvider.SetUtcNow(_timeProvider.GetUtcNow().AddMinutes(3));
+        await _service.ProcessPendingMutationsAsync("acc-1", ct);
+        await _gateway.ReceivedWithAnyArgs(2).CreateEventAsync(default!, default!, default!, default!, TestContext.Current.CancellationToken);
+
+        _timeProvider.SetUtcNow(_timeProvider.GetUtcNow().AddMinutes(3));
+        await _service.ProcessPendingMutationsAsync("acc-1", ct);
+        await _gateway.ReceivedWithAnyArgs(2).CreateEventAsync(default!, default!, default!, default!, TestContext.Current.CancellationToken);
+
+        // The change itself is never dropped: the user's data stays in the queue.
+        (await _mutationStore.GetPendingAsync(10, ct)).Should().HaveCount(1);
+    }
+
+    [Fact]
     public async Task FR_SYNC_4_ProcessPendingMutationsAsync_when_offline_increments_attempts_and_preserves_local_data()
     {
         var ct = TestContext.Current.CancellationToken;

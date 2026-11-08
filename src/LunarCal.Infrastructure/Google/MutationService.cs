@@ -24,6 +24,13 @@ public sealed class MutationService : IMutationService
     private readonly TimeProvider _timeProvider;
     private readonly ILogger _logger;
 
+    // A mutation Google keeps rejecting (400, 403, 404...) is not sent again at every sync pass (every 2 minutes, every
+    // focus change, after every edit): its next try waits 2, 4, 8... minutes, at most 60 (P4-R11). In memory on purpose:
+    // restarting the app gives every mutation a fresh chance.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> _retryNotBefore = new(StringComparer.Ordinal);
+    private static readonly TimeSpan _firstFailureBackoff = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan _maxFailureBackoff = TimeSpan.FromMinutes(60);
+
     /// <summary>
     /// Gets or sets the sync scheduler used to trigger post-mutation sync passes.
     /// </summary>
@@ -322,6 +329,12 @@ public sealed class MutationService : IMutationService
                 continue;
             }
 
+            if (_retryNotBefore.TryGetValue(mutation.Id, out var notBefore) && _timeProvider.GetUtcNow() < notBefore)
+            {
+                _logger.Debug("Mutation {MutationId} keeps failing; its next attempt waits until {NotBefore}", mutation.Id, notBefore);
+                continue;
+            }
+
             processed++;
 
             // Acquire valid access token (refreshes if needed per FR-AUTH-3)
@@ -363,6 +376,7 @@ public sealed class MutationService : IMutationService
 
                 // Mutation successfully applied or conflict resolved per server-wins
                 await _mutationStore.DeleteAsync(mutation.Id, cancellationToken).ConfigureAwait(false);
+                _retryNotBefore.TryRemove(mutation.Id, out _);
                 succeeded++;
             }
             catch (GooglePreconditionFailedException ex)
@@ -386,6 +400,11 @@ public sealed class MutationService : IMutationService
                 _logger.Error(ex, "Unexpected error dispatching mutation {MutationId}", mutation.Id);
                 await _mutationStore.MarkAttemptFailedAsync(mutation.Id, ex.Message, cancellationToken).ConfigureAwait(false);
                 failed++;
+
+                // attempts + 1 is the number of failures including this one: 2 min, 4 min, 8 min... up to 60 min.
+                var failures = Math.Min(mutation.Attempts + 1, 10);
+                var backoff = TimeSpan.FromTicks(Math.Min(_maxFailureBackoff.Ticks, _firstFailureBackoff.Ticks * (1L << (failures - 1))));
+                _retryNotBefore[mutation.Id] = _timeProvider.GetUtcNow() + backoff;
                 // Continue to next mutation or halt depending on severity
             }
         }

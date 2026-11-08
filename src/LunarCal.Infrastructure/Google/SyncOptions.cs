@@ -29,6 +29,12 @@ public sealed class SyncOptions
     public int PollingTrayMinutes { get; set; } = 10;
 
     /// <summary>
+    /// Minimum seconds between two syncs triggered by the window gaining focus (default: 30), so switching between
+    /// windows quickly does not start a sync every time (FR-SYNC-3, P4-R11).
+    /// </summary>
+    public int FocusSyncMinIntervalSeconds { get; set; } = 30;
+
+    /// <summary>
     /// Maximum number of requests per second allowed across sync and API operations (FR-SYNC-5, default: 5).
     /// </summary>
     public int MaxRequestsPerSecond { get; set; } = 5;
