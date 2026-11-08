@@ -35,9 +35,8 @@ Nếu một mục thất bại, ghi lỗi vào đây và tạo task `P4-R*` ho�
 
 ## Câu hỏi mở
 
-- (Không còn câu hỏi mở. Hai nguy cơ đồng bộ Google đã sửa ở P4-R11.)
+- (Không còn câu hỏi mở. Cột `AiCommand.proposal_json` đã vào spec §6 ở P4-R8; hai nguy cơ đồng bộ Google đã sửa ở P4-R11.)
 
-- (Không còn câu hỏi mở. Cột `AiCommand.proposal_json` đã được ghi vào spec §6 ngày 2026-11-08, P4-R8.)
 
 ## Đã hoàn thành (đối chiếu spec §13)
 
