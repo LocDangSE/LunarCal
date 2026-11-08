@@ -201,9 +201,8 @@ public sealed class GeminiModelService : IAiModelService
                 return true;
             }
 
-            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            _logger.Warning("Function calling probe failed for {ModelId}: HTTP {Status}, Body: {Body}",
-                normalizedId, response.StatusCode, errorBody);
+            // SEC-LOG-2, AGENTS §7: never log the raw Gemini response at the default level; the status code is enough.
+            _logger.Warning("Function calling probe failed for {ModelId}: HTTP {Status}", normalizedId, response.StatusCode);
             return false;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

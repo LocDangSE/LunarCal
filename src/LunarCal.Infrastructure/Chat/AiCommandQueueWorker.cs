@@ -223,7 +223,9 @@ public sealed class AiCommandQueueWorker : BackgroundService
 
     private async Task ProcessSingleCommandAsync(AiCommand command, CancellationToken cancellationToken)
     {
-        _logger.Information("Processing AI command {CommandId} (#{DisplayNo}): {Text}", command.Id, command.DisplayNo, command.Text);
+        // SEC-LOG-2: chat content is only logged at Debug (off by default).
+        _logger.Information("Processing AI command {CommandId} (#{DisplayNo})", command.Id, command.DisplayNo);
+        _logger.Debug("AI command {CommandId} text: {Text}", command.Id, command.Text);
 
         // Mark as processing
         await _commandStore.UpdateStatusAsync(
