@@ -26,7 +26,7 @@
 
   <ItemGroup Label="Storage">
     <!-- Encrypted local storage using SQLCipher (SEC-DATA-1, ADR-0013) -->
-    <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="11.0.0" />
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11" />
   </ItemGroup>
 
