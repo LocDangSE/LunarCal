@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup Label="Hosting / DI">
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Logging">
@@ -51,7 +51,7 @@
 
   <ItemGroup Label="Network">
     <!-- HTTP resilience and retry pipeline (SEC-NET-1, SEC-NET-2) -->
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="11.0.0" />
   </ItemGroup>
 
 </Project>
