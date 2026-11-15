@@ -14,7 +14,7 @@
 
   <ItemGroup Label="Logging">
     <!-- Serilog logging with file sink and redaction (SEC-LOG-1, SEC-LOG-2, ADR-0019). -->
-    <PackageVersion Include="Serilog" Version="4.3.0" />
+    <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
